@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using Nickvision.Desktop.Application;
 using Nickvision.Desktop.Globalization;
 using Nickvision.Desktop.Keyring;
@@ -20,6 +21,7 @@ public class AddDownloadDialogController
     private static AddDownloadTeachType _shownTeachTypeFlag;
 
     private readonly ILogger<AddDownloadDialogController> _logger;
+    private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly IConfigurationService _configurationService;
     private readonly IDiscoveryService _discoveryService;
     private readonly IDownloadService _downloadService;
@@ -35,12 +37,14 @@ public class AddDownloadDialogController
     public bool PreviousNumberTitles => _configurationService.PreviousNumberTitles;
     public bool PreviousReverseDownloadOrder => _configurationService.PreviousReverseDownloadOrder;
     public string PreviousSaveFolder => _configurationService.PreviousSaveFolder;
+    public bool FastDownload => _configurationService.FastDownload;
     public bool PreviousSplitChapters => _configurationService.PreviousSplitChapters;
     public Dictionary<MediaFileType, string> PreviousVideoFormatIds => _configurationService.PreviousVideoFormatIds;
 
-    public AddDownloadDialogController(ILogger<AddDownloadDialogController> logger, IConfigurationService configurationService, IDiscoveryService discoveryService, IDownloadService downloadService, IKeyringService keyringService, INotificationService notificationService, IThumbnailService thumbnailService, ITranslationService translationService)
+    public AddDownloadDialogController(ILogger<AddDownloadDialogController> logger, IHostApplicationLifetime applicationLifetime, IConfigurationService configurationService, IDiscoveryService discoveryService, IDownloadService downloadService, IKeyringService keyringService, INotificationService notificationService, IThumbnailService thumbnailService, ITranslationService translationService)
     {
         _logger = logger;
+        _applicationLifetime = applicationLifetime;
         _configurationService = configurationService;
         _discoveryService = discoveryService;
         _downloadService = downloadService;
@@ -64,6 +68,67 @@ public class AddDownloadDialogController
         get => _configurationService.PreviousDownloadImmediatelyAsVideo;
 
         set => _configurationService.PreviousDownloadImmediatelyAsVideo = value;
+    }
+
+    public async Task AddFastDownloadsAsync(Uri url, Credential? credential)
+    {
+        // Snapshot the destination before background discovery. Do not overwrite
+        // the quality and file type remembered by the normal configuration dialog.
+        var saveFolder = _configurationService.PreviousSaveFolder;
+        var cancellationToken = _applicationLifetime.ApplicationStopping;
+        _notificationService.Send(new AppNotification(_translationService._("Preparing downloads in the background"), NotificationSeverity.Information));
+        try
+        {
+            var result = url.IsFile
+                ? await _discoveryService.GetForBatchFileAsync(url.LocalPath, credential, cancellationToken)
+                : await _discoveryService.GetForUrlAsync(url, credential, cancellationToken);
+            if (result.Media.Count == 0)
+            {
+                _notificationService.Send(new AppNotification(_translationService._("No media was found at the provided URL"), NotificationSeverity.Warning));
+                return;
+            }
+            var options = new List<DownloadOptions>(result.Media.Count);
+            for (var i = 0; i < result.Media.Count; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var media = result.Media[i];
+                var folder = string.IsNullOrEmpty(media.SuggestedSaveFolder) ? saveFolder : media.SuggestedSaveFolder;
+                if (result.IsPlaylist)
+                {
+                    folder = Path.Combine(folder, result.Title.SanitizeForFilename(_configurationService.LimitCharacters));
+                }
+                options.Add(new DownloadOptions(media.Url)
+                {
+                    Credential = credential,
+                    SaveFolder = folder,
+                    SaveFilename = $"{(result.IsPlaylist ? $"{i + 1} - " : string.Empty)}{media.Title.SanitizeForFilename(_configurationService.LimitCharacters)}",
+                    FileType = media.Type == MediaType.Audio ? MediaFileType.Audio : MediaFileType.MP4,
+                    PlaylistPosition = media.PlaylistPosition,
+                    RequiresPlaylistItems = media.RequiresPlaylistItems,
+                    VideoFormat = media.Type == MediaType.Audio ? Format.NoneVideo : Format.BestVideo,
+                    AudioFormat = Format.BestAudio,
+                    UseBestQuality = true,
+                    SubtitleLanguages = media.Subtitles.Where(x => _configurationService.PreviousSubtitleLanguages.Contains(x)).ToList(),
+                    SplitChapters = _configurationService.PreviousSplitChapters,
+                    ExportDescription = _configurationService.PreviousExportDescription
+                });
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            await _downloadService.AddAsync(options, false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Application shutdown cancels pending extraction without an error.
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "An error occurred while preparing fast downloads");
+            _notificationService.Send(new AppNotification(_translationService._("An error occurred while preparing fast downloads"), NotificationSeverity.Error)
+            {
+                Action = "error",
+                ActionParam = e.ToString()
+            });
+        }
     }
 
     public async Task AddPlaylistDownloadsAsync(DiscoveryContext context, IReadOnlyList<MediaSelectionItem> items, string saveFolder, SelectionItem<MediaFileType> selectedFileType, SelectionItem<VideoResolution> selectedVideoResoltuion, SelectionItem<double> selectedAudioBitrate, bool reverseDownloadOrder, bool numberTitles, IEnumerable<SelectionItem<SubtitleLanguage>> selectedSubtitleLanguages, bool exportM3U, bool splitChapters, bool exportDescription, bool excludeFromHistory, SelectionItem<PostProcessorArgument?> selectedPostProcessorArgument)

@@ -1,6 +1,9 @@
 on:
-  push:
-    branches: [ "main" ]
+  workflow_call:
+    inputs:
+      release_version:
+        type: string
+        default: '2026.5.0'
   pull_request:
     branches: [ "main" ]
     types: [ "review_requested", "ready_for_review" ]
@@ -26,9 +29,22 @@ jobs:
     runs-on: ${{ matrix.variant.runner }}
     steps:
       - uses: actions/checkout@v6
+      - name: "Set release version"
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version || '2026.5.0' }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          path = 'flatpak/org.nickvision.tubeconverter.json'
+          with open(path) as file:
+              manifest = json.load(file)
+          manifest['build-options'].setdefault('env', {})['RELEASE_VERSION'] = os.environ['RELEASE_VERSION']
+          with open(path, 'w') as file:
+              json.dump(manifest, file, indent=2)
+          PY
       - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
-          bundle: org.nickvision.tubeconverter.flatpak
+          bundle: BearDL-linux-${{ matrix.variant.arch }}.flatpak
           manifest-path: flatpak/org.nickvision.tubeconverter.json
           cache-key: flatpak-builder-${{ github.sha }}
           arch: ${{ matrix.variant.arch }}

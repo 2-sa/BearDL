@@ -25,6 +25,7 @@ public class DownloadOptions
     public TimeFrame? TimeFrame { get; set; }
     public VideoResolution? VideoResolution { get; set; }
     public double? AudioBitrate { get; set; }
+    public bool UseBestQuality { get; set; }
 
     public DownloadOptions(Uri url)
     {

@@ -5,6 +5,7 @@ using Nickvision.Desktop.Globalization;
 using Nickvision.Parabolic.Shared.Events;
 using Nickvision.Parabolic.Shared.Models;
 using Nickvision.Parabolic.Shared.Services;
+using Nickvision.Parabolic.WinUI.Helpers;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -41,6 +42,7 @@ public sealed partial class DownloadRow : UserControl
     public DownloadRow(IThumbnailService thumbnailService, ITranslationService translator)
     {
         InitializeComponent();
+        LocalizationHelper.Apply(this, translator);
         _thumbnailService = thumbnailService;
         _translator = translator;
         _id = -1;

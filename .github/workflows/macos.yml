@@ -1,6 +1,9 @@
 on:
-  push:
-    branches: [ "main" ]
+  workflow_call:
+    inputs:
+      release_version:
+        type: string
+        default: '2026.5.0'
   pull_request:
     branches: [ "main" ]
     types: [ "review_requested", "ready_for_review" ]
@@ -11,7 +14,8 @@ permissions:
   contents: read
 env:
   PROJECT_NAME: Nickvision.Parabolic.GNOME
-  APP_NAME: Parabolic
+  APP_NAME: BearDL
+  RELEASE_VERSION: ${{ inputs.release_version || '2026.5.0' }}
 jobs:
   gnome-macos:
     name: "GNOME on macOS"
@@ -20,7 +24,7 @@ jobs:
       matrix:
         variant:
           - arch: arm64
-            runner: macos-latest
+            runner: macos-15
             runtime: osx-arm64
           - arch: x64
             runner: macos-15-intel
@@ -45,7 +49,13 @@ jobs:
         run: |
           chmod +x resources/macos/publish-and-package.sh
           ./resources/macos/publish-and-package.sh ${{ matrix.variant.runtime }}
+      - name: "Archive app bundle"
+        run: |
+          codesign --force --deep --sign - resources/macos/BearDL.app
+          codesign --verify --deep --strict resources/macos/BearDL.app
+          ditto -c -k --sequesterRsrc --keepParent resources/macos/BearDL.app BearDL-macOS-${{ matrix.variant.arch }}.zip
       - uses: actions/upload-artifact@v4
         with:
-          path: ${{ github.workspace }}/resources/macos/*.app
-          name: ${{ env.APP_NAME }}-${{ matrix.variant.arch }}
+          path: ${{ github.workspace }}/BearDL-macOS-${{ matrix.variant.arch }}.zip
+          name: BearDL-macOS-${{ matrix.variant.arch }}
+          if-no-files-found: error

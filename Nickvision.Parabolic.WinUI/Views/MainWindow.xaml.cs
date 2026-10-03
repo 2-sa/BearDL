@@ -13,10 +13,12 @@ using Nickvision.Parabolic.Shared.Events;
 using Nickvision.Parabolic.Shared.Models;
 using Nickvision.Parabolic.Shared.Services;
 using Nickvision.Parabolic.WinUI.Controls;
+using Nickvision.Parabolic.WinUI.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.System;
+using WinRT;
 
 namespace Nickvision.Parabolic.WinUI.Views;
 
@@ -39,6 +41,8 @@ public sealed partial class MainWindow : Window
     public MainWindow(IServiceProvider serviceProvider, MainWindowController controller, AppInfo appInfo, IEventsService eventsService, ITranslationService translationService)
     {
         InitializeComponent();
+        // Localize the inner layout; the window root stays LTR for native hit testing.
+        LocalizationHelper.Apply(MainGrid, translationService);
         _serviceProvider = serviceProvider;
         _controller = controller;
         _appInfo = appInfo;
@@ -64,6 +68,16 @@ public sealed partial class MainWindow : Window
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(TitleBar);
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+        if (MainGrid.FlowDirection == FlowDirection.RightToLeft)
+        {
+            // XAML direction does not move the native Windows caption buttons.
+            AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
+            RtlCaptionButtons.Visibility = Visibility.Visible;
+            SetCaptionLabel(BtnWindowClose, _translationService._("Close"));
+            SetCaptionLabel(BtnWindowMinimize, _translationService._("Minimize"));
+            UpdateMaximizeButton();
+            AppWindow.Changed += (_, _) => UpdateMaximizeButton();
+        }
         BtnPreview.Visibility = _appInfo.Version.IsPreview ? Visibility.Visible : Visibility.Collapsed;
         // Events
         AppWindow.Closing += Window_Closing;
@@ -157,6 +171,7 @@ public sealed partial class MainWindow : Window
                 CloseButtonText = _translationService._("I understand"),
                 DefaultButton = ContentDialogButton.Close,
                 RequestedTheme = MainGrid.ActualTheme,
+                FlowDirection = MainGrid.FlowDirection,
                 XamlRoot = MainGrid.XamlRoot
             };
             await disclaimerDialog.ShowAsync();
@@ -175,6 +190,7 @@ public sealed partial class MainWindow : Window
                 CloseButtonText = _translationService._("No"),
                 DefaultButton = ContentDialogButton.Primary,
                 RequestedTheme = MainGrid.ActualTheme,
+                FlowDirection = MainGrid.FlowDirection,
                 XamlRoot = MainGrid.XamlRoot
             };
             if ((await recoverDialog.ShowAsync()) == ContentDialogResult.Primary)
@@ -207,6 +223,7 @@ public sealed partial class MainWindow : Window
                 CloseButtonText = _translationService._("No"),
                 DefaultButton = ContentDialogButton.Close,
                 RequestedTheme = MainGrid.ActualTheme,
+                FlowDirection = MainGrid.FlowDirection,
                 XamlRoot = MainGrid.XamlRoot
             };
             if ((await confirmDialog.ShowAsync()) == ContentDialogResult.Primary)
@@ -266,6 +283,8 @@ public sealed partial class MainWindow : Window
                     Title = _translationService._("Error"),
                     Content = new ScrollViewer()
                     {
+                        FlowDirection = FlowDirection.LeftToRight,
+                        Padding = new Thickness(0, 0, 20, 0),
                         HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
                         VerticalScrollBarVisibility = ScrollBarVisibility.Visible,
                         Content = new TextBlock()
@@ -277,6 +296,7 @@ public sealed partial class MainWindow : Window
                     CloseButtonText = _translationService._("Close"),
                     DefaultButton = ContentDialogButton.Close,
                     RequestedTheme = MainGrid.ActualTheme,
+                    FlowDirection = MainGrid.FlowDirection,
                     XamlRoot = MainGrid.XamlRoot
                 };
                 await errorDialog.ShowAsync();
@@ -303,6 +323,56 @@ public sealed partial class MainWindow : Window
                 Theme.Dark => ElementTheme.Dark,
                 _ => ElementTheme.Default
             };
+        }
+    }
+
+    private static void SetCaptionLabel(Button button, string label)
+    {
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(button, label);
+        ToolTipService.SetToolTip(button, label);
+    }
+
+    private OverlappedPresenter? GetOverlappedPresenter()
+    {
+        var presenter = AppWindow.Presenter;
+        // The WinRT object can be projected as its base AppWindowPresenter type
+        // in NativeAOT. Query its native interface instead of silently failing
+        // a managed "is OverlappedPresenter" check.
+        return presenter.Kind == AppWindowPresenterKind.Overlapped
+            ? presenter.As<OverlappedPresenter>()
+            : null;
+    }
+
+    private void UpdateMaximizeButton()
+    {
+        if (GetOverlappedPresenter() is { } presenter)
+        {
+            var maximized = presenter.State == OverlappedPresenterState.Maximized;
+            IconWindowMaximize.Glyph = maximized ? "\uE923" : "\uE922";
+            SetCaptionLabel(BtnWindowMaximize, maximized ? _translationService._("Restore") : _translationService._("Maximize"));
+        }
+    }
+
+    private void WindowMinimize_Click(object sender, RoutedEventArgs e)
+    {
+        if (GetOverlappedPresenter() is { } presenter)
+        {
+            presenter.Minimize();
+        }
+    }
+
+    private void WindowMaximize_Click(object sender, RoutedEventArgs e)
+    {
+        if (GetOverlappedPresenter() is { } presenter)
+        {
+            if (presenter.State == OverlappedPresenterState.Maximized)
+            {
+                presenter.Restore();
+            }
+            else
+            {
+                presenter.Maximize();
+            }
         }
     }
 
@@ -420,6 +490,7 @@ public sealed partial class MainWindow : Window
                 IsActive = true,
             },
             RequestedTheme = MainGrid.ActualTheme,
+            FlowDirection = MainGrid.FlowDirection,
             XamlRoot = MainGrid.XamlRoot
         };
         DispatcherQueue.TryEnqueue(async () => await progressDialog.ShowAsync());

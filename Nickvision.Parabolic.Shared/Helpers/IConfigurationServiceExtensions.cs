@@ -22,6 +22,13 @@ public static class IConfigurationServiceExtensions
             set => configurationService.Set("AllowPreviewUpdates", value);
         }
 
+        public bool FastDownload
+        {
+            get => configurationService.Get("FastDownload", false);
+
+            set => configurationService.Set("FastDownload", value);
+        }
+
         public int AriaMaxConnectionsPerServer
         {
             get => configurationService.Get("AriaMaxConnectionsPerServer", 16);

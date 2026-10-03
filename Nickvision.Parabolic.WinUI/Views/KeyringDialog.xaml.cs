@@ -38,6 +38,7 @@ public sealed partial class KeyringDialog : ContentDialog
     public KeyringDialog(KeyringViewController controller, ITranslationService translationService)
     {
         InitializeComponent();
+        LocalizationHelper.Apply(this, translationService);
         _controller = controller;
         _translationService = translationService;
         _credentials = [];
@@ -68,6 +69,7 @@ public sealed partial class KeyringDialog : ContentDialog
                     PrimaryButtonText = _credentialEditMode == CredentialEditMode.Add ? _translationService._("Add") : _translationService._("Update"),
                     CloseButtonText = _translationService._("Cancel"),
                     DefaultButton = ContentDialogButton.Primary,
+                    FlowDirection = this.FlowDirection,
                     XamlRoot = XamlRoot,
                     RequestedTheme = ActualTheme
                 };
@@ -79,16 +81,19 @@ public sealed partial class KeyringDialog : ContentDialog
                 };
                 var txtUrl = new TextBox()
                 {
+                    FlowDirection = FlowDirection.LeftToRight,
                     Header = _translationService._("URL"),
                     PlaceholderText = _translationService._("Enter url here")
                 };
                 var txtUsername = new TextBox()
                 {
+                    FlowDirection = FlowDirection.LeftToRight,
                     Header = _translationService._("Username"),
                     PlaceholderText = _translationService._("Enter username here")
                 };
                 var txtPassword = new PasswordBox()
                 {
+                    FlowDirection = FlowDirection.LeftToRight,
                     Header = _translationService._("Password"),
                     PlaceholderText = _translationService._("Enter password here")
                 };
@@ -122,6 +127,7 @@ public sealed partial class KeyringDialog : ContentDialog
                                 Content = error,
                                 CloseButtonText = _translationService._("OK"),
                                 DefaultButton = ContentDialogButton.Close,
+                                FlowDirection = this.FlowDirection,
                                 XamlRoot = XamlRoot,
                                 RequestedTheme = ActualTheme
                             };
@@ -146,6 +152,7 @@ public sealed partial class KeyringDialog : ContentDialog
                     PrimaryButtonText = _translationService._("Yes"),
                     CloseButtonText = _translationService._("No"),
                     DefaultButton = ContentDialogButton.Close,
+                    FlowDirection = this.FlowDirection,
                     XamlRoot = XamlRoot,
                     RequestedTheme = ActualTheme
                 };

@@ -172,6 +172,12 @@ public class AddDownloadDialog : Adw.Dialog
         // Load
         _downloadImmediatelyAsVideoRow!.Active = _controller.PreviousDownloadImmediatelyAsVideo;
         _downloadImmediatelyAsAudioRow!.Active = _controller.PreviousDownloadImmediatelyAsAudio;
+        if (_controller.FastDownload)
+        {
+            _downloadImmediatelyAsVideoRow.Visible = false;
+            _downloadImmediatelyAsAudioRow.Visible = false;
+            _discoverUrlButton!.Label = _translationService._("Download");
+        }
         // Events
         OnClosed += Dialog_OnClosed;
         _urlRow!.OnChanged += UrlRow_OnChanged;
@@ -328,8 +334,6 @@ public class AddDownloadDialog : Adw.Dialog
 
     private async void DiscoverUrlButton_OnClicked(Gtk.Button sender, EventArgs e)
     {
-        _cancellationTokenSource = new CancellationTokenSource();
-        _navigationView!.PushByTag("loading");
         Credential? credential = null;
         if (!string.IsNullOrEmpty(_authenticationUsernameRow!.Text_) || !string.IsNullOrEmpty(_authenticationPasswordRow!.Text_))
         {
@@ -339,6 +343,15 @@ public class AddDownloadDialog : Adw.Dialog
         {
             credential = (await _controller.GetAvailableCredentialsAsync())[(int)_authenticationCredentialRow!.Selected].Value;
         }
+        if (_controller.FastDownload)
+        {
+            var url = new Uri(_urlRow!.Text_!);
+            Close();
+            _ = _controller.AddFastDownloadsAsync(url, credential);
+            return;
+        }
+        _cancellationTokenSource = new CancellationTokenSource();
+        _navigationView!.PushByTag("loading");
         _controller.PreviousDownloadImmediatelyAsVideo = _downloadImmediatelyAsVideoRow!.Active;
         _controller.PreviousDownloadImmediatelyAsAudio = _downloadImmediatelyAsAudioRow!.Active;
         _discoveryContext = await _controller.DiscoverAsync(new Uri(_urlRow!.Text_!), credential, _cancellationTokenSource.Token);

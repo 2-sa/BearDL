@@ -1,6 +1,7 @@
-﻿using CommunityToolkit.WinUI;
+using CommunityToolkit.WinUI;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Windows.Storage.Pickers;
@@ -56,6 +57,7 @@ public sealed partial class AddDownloadDialog : ContentDialog
     public AddDownloadDialog(AddDownloadDialogController controller, ITranslationService translationService)
     {
         InitializeComponent();
+        LocalizationHelper.Apply(this, translationService);
         _controller = controller;
         _translationService = translationService;
         _discoveryContext = null;
@@ -65,20 +67,20 @@ public sealed partial class AddDownloadDialog : ContentDialog
         CloseButtonText = _translationService._("Cancel");
         DefaultButton = ContentDialogButton.Primary;
         IsPrimaryButtonEnabled = false;
-        TxtUrl.Header = _translationService._("Media URL");
+        LblUrl.Text = _translationService._("Media URL");
         TxtUrl.PlaceholderText = _translationService._("Enter media url here");
         LblSelectBatchFile.Text = _translationService._("Select Batch File");
-        TglUseAuthentication.OnContent = _translationService._("Use Authentication");
-        TglUseAuthentication.OffContent = _translationService._("Use Authentication");
+        LblUseAuthentication.Text = _translationService._("Use Authentication");
+        AutomationProperties.SetName(TglUseAuthentication, _translationService._("Use Authentication"));
         CmbCredential.Header = _translationService._("Credential");
         TxtUsername.Header = _translationService._("Username");
         TxtUsername.PlaceholderText = _translationService._("Enter username here");
         TxtPassword.Header = _translationService._("Password");
         TxtPassword.PlaceholderText = _translationService._("Enter password here");
-        TglDownloadImmediatelyAsVideo.OnContent = _translationService._("Download Immediately as Video");
-        TglDownloadImmediatelyAsVideo.OffContent = _translationService._("Download Immediately as Video");
-        TglDownloadImmediatelyAsAudio.OnContent = _translationService._("Download Immediately as Audio");
-        TglDownloadImmediatelyAsAudio.OffContent = _translationService._("Download Immediately as Audio");
+        LblDownloadImmediatelyAsVideo.Text = _translationService._("Download Immediately as Video");
+        AutomationProperties.SetName(TglDownloadImmediatelyAsVideo, _translationService._("Download Immediately as Video"));
+        LblDownloadImmediatelyAsAudio.Text = _translationService._("Download Immediately as Audio");
+        AutomationProperties.SetName(TglDownloadImmediatelyAsAudio, _translationService._("Download Immediately as Audio"));
         TeachDownloadImmediately.Title = _translationService._("Warning");
         TeachDownloadImmediately.Subtitle = _translationService._("Parabolic will download media based off of previously configured options and sensible defaults. Options including save folder, format, and subtitle selection will not be shown.");
         LblLoading.Text = _translationService._("This may take some time...");
@@ -99,12 +101,12 @@ public sealed partial class AddDownloadDialog : ContentDialog
         LblSingleSelectAllSubtitles.Text = _translationService._("Select All");
         LblSingleDeselectAllSubtitles.Text = _translationService._("Deselect All");
         TxtSingleSubtitlesSearch.PlaceholderText = _translationService._("Search subtitles");
-        TglSingleSplitChapters.OnContent = _translationService._("Split into Files by Chapters");
-        TglSingleSplitChapters.OffContent = _translationService._("Split into Files by Chapters");
-        TglSingleExportDescription.OnContent = _translationService._("Export Description to File");
-        TglSingleExportDescription.OffContent = _translationService._("Export Description to File");
-        TglSingleExcludeFromHistory.OnContent = _translationService._("Exclude from History");
-        TglSingleExcludeFromHistory.OffContent = _translationService._("Exclude from History");
+        LblSingleSplitChapters.Text = _translationService._("Split into Files by Chapters");
+        AutomationProperties.SetName(TglSingleSplitChapters, LblSingleSplitChapters.Text);
+        LblSingleExportDescription.Text = _translationService._("Export Description to File");
+        AutomationProperties.SetName(TglSingleExportDescription, LblSingleExportDescription.Text);
+        LblSingleExcludeFromHistory.Text = _translationService._("Exclude from History");
+        AutomationProperties.SetName(TglSingleExcludeFromHistory, LblSingleExcludeFromHistory.Text);
         CmbSinglePostProcessorArgument.Header = _translationService._("Post Processor Argument");
         TxtSingleStartTime.Header = _translationService._("Start Time");
         TxtSingleEndTime.Header = _translationService._("End Time");
@@ -121,10 +123,10 @@ public sealed partial class AddDownloadDialog : ContentDialog
         CmbPlaylistSuggestedAudioBitrate.Header = _translationService._("Suggested Audio Bitrate");
         LblPlaylistSelectAllItems.Text = _translationService._("Select All");
         LblPlaylistDeselectAllItems.Text = _translationService._("Deselect All");
-        TglPlaylistReverseDownloadOrder.OnContent = _translationService._("Reverse Download Order");
-        TglPlaylistReverseDownloadOrder.OffContent = _translationService._("Reverse Download Order");
-        TglPlaylistNumberTitles.OnContent = _translationService._("Number Titles");
-        TglPlaylistNumberTitles.OffContent = _translationService._("Number Titles");
+        LblPlaylistReverseDownloadOrder.Text = _translationService._("Reverse Download Order");
+        AutomationProperties.SetName(TglPlaylistReverseDownloadOrder, LblPlaylistReverseDownloadOrder.Text);
+        LblPlaylistNumberTitles.Text = _translationService._("Number Titles");
+        AutomationProperties.SetName(TglPlaylistNumberTitles, LblPlaylistNumberTitles.Text);
         TeachPlaylistNumberTitles.Title = _translationService._("Warning");
         TeachPlaylistNumberTitles.Subtitle = _translationService._("Numbering will be applied to titles of selected items in succession on download.");
         StatusPlaylistSubtitles.Title = _translationService._("No Subtitles");
@@ -133,14 +135,14 @@ public sealed partial class AddDownloadDialog : ContentDialog
         LblPlaylistDeselectAllSubtitles.Text = _translationService._("Deselect All");
         LblPlaylistSubtitleNote.Text = _translationService._("Note: Some playlist items may not contain subtitles for a selected language.");
         TxtPlaylistSubtitlesSearch.PlaceholderText = _translationService._("Search subtitles");
-        TglPlaylistExportM3U.OnContent = _translationService._("Export M3U Playlist File");
-        TglPlaylistExportM3U.OffContent = _translationService._("Export M3U Playlist File");
-        TglPlaylistSplitChapters.OnContent = _translationService._("Split into Files by Chapters");
-        TglPlaylistSplitChapters.OffContent = _translationService._("Split into Files by Chapters");
-        TglPlaylistExportDescription.OnContent = _translationService._("Export Description to File");
-        TglPlaylistExportDescription.OffContent = _translationService._("Export Description to File");
-        TglPlaylistExcludeFromHistory.OnContent = _translationService._("Exclude from History");
-        TglPlaylistExcludeFromHistory.OffContent = _translationService._("Exclude from History");
+        LblPlaylistExportM3U.Text = _translationService._("Export M3U Playlist File");
+        AutomationProperties.SetName(TglPlaylistExportM3U, LblPlaylistExportM3U.Text);
+        LblPlaylistSplitChapters.Text = _translationService._("Split into Files by Chapters");
+        AutomationProperties.SetName(TglPlaylistSplitChapters, LblPlaylistSplitChapters.Text);
+        LblPlaylistExportDescription.Text = _translationService._("Export Description to File");
+        AutomationProperties.SetName(TglPlaylistExportDescription, LblPlaylistExportDescription.Text);
+        LblPlaylistExcludeFromHistory.Text = _translationService._("Exclude from History");
+        AutomationProperties.SetName(TglPlaylistExcludeFromHistory, LblPlaylistExcludeFromHistory.Text);
         CmbPlaylistPostProcessorArgument.Header = _translationService._("Post Processor Argument");
     }
 
@@ -149,8 +151,15 @@ public sealed partial class AddDownloadDialog : ContentDialog
         CmbCredential.ItemsSource = (await _controller.GetAvailableCredentialsAsync()).ToBindableSelectonItems();
         CmbCredential.SelectSelectionItem();
         ViewStack.SelectedIndex = (int)Pages.Discover;
-        TglDownloadImmediatelyAsVideo.IsOn = _controller.PreviousDownloadImmediatelyAsVideo;
-        TglDownloadImmediatelyAsAudio.IsOn = _controller.PreviousDownloadImmediatelyAsAudio;
+        var fastDownload = _controller.FastDownload;
+        PrimaryButtonText = _translationService._(fastDownload ? "Download" : "Discover");
+        ((FrameworkElement)TglDownloadImmediatelyAsVideo.Parent).Visibility = fastDownload ? Visibility.Collapsed : Visibility.Visible;
+        ((FrameworkElement)TglDownloadImmediatelyAsAudio.Parent).Visibility = fastDownload ? Visibility.Collapsed : Visibility.Visible;
+        if (!fastDownload)
+        {
+            TglDownloadImmediatelyAsVideo.IsOn = _controller.PreviousDownloadImmediatelyAsVideo;
+            TglDownloadImmediatelyAsAudio.IsOn = _controller.PreviousDownloadImmediatelyAsAudio;
+        }
         if (string.IsNullOrEmpty(TxtUrl.Text))
         {
             if (Clipboard.GetContent().Contains(StandardDataFormats.Text))
@@ -165,6 +174,13 @@ public sealed partial class AddDownloadDialog : ContentDialog
         var result = await base.ShowAsync();
         if (result != ContentDialogResult.Primary)
         {
+            return result;
+        }
+        if (fastDownload)
+        {
+            // The URL dialog has closed. Prepare and queue every item in the
+            // background; this task handles failures through app notifications.
+            _ = _controller.AddFastDownloadsAsync(new Uri(TxtUrl.Text), TglUseAuthentication.IsOn ? GetSelectedCredential() : null);
             return result;
         }
         var cancellationToken = new CancellationTokenSource();
@@ -201,17 +217,18 @@ public sealed partial class AddDownloadDialog : ContentDialog
         return await ShowAsync();
     }
 
-    private async Task DiscoverMediaAsync(CancellationToken cancellationToken)
+    private Credential? GetSelectedCredential()
     {
-        Credential? credential = null;
         if (!string.IsNullOrEmpty(TxtUsername.Text) || !string.IsNullOrEmpty(TxtPassword.Password))
         {
-            credential = new Credential("manual", TxtUsername.Text, TxtPassword.Password);
+            return new Credential("manual", TxtUsername.Text, TxtPassword.Password);
         }
-        else
-        {
-            credential = (CmbCredential.SelectedItem as BindableSelectionItem)!.ToSelectionItem<Credential?>()!.Value;
-        }
+        return (CmbCredential.SelectedItem as BindableSelectionItem)?.ToSelectionItem<Credential?>()?.Value;
+    }
+
+    private async Task DiscoverMediaAsync(CancellationToken cancellationToken)
+    {
+        var credential = GetSelectedCredential();
         _controller.PreviousDownloadImmediatelyAsVideo = TglDownloadImmediatelyAsVideo.IsOn;
         _controller.PreviousDownloadImmediatelyAsAudio = TglDownloadImmediatelyAsAudio.IsOn;
         _discoveryContext = await _controller.DiscoverAsync(new Uri(TxtUrl.Text), credential, cancellationToken);

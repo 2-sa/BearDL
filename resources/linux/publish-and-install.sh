@@ -66,13 +66,13 @@ if [ -n "$container" ]; then
         "../../$PROJECT/$PROJECT.csproj" \
         --runtime $RUNTIME \
         --self-contained true \
-        -p:PublishReadyToRun=true
+        -p:PublishReadyToRun=true -p:Version="${RELEASE_VERSION:-2026.5.0}"
 else
     dotnet publish -c Release \
         "../../$PROJECT/$PROJECT.csproj" \
         --runtime $RUNTIME \
         --self-contained true \
-        -p:PublishReadyToRun=true
+        -p:PublishReadyToRun=true -p:Version="${RELEASE_VERSION:-2026.5.0}"
 fi
 PUBLISH_DIR="$(find "../../$PROJECT/bin/Release" -type d -name publish | head -n1)"
 if [[ ! -d "$PUBLISH_DIR" ]]; then

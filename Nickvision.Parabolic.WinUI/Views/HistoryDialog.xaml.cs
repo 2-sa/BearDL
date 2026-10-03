@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Nickvision.Desktop.Globalization;
 using Nickvision.Parabolic.Shared.Controllers;
@@ -31,6 +31,7 @@ public sealed partial class HistoryDialog : ContentDialog
     public HistoryDialog(HistoryViewController controller, ITranslationService translationService)
     {
         InitializeComponent();
+        LocalizationHelper.Apply(this, translationService);
         _controller = controller;
         _translationService = translationService;
         _historicDownloads = [];
@@ -61,6 +62,7 @@ public sealed partial class HistoryDialog : ContentDialog
                 PrimaryButtonText = _translationService._("Yes"),
                 CloseButtonText = _translationService._("No"),
                 DefaultButton = ContentDialogButton.Close,
+                FlowDirection = this.FlowDirection,
                 XamlRoot = XamlRoot,
                 RequestedTheme = ActualTheme
             };

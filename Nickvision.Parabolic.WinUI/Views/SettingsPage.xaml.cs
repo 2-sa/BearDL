@@ -1,5 +1,6 @@
-﻿using Microsoft.UI;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.Storage.Pickers;
 using Nickvision.Desktop.Globalization;
@@ -25,6 +26,7 @@ public sealed partial class SettingsPage : Page
     public SettingsPage(PreferencesViewController controller, ITranslationService translationService)
     {
         InitializeComponent();
+        LocalizationHelper.Apply(this, translationService);
         _controller = controller;
         _translationService = translationService;
         _constructing = true;
@@ -41,31 +43,28 @@ public sealed partial class SettingsPage : Page
         CmbTranslationLanguage.ItemsSource = _controller.AvailableTranslationLanguages.ToBindableSelectonItems();
         RowPreviewUpdates.Header = _translationService._("Receive Preview Updates");
         RowPreviewUpdates.Description = _translationService._("Update Parabolic and dependencies, such as yt-dlp, to beta versions");
-        TglPreviewUpdates.OnContent = _translationService._("On");
-        TglPreviewUpdates.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglPreviewUpdates, (string)RowPreviewUpdates.Header);
         RowPreventSuspend.Header = _translationService._("Prevent Suspend");
         RowPreventSuspend.Description = _translationService._("Prevent the computer from sleeping while downloads are running");
-        TglPreventSuspend.OnContent = _translationService._("On");
-        TglPreventSuspend.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglPreventSuspend, (string)RowPreventSuspend.Header);
         RowHistoryLength.Header = _translationService._("Download History Length");
         RowHistoryLength.Description = _translationService._("The amount of time to keep past downloads in the app's history");
         CmbHistoryLength.ItemsSource = _controller.HistoryLengths.ToBindableSelectonItems();
         RowActiveDownloads.Header = _translationService._("Max Number of Active Downloads");
+        RowFastDownload.Header = _translationService._("Fast Download");
+        RowFastDownload.Description = _translationService._("Download links and entire playlists at the best quality to the last save folder, without configuration dialogs.");
+        AutomationProperties.SetName(TglFastDownload, (string)RowFastDownload.Header);
         RowOverwriteFiles.Header = _translationService._("Overwrite Existing Files");
-        TglOverwriteFiles.OnContent = _translationService._("On");
-        TglOverwriteFiles.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglOverwriteFiles, (string)RowOverwriteFiles.Header);
         RowIncludeMediaId.Header = _translationService._("Include Media Id in Title");
         RowIncludeMediaId.Description = _translationService._("Add the media's id to its default title");
-        TglIncludeMediaId.OnContent = _translationService._("On");
-        TglIncludeMediaId.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglIncludeMediaId, (string)RowIncludeMediaId.Header);
         RowIncludeAutoSubtitles.Header = _translationService._("Include Auto-Generated Subtitles");
         RowIncludeAutoSubtitles.Description = _translationService._("Show auto-generated subtitles to download in addition to available subtitles");
-        TglIncludeAutoSubtitles.OnContent = _translationService._("On");
-        TglIncludeAutoSubtitles.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglIncludeAutoSubtitles, (string)RowIncludeAutoSubtitles.Header);
         RowIncludeSuperResolutions.Header = _translationService._("Include Super Resolution Formats");
         RowIncludeSuperResolutions.Description = _translationService._("Show super (AI-scaled) resolution formats to download in addition to regular formats");
-        TglIncludeSuperResolutions.OnContent = _translationService._("On");
-        TglIncludeSuperResolutions.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglIncludeSuperResolutions, (string)RowIncludeSuperResolutions.Header);
         RowPreferredVideoCodec.Header = _translationService._("Preferred Video Codec");
         RowPreferredVideoCodec.Description = _translationService._("Prefer this codec when parsing video formats to show available to download");
         CmbPreferredVideoCodec.ItemsSource = _controller.VideoCodecs.ToBindableSelectonItems();
@@ -80,15 +79,12 @@ public sealed partial class SettingsPage : Page
         CmbPreferredFrameRate.ItemsSource = _controller.FrameRates.ToBindableSelectonItems();
         RowUsePartFiles.Header = _translationService._("Use Part Files");
         RowUsePartFiles.Description = _translationService._("Download media in separate .part files instead of directly into the output file");
-        TglUsePartFiles.OnContent = _translationService._("On");
-        TglUsePartFiles.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglUsePartFiles, (string)RowUsePartFiles.Header);
         RowUseSponsorBlock.Header = _translationService._("Use SponsorBlock for YouTube");
         RowUseSponsorBlock.Description = _translationService._("Try to remove sponsored segments from videos");
-        TglUseSponsorBlock.OnContent = _translationService._("On");
-        TglUseSponsorBlock.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglUseSponsorBlock, (string)RowUseSponsorBlock.Header);
         RowLimitSpeed.Header = _translationService._("Limit Download Speed");
-        TglLimitSpeed.OnContent = _translationService._("On");
-        TglLimitSpeed.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglLimitSpeed, (string)RowLimitSpeed.Header);
         RowSpeedLimit.Header = _translationService._("Speed Limit");
         RowProxyUrl.Header = _translationService._("Proxy URL");
         TxtProxyUrl.PlaceholderText = _translationService._("Enter proxy url here");
@@ -102,8 +98,7 @@ public sealed partial class SettingsPage : Page
         LblAria.Text = _translationService._("aria2c");
         RowUseAria.Header = _translationService._("Use aria2c");
         RowUseAria.Description = _translationService._("An alternative downloader that may be faster in some regions compared to yt-dlp's native downloader");
-        TglUseAria.OnContent = _translationService._("On");
-        TglUseAria.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglUseAria, (string)RowUseAria.Header);
         RowMaxConnectionsPerServer.Header = _translationService._("Max Connections Per Server");
         RowMaxConnectionsPerServer.Description = _translationService._("Corresponds to -x option");
         RowMinimumSplitSize.Header = _translationService._("Minimum Split Size (MiB)");
@@ -117,30 +112,23 @@ public sealed partial class SettingsPage : Page
         TxtYtdlpDownloadArgs.PlaceholderText = _translationService._("Enter args here");
         RowTranslateMetadataAndChapters.Header = _translationService._("Translate Metadata and Chapters");
         RowTranslateMetadataAndChapters.Description = _translationService._("Automatically translate embedded metadata and chapters to the app's language on supported sites and media");
-        TglTranslateMetadataAndChapters.OnContent = _translationService._("On");
-        TglTranslateMetadataAndChapters.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglTranslateMetadataAndChapters, (string)RowTranslateMetadataAndChapters.Header);
         RowEmbedMetadata.Header = _translationService._("Embed Metadata");
-        TglEmbedMetadata.OnContent = _translationService._("On");
-        TglEmbedMetadata.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglEmbedMetadata, (string)RowEmbedMetadata.Header);
         RowRemoveSourceData.Header = _translationService._("Remove Source Data");
         RowRemoveSourceData.Description = _translationService._("Clear metadata fields containing identifying download information");
-        TglRemoveSourceData.OnContent = _translationService._("On");
-        TglRemoveSourceData.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglRemoveSourceData, (string)RowRemoveSourceData.Header);
         RowEmbedThumbnails.Header = _translationService._("Embed Thumbnails");
         RowEmbedThumbnails.Description = _translationService._("If the file type does not support embedding, the thumbnail will be written to a separate image file");
-        TglEmbedThumbnails.OnContent = _translationService._("On");
-        TglEmbedThumbnails.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglEmbedThumbnails, (string)RowEmbedThumbnails.Header);
         RowCropAudioThumbnails.Header = _translationService._("Crop Audio Thumbnails");
         RowCropAudioThumbnails.Description = _translationService._("Crop thumbnails of audio files to squares");
-        TglCropAudioThumbnails.OnContent = _translationService._("On");
-        TglCropAudioThumbnails.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglCropAudioThumbnails, (string)RowCropAudioThumbnails.Header);
         RowEmbedChapters.Header = _translationService._("Embed Chapters");
-        TglEmbedChapters.OnContent = _translationService._("On");
-        TglEmbedChapters.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglEmbedChapters, (string)RowEmbedChapters.Header);
         RowEmbedSubtitles.Header = _translationService._("Embed Subtitles");
         RowEmbedSubtitles.Description = _translationService._("If disabled or if embedding is not supported, downloaded subtitles will be saved to separate files");
-        TglEmbedSubtitles.OnContent = _translationService._("On");
-        TglEmbedSubtitles.OffContent = _translationService._("Off");
+        AutomationProperties.SetName(TglEmbedSubtitles, (string)RowEmbedSubtitles.Header);
         RowFfmpegThreads.Header = _translationService._("FFmpeg Threads");
         RowFfmpegThreads.Description = _translationService._("Limit the number of threads used by ffmpeg");
         NumFfmpegThreads.Maximum = Environment.ProcessorCount;
@@ -161,6 +149,7 @@ public sealed partial class SettingsPage : Page
         CmbTheme.SelectSelectionItem();
         CmbTranslationLanguage.SelectSelectionItem();
         TglPreviewUpdates.IsOn = _controller.AllowPreviewUpdates;
+        TglFastDownload.IsOn = _controller.FastDownload;
         TglPreventSuspend.IsOn = _controller.PreventSuspend;
         CmbHistoryLength.SelectSelectionItem();
         NumActiveDownloads.Value = _controller.MaxNumberOfActiveDownloads;
@@ -208,6 +197,7 @@ public sealed partial class SettingsPage : Page
         CmbPostprocessingArgumentExecutable.SelectSelectionItem();
         TxtPostprocessingArgumentArgs.Text = string.Empty;
         DlgPostprocessingArgument.PrimaryButtonText = _translationService._("Add");
+        DlgPostprocessingArgument.FlowDirection = FlowDirection;
         DlgPostprocessingArgument.XamlRoot = XamlRoot;
         DlgPostprocessingArgument.RequestedTheme = ActualTheme;
         string? error = null;
@@ -227,6 +217,7 @@ public sealed partial class SettingsPage : Page
                         Content = error,
                         CloseButtonText = _translationService._("OK"),
                         DefaultButton = ContentDialogButton.Close,
+                        FlowDirection = this.FlowDirection,
                         XamlRoot = XamlRoot,
                         RequestedTheme = ActualTheme
                     };
@@ -252,6 +243,7 @@ public sealed partial class SettingsPage : Page
             PrimaryButtonText = _translationService._("Yes"),
             CloseButtonText = _translationService._("No"),
             DefaultButton = ContentDialogButton.Close,
+            FlowDirection = this.FlowDirection,
             XamlRoot = XamlRoot,
             RequestedTheme = ActualTheme
         };
@@ -271,6 +263,7 @@ public sealed partial class SettingsPage : Page
         CmbPostprocessingArgumentExecutable.SelectedItem = _controller.Executables.First(x => x.Value == argument.Executable);
         TxtPostprocessingArgumentArgs.Text = argument.Args;
         DlgPostprocessingArgument.PrimaryButtonText = _translationService._("Update");
+        DlgPostprocessingArgument.FlowDirection = FlowDirection;
         DlgPostprocessingArgument.XamlRoot = XamlRoot;
         DlgPostprocessingArgument.RequestedTheme = ActualTheme;
         string? error = null;
@@ -290,6 +283,7 @@ public sealed partial class SettingsPage : Page
                         Content = error,
                         CloseButtonText = _translationService._("OK"),
                         DefaultButton = ContentDialogButton.Close,
+                        FlowDirection = this.FlowDirection,
                         XamlRoot = XamlRoot,
                         RequestedTheme = ActualTheme
                     };
@@ -337,6 +331,7 @@ public sealed partial class SettingsPage : Page
         _controller.Theme = (CmbTheme.SelectedItem as BindableSelectionItem)!.ToSelectionItem<Theme>()!;
         _controller.TranslationLanguage = (CmbTranslationLanguage.SelectedItem as BindableSelectionItem)!.ToSelectionItem<string>()!;
         _controller.AllowPreviewUpdates = TglPreviewUpdates.IsOn;
+        _controller.FastDownload = TglFastDownload.IsOn;
         _controller.PreventSuspend = TglPreventSuspend.IsOn;
         _controller.HistoryLength = (CmbHistoryLength.SelectedItem as BindableSelectionItem)!.ToSelectionItem<HistoryLength>()!;
         _controller.MaxNumberOfActiveDownloads = (int)NumActiveDownloads.Value;

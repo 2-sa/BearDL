@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Nickvision.Desktop.Application;
 using Nickvision.Desktop.Globalization;
+using Nickvision.Parabolic.WinUI.Helpers;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;

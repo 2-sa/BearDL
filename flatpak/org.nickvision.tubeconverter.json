@@ -119,16 +119,16 @@
             "sources": [
                 {
                     "type": "archive",
-                    "url": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-05-23-13-18/ffmpeg-n8.1.1-8-gb21e00eda5-linux64-gpl-8.1.tar.xz",
-                    "sha256": "8c36ed5ff4fa46f031622e3f8bebce356d0f8add7208ce1d020a301cf65255e2",
+                    "url": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-10-03-18-14/ffmpeg-n8.1.3-14-g330caae0c1-linux64-gpl-8.1.tar.xz",
+                    "sha256": "010375affede402ccd1632835c9349a18c8658c3b08cb95a725a74cca1701738",
                     "only-arches": [
                         "x86_64"
                     ]
                 },
                 {
                     "type": "archive",
-                    "url": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-05-23-13-18/ffmpeg-n8.1.1-8-gb21e00eda5-linuxarm64-gpl-8.1.tar.xz",
-                    "sha256": "21dbd7a2bf52454d0eb5ecebbbed44cf24ac259a40148c1c240d1b08b9aa5a36",
+                    "url": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-10-03-18-14/ffmpeg-n8.1.3-14-g330caae0c1-linuxarm64-gpl-8.1.tar.xz",
+                    "sha256": "17af3bb2771374ff8b62fbc9b59d8eab7859f2ece8df2975c7783602b6d44bff",
                     "only-arches": [
                         "aarch64"
                     ]

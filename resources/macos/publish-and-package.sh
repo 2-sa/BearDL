@@ -38,7 +38,7 @@ APP_NAME="BearDL"
 PROJECT="Nickvision.Parabolic.GNOME"
 RUNTIME="$1"
 RELEASE_VERSION="${RELEASE_VERSION:-2026.5.0}"
-APP_BUNDLE="${APP_NAME}.app"
+APP_BUNDLE="$SCRIPT_DIR/${APP_NAME}.app"
 info "Runtime: $RUNTIME"
 info "App bundle: $APP_BUNDLE"
 success "Loaded variables."
@@ -276,7 +276,7 @@ ICONS_DEST="$BUNDLE_RESOURCES_DIR/share/icons"
 mkdir -p "$ICONS_DEST"
 for THEME in hicolor Adwaita; do
     if [[ -d "$BREW_PREFIX/share/icons/$THEME" ]]; then
-        cp -R "$BREW_PREFIX/share/icons/$THEME" "$ICONS_DEST/"
+        cp -RL "$BREW_PREFIX/share/icons/$THEME" "$ICONS_DEST/"
         success "Bundled $THEME icon theme."
     else
         warn "$THEME icon theme not found under $BREW_PREFIX/share/icons"
@@ -289,7 +289,9 @@ GDK_PIXBUF_SRC="$(find "$BREW_PREFIX/lib/gdk-pixbuf-2.0" -maxdepth 1 -type d | g
 if [[ -n "$GDK_PIXBUF_SRC" ]]; then
     GDK_PIXBUF_DEST="$BUNDLE_RESOURCES_DIR/lib/gdk-pixbuf-2.0"
     mkdir -p "$GDK_PIXBUF_DEST"
-    cp -R "$GDK_PIXBUF_SRC" "$GDK_PIXBUF_DEST/"
+    # Homebrew installs loaders as links into Cellar. Copy their bytes so the
+    # app neither depends on Homebrew nor contains broken links during signing.
+    cp -RL "$GDK_PIXBUF_SRC" "$GDK_PIXBUF_DEST/"
     LOADERS_CACHE="$(find "$GDK_PIXBUF_DEST" -name "loaders.cache" | head -n1)"
     if [[ -n "$LOADERS_CACHE" ]]; then
         # Rewrite absolute paths in loaders.cache to use a placeholder; launcher will set GDK_PIXBUF_MODULE_FILE

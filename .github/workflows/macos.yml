@@ -21,6 +21,7 @@ jobs:
     name: "GNOME on macOS"
     if: ${{ github.event.pull_request.user.login != 'weblate' }}
     strategy:
+      fail-fast: false
       matrix:
         variant:
           - arch: arm64
@@ -51,6 +52,9 @@ jobs:
           ./resources/macos/publish-and-package.sh ${{ matrix.variant.runtime }}
       - name: "Archive app bundle"
         run: |
+          test -d resources/macos/BearDL.app
+          broken_links=$(find resources/macos/BearDL.app -type l ! -exec test -e {} \; -print)
+          test -z "$broken_links" || { printf '%s\n' "$broken_links"; exit 1; }
           codesign --force --deep --sign - resources/macos/BearDL.app
           codesign --verify --deep --strict resources/macos/BearDL.app
           ditto -c -k --sequesterRsrc --keepParent resources/macos/BearDL.app BearDL-macOS-${{ matrix.variant.arch }}.zip

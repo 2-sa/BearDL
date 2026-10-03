@@ -13,6 +13,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  plugins:
+    uses: ./.github/workflows/plugins.yml
+
   version:
     runs-on: ubuntu-latest
     outputs:
@@ -24,19 +27,19 @@ jobs:
         run: echo "version=2026.5.$((100 + RUN_NUMBER))" >> "$GITHUB_OUTPUT"
 
   windows:
-    needs: version
+    needs: [version, plugins]
     uses: ./.github/workflows/windows.yml
     with:
       release_version: ${{ needs.version.outputs.version }}
 
   macos:
-    needs: version
+    needs: [version, plugins]
     uses: ./.github/workflows/macos.yml
     with:
       release_version: ${{ needs.version.outputs.version }}
 
   linux:
-    needs: version
+    needs: [version, plugins]
     uses: ./.github/workflows/flatpak.yml
     with:
       release_version: ${{ needs.version.outputs.version }}

@@ -1,0 +1,36 @@
+name: Subtitle plugin checks
+on:
+  workflow_call:
+  pull_request:
+    paths:
+      - 'resources/yt-dlp-plugins/**'
+      - 'tests/plugins/**'
+      - '.github/workflows/plugins.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  subtitles:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ytdlp: ['2026.3.17', 'latest']
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install yt-dlp for compatibility checks
+        env:
+          YTDLP_VERSION: ${{ matrix.ytdlp }}
+        run: |
+          if [ "$YTDLP_VERSION" = latest ]; then
+            python -m pip install --upgrade yt-dlp
+          else
+            python -m pip install "yt-dlp==$YTDLP_VERSION"
+          fi
+      - name: Test subtitle extraction without network requests
+        run: python -m unittest discover -s tests/plugins -v

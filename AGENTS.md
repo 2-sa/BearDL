@@ -45,7 +45,7 @@ Keep vertical scrollbars on the right in every window. Give scrolling containers
 
 ## Testing Guidelines
 
-No automated test suite or coverage threshold is configured. Build affected platforms on GitHub Actions. Verify downloaded artifacts for Arabic RTL, English LTR, mixed text, dialogs, menus, keyboard navigation, and downloads. Report CI results separately from visual verification; capture screenshots before claiming visual completion.
+Subtitle plugin regression tests live in `tests/plugins/`; `.github/workflows/plugins.yml` checks bundled and latest yt-dlp before release builds. No .NET test suite or coverage threshold is configured. Build affected platforms on GitHub Actions. Verify downloaded artifacts for Arabic RTL, English LTR, mixed text, dialogs, menus, keyboard navigation, and downloads. Report CI results separately from visual verification; capture screenshots before claiming visual completion.
 
 ## Commit & Pull Request Guidelines
 

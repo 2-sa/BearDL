@@ -1,6 +1,9 @@
 on:
-  push:
-    branches: [ "main" ]
+  workflow_call:
+    inputs:
+      release_version:
+        type: string
+        default: '2026.5.0'
   pull_request:
     branches: [ "main" ]
     types: [ "review_requested", "ready_for_review" ]
@@ -11,8 +14,9 @@ permissions:
   contents: read
 env:
   PROJECT_NAME: Nickvision.Parabolic.WinUI
-  INSTALLER_NAME: NickvisionParabolicSetup
+  INSTALLER_NAME: BearDLSetup
   SHORT_NAME: Parabolic
+  RELEASE_VERSION: ${{ inputs.release_version || '2026.5.0' }}
 jobs:
   winui-windows:
     name: "WinUI on Windows"
@@ -61,7 +65,7 @@ jobs:
           $vsInstallPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
           Import-Module "$vsInstallPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
           Enter-VsDevShell -VsInstallPath $vsInstallPath -SkipAutomaticLocation
-          dotnet publish ${{ env.PROJECT_NAME }} -c Release --no-restore --runtime win-${{ matrix.variant.arch }} /p:Platform=${{ matrix.variant.arch }}
+          dotnet publish ${{ env.PROJECT_NAME }} -c Release --no-restore --runtime win-${{ matrix.variant.arch }} /p:Platform=${{ matrix.variant.arch }} /p:Version=${{ env.RELEASE_VERSION }}
       - name: "Installer"
         working-directory: ${{github.workspace}}/inno
         env:
@@ -81,7 +85,7 @@ jobs:
           move ffmpeg\ffmpeg-n8.1-latest-${{ matrix.variant.ffmpeg }}-gpl-8.1\bin\ffprobe.exe ffprobe.exe
           move ffmpeg\ffmpeg-n8.1-latest-${{ matrix.variant.ffmpeg }}-gpl-8.1\bin\ffplay.exe ffplay.exe
           move deno\deno.exe deno.exe
-          iscc setup.iss
+          iscc /DInstallerArch=${{ matrix.variant.arch }} /DMyAppVersion=${{ env.RELEASE_VERSION }} setup.iss
       - name: "Portable"
         shell: pwsh
         run: |
@@ -100,9 +104,11 @@ jobs:
           move $innoDir\deno.exe $portableDir\Release\deno.exe
       - uses: actions/upload-artifact@v4
         with:
-          path: ${{ github.workspace }}/inno/${{ env.INSTALLER_NAME }}.exe
+          path: ${{ github.workspace }}/inno/${{ env.INSTALLER_NAME }}-${{ matrix.variant.arch }}.exe
           name: ${{ env.INSTALLER_NAME }}-${{ matrix.variant.arch }}
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/portable
-          name: ${{ env.PROJECT_NAME }}-portable-${{ matrix.variant.arch }}
+          name: BearDLPortable-${{ matrix.variant.arch }}
+          if-no-files-found: error

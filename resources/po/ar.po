@@ -3152,3 +3152,16 @@ msgstr "تكبير"
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
 msgid "Restore"
 msgstr "استعادة"
+
+#. Fast download setting
+msgid "Fast Download"
+msgstr "المسار السريع"
+
+msgid "Download links and entire playlists at the best quality to the last save folder, without configuration dialogs."
+msgstr "نزّل الروابط وقوائم التشغيل كاملة بأفضل جودة إلى مجلد الحفظ السابق، دون نوافذ اختيار الخيارات."
+
+msgid "Preparing downloads in the background"
+msgstr "تجهيز التنزيلات في الخلفية"
+
+msgid "An error occurred while preparing fast downloads"
+msgstr "تعذّر تجهيز تنزيلات المسار السريع"

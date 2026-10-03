@@ -34,9 +34,10 @@ success "Changed to script directory: $SCRIPT_DIR"
 # Load variables
 info "Loading variables..."
 APP_ID="org.nickvision.tubeconverter"
-APP_NAME="Parabolic"
+APP_NAME="BearDL"
 PROJECT="Nickvision.Parabolic.GNOME"
 RUNTIME="$1"
+RELEASE_VERSION="${RELEASE_VERSION:-2026.5.0}"
 APP_BUNDLE="${APP_NAME}.app"
 info "Runtime: $RUNTIME"
 info "App bundle: $APP_BUNDLE"
@@ -53,7 +54,7 @@ dotnet publish -c Release \
     "../../$PROJECT/$PROJECT.csproj" \
     --runtime $RUNTIME \
     --self-contained true \
-    -p:PublishReadyToRun=true
+    -p:PublishReadyToRun=true -p:Version="$RELEASE_VERSION"
 PUBLISH_DIR="$(find "../../$PROJECT/bin/Release" -type d -name publish | head -n1)"
 if [[ ! -d "$PUBLISH_DIR" ]]; then
     error "Publish directory not found!"
@@ -74,6 +75,7 @@ cp "Info.plist" "$APP_BUNDLE/Contents/Info.plist"
 sed -i '' "s|@APP_ID@|$APP_ID|g" "$APP_BUNDLE/Contents/Info.plist"
 sed -i '' "s|@APP_NAME@|$APP_NAME|g" "$APP_BUNDLE/Contents/Info.plist"
 sed -i '' "s|@OUTPUT_NAME@|$PROJECT|g" "$APP_BUNDLE/Contents/Info.plist"
+sed -i '' "s|@APP_VERSION@|$RELEASE_VERSION|g" "$APP_BUNDLE/Contents/Info.plist"
 success "Created Info.plist."
 
 # Set app icon

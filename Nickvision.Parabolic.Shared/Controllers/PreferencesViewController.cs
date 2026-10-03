@@ -144,6 +144,13 @@ public class PreferencesViewController
         set => _configurationService.AllowPreviewUpdates = value;
     }
 
+    public bool FastDownload
+    {
+        get => _configurationService.FastDownload;
+
+        set => _configurationService.FastDownload = value;
+    }
+
     public int AriaMaxConnectionsPerServer
     {
         get => _configurationService.AriaMaxConnectionsPerServer;

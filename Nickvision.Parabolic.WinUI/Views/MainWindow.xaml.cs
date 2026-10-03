@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.System;
+using WinRT;
 
 namespace Nickvision.Parabolic.WinUI.Views;
 
@@ -40,6 +41,7 @@ public sealed partial class MainWindow : Window
     public MainWindow(IServiceProvider serviceProvider, MainWindowController controller, AppInfo appInfo, IEventsService eventsService, ITranslationService translationService)
     {
         InitializeComponent();
+        // Localize the inner layout; the window root stays LTR for native hit testing.
         LocalizationHelper.Apply(MainGrid, translationService);
         _serviceProvider = serviceProvider;
         _controller = controller;
@@ -281,6 +283,8 @@ public sealed partial class MainWindow : Window
                     Title = _translationService._("Error"),
                     Content = new ScrollViewer()
                     {
+                        FlowDirection = FlowDirection.LeftToRight,
+                        Padding = new Thickness(0, 0, 20, 0),
                         HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
                         VerticalScrollBarVisibility = ScrollBarVisibility.Visible,
                         Content = new TextBlock()
@@ -328,9 +332,20 @@ public sealed partial class MainWindow : Window
         ToolTipService.SetToolTip(button, label);
     }
 
+    private OverlappedPresenter? GetOverlappedPresenter()
+    {
+        var presenter = AppWindow.Presenter;
+        // The WinRT object can be projected as its base AppWindowPresenter type
+        // in NativeAOT. Query its native interface instead of silently failing
+        // a managed "is OverlappedPresenter" check.
+        return presenter.Kind == AppWindowPresenterKind.Overlapped
+            ? presenter.As<OverlappedPresenter>()
+            : null;
+    }
+
     private void UpdateMaximizeButton()
     {
-        if (AppWindow.Presenter is OverlappedPresenter presenter)
+        if (GetOverlappedPresenter() is { } presenter)
         {
             var maximized = presenter.State == OverlappedPresenterState.Maximized;
             IconWindowMaximize.Glyph = maximized ? "\uE923" : "\uE922";
@@ -340,7 +355,7 @@ public sealed partial class MainWindow : Window
 
     private void WindowMinimize_Click(object sender, RoutedEventArgs e)
     {
-        if (AppWindow.Presenter is OverlappedPresenter presenter)
+        if (GetOverlappedPresenter() is { } presenter)
         {
             presenter.Minimize();
         }
@@ -348,7 +363,7 @@ public sealed partial class MainWindow : Window
 
     private void WindowMaximize_Click(object sender, RoutedEventArgs e)
     {
-        if (AppWindow.Presenter is OverlappedPresenter presenter)
+        if (GetOverlappedPresenter() is { } presenter)
         {
             if (presenter.State == OverlappedPresenterState.Maximized)
             {

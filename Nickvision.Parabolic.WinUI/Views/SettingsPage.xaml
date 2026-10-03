@@ -1,5 +1,6 @@
 <Page
     x:Class="Nickvision.Parabolic.WinUI.Views.SettingsPage"
+    x:Name="PageRoot"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Nickvision.Parabolic.WinUI.Views"
@@ -46,8 +47,8 @@
                 </NavigationViewItem>
             </NavigationView.MenuItems>
 
-            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                <nickvision:ViewStack x:Name="ViewStack" Margin="12,12,12,12">
+            <ScrollViewer FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <nickvision:ViewStack x:Name="ViewStack" FlowDirection="{Binding FlowDirection, ElementName=PageRoot}" Margin="12,12,12,12">
                     <nickvision:ViewStack.Pages>
                         <StackPanel Spacing="6">
                             <StackPanel.Transitions>
@@ -85,19 +86,29 @@
                             </community:SettingsCard>
 
                             <community:SettingsCard x:Name="RowPreviewUpdates">
+                                <community:SettingsCard.Resources>
+                                    <!-- Keep compact toggles beside the header at every width. -->
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsCard.Resources>
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xF1AD;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ToggleSwitch x:Name="TglPreviewUpdates" Toggled="Tgl_Toggled"/>
+                                <ToggleSwitch x:Name="TglPreviewUpdates" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
                             <community:SettingsCard x:Name="RowPreventSuspend">
+                                <community:SettingsCard.Resources>
+                                    <!-- Keep compact toggles beside the header at every width. -->
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsCard.Resources>
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE7E8;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ToggleSwitch x:Name="TglPreventSuspend" Toggled="Tgl_Toggled"/>
+                                <ToggleSwitch x:Name="TglPreventSuspend" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
                             <community:SettingsCard x:Name="RowHistoryLength">
@@ -122,6 +133,17 @@
                                 </TransitionCollection>
                             </StackPanel.Transitions>
 
+                            <community:SettingsCard x:Name="RowFastDownload">
+                                <community:SettingsCard.Resources>
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsCard.Resources>
+                                <community:SettingsCard.HeaderIcon>
+                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE945;"/>
+                                </community:SettingsCard.HeaderIcon>
+                                <ToggleSwitch x:Name="TglFastDownload" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
+                            </community:SettingsCard>
+
                             <community:SettingsCard x:Name="RowActiveDownloads">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE896;"/>
@@ -131,35 +153,55 @@
                             </community:SettingsCard>
 
                             <community:SettingsCard x:Name="RowOverwriteFiles">
+                                <community:SettingsCard.Resources>
+                                    <!-- Keep compact toggles beside the header at every width. -->
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsCard.Resources>
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8E5;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ToggleSwitch x:Name="TglOverwriteFiles" Toggled="Tgl_Toggled"/>
+                                <ToggleSwitch x:Name="TglOverwriteFiles" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
                             <community:SettingsCard x:Name="RowIncludeMediaId">
+                                <community:SettingsCard.Resources>
+                                    <!-- Keep compact toggles beside the header at every width. -->
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsCard.Resources>
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8AC;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ToggleSwitch x:Name="TglIncludeMediaId" Toggled="Tgl_Toggled"/>
+                                <ToggleSwitch x:Name="TglIncludeMediaId" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
                             <community:SettingsCard x:Name="RowIncludeAutoSubtitles">
+                                <community:SettingsCard.Resources>
+                                    <!-- Keep compact toggles beside the header at every width. -->
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsCard.Resources>
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xED1E;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ToggleSwitch x:Name="TglIncludeAutoSubtitles" Toggled="Tgl_Toggled"/>
+                                <ToggleSwitch x:Name="TglIncludeAutoSubtitles" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
                             <community:SettingsCard x:Name="RowIncludeSuperResolutions">
+                                <community:SettingsCard.Resources>
+                                    <!-- Keep compact toggles beside the header at every width. -->
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsCard.Resources>
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xF7EE;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ToggleSwitch x:Name="TglIncludeSuperResolutions" Toggled="Tgl_Toggled"/>
+                                <ToggleSwitch x:Name="TglIncludeSuperResolutions" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
                             <community:SettingsCard x:Name="RowPreferredVideoCodec">
@@ -227,27 +269,42 @@
                             </StackPanel.Transitions>
 
                             <community:SettingsCard x:Name="RowUsePartFiles">
+                                <community:SettingsCard.Resources>
+                                    <!-- Keep compact toggles beside the header at every width. -->
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsCard.Resources>
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8A5;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ToggleSwitch x:Name="TglUsePartFiles" Toggled="Tgl_Toggled"/>
+                                <ToggleSwitch x:Name="TglUsePartFiles" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
                             <community:SettingsCard x:Name="RowUseSponsorBlock">
+                                <community:SettingsCard.Resources>
+                                    <!-- Keep compact toggles beside the header at every width. -->
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsCard.Resources>
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE789;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ToggleSwitch x:Name="TglUseSponsorBlock" Toggled="Tgl_Toggled"/>
+                                <ToggleSwitch x:Name="TglUseSponsorBlock" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
                             <community:SettingsCard x:Name="RowLimitSpeed">
+                                <community:SettingsCard.Resources>
+                                    <!-- Keep compact toggles beside the header at every width. -->
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsCard.Resources>
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xEBD3;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ToggleSwitch x:Name="TglLimitSpeed" Toggled="Tgl_Toggled"/>
+                                <ToggleSwitch x:Name="TglLimitSpeed" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
                             <community:SettingsCard x:Name="RowSpeedLimit" IsEnabled="{x:Bind TglLimitSpeed.IsOn, Mode=OneWay}">
@@ -306,11 +363,16 @@
                             <TextBlock x:Name="LblAria" Margin="0,12,0,0" Style="{StaticResource NavigationViewItemHeaderTextStyle}"/>
 
                             <community:SettingsExpander x:Name="RowUseAria">
+                                <community:SettingsExpander.Resources>
+                                    <!-- Keep compact toggles beside the header at every width. -->
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsExpander.Resources>
                                 <community:SettingsExpander.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE756;"/>
                                 </community:SettingsExpander.HeaderIcon>
 
-                                <ToggleSwitch x:Name="TglUseAria" Toggled="Tgl_Toggled"/>
+                                <ToggleSwitch x:Name="TglUseAria" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
 
                                 <community:SettingsExpander.Items>
                                     <community:SettingsCard x:Name="RowMaxConnectionsPerServer" IsEnabled="{x:Bind TglUseAria.IsOn, Mode=OneWay}">
@@ -358,63 +420,98 @@
                             </StackPanel.Transitions>
 
                             <community:SettingsCard x:Name="RowTranslateMetadataAndChapters">
+                                <community:SettingsCard.Resources>
+                                    <!-- Keep compact toggles beside the header at every width. -->
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsCard.Resources>
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xF2B7;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ToggleSwitch x:Name="TglTranslateMetadataAndChapters" Toggled="Tgl_Toggled"/>
+                                <ToggleSwitch x:Name="TglTranslateMetadataAndChapters" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
                             <community:SettingsExpander x:Name="RowEmbedMetadata">
+                                <community:SettingsExpander.Resources>
+                                    <!-- Keep compact toggles beside the header at every width. -->
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsExpander.Resources>
                                 <community:SettingsExpander.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8EC;"/>
                                 </community:SettingsExpander.HeaderIcon>
 
-                                <ToggleSwitch x:Name="TglEmbedMetadata" Toggled="Tgl_Toggled"/>
+                                <ToggleSwitch x:Name="TglEmbedMetadata" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
 
                                 <community:SettingsExpander.Items>
                                     <community:SettingsCard x:Name="RowRemoveSourceData" IsEnabled="{x:Bind TglEmbedMetadata.IsOn, Mode=OneWay}">
+                                        <community:SettingsCard.Resources>
+                                            <!-- Keep compact toggles beside the header at every width. -->
+                                            <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                            <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                        </community:SettingsCard.Resources>
                                         <community:SettingsCard.HeaderIcon>
                                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE74D;"/>
                                         </community:SettingsCard.HeaderIcon>
 
-                                        <ToggleSwitch x:Name="TglRemoveSourceData" Toggled="Tgl_Toggled"/>
+                                        <ToggleSwitch x:Name="TglRemoveSourceData" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                                     </community:SettingsCard>
                                 </community:SettingsExpander.Items>
                             </community:SettingsExpander>
 
                             <community:SettingsExpander x:Name="RowEmbedThumbnails">
+                                <community:SettingsExpander.Resources>
+                                    <!-- Keep compact toggles beside the header at every width. -->
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsExpander.Resources>
                                 <community:SettingsExpander.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B9;"/>
                                 </community:SettingsExpander.HeaderIcon>
 
-                                <ToggleSwitch x:Name="TglEmbedThumbnails" Toggled="Tgl_Toggled"/>
+                                <ToggleSwitch x:Name="TglEmbedThumbnails" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
 
                                 <community:SettingsExpander.Items>
                                     <community:SettingsCard x:Name="RowCropAudioThumbnails" IsEnabled="{x:Bind TglEmbedThumbnails.IsOn, Mode=OneWay}">
+                                        <community:SettingsCard.Resources>
+                                            <!-- Keep compact toggles beside the header at every width. -->
+                                            <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                            <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                        </community:SettingsCard.Resources>
                                         <community:SettingsCard.HeaderIcon>
                                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE7A8;"/>
                                         </community:SettingsCard.HeaderIcon>
 
-                                        <ToggleSwitch x:Name="TglCropAudioThumbnails" Toggled="Tgl_Toggled"/>
+                                        <ToggleSwitch x:Name="TglCropAudioThumbnails" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                                     </community:SettingsCard>
                                 </community:SettingsExpander.Items>
                             </community:SettingsExpander>
 
                             <community:SettingsCard x:Name="RowEmbedChapters">
+                                <community:SettingsCard.Resources>
+                                    <!-- Keep compact toggles beside the header at every width. -->
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsCard.Resources>
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xF168;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ToggleSwitch x:Name="TglEmbedChapters" Toggled="Tgl_Toggled"/>
+                                <ToggleSwitch x:Name="TglEmbedChapters" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
                             <community:SettingsCard x:Name="RowEmbedSubtitles">
+                                <community:SettingsCard.Resources>
+                                    <!-- Keep compact toggles beside the header at every width. -->
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsCard.Resources>
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xED1E;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ToggleSwitch x:Name="TglEmbedSubtitles" Toggled="Tgl_Toggled"/>
+                                <ToggleSwitch x:Name="TglEmbedSubtitles" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
                             <community:SettingsCard x:Name="RowFfmpegThreads">

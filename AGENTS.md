@@ -39,6 +39,10 @@ Apply the `arabic-ui` skill to Arabic interface work. Derive direction from the 
 
 Isolate URLs, paths, and numeric expressions as LTR where needed without reversing stored text. Use concise Arabic and gettext plural forms.
 
+Keep toggle labels and switches in one horizontal row: Arabic labels on the right, switches on the left. Reserve a separate column for the switch; allow long labels to wrap within their own column. Disable responsive stacking for toggle settings cards. Preserve accessible labels and dependent settings.
+
+Keep vertical scrollbars on the right in every window. Give scrolling containers LTR direction and reserve scrollbar space; explicitly restore the UI language direction on their content.
+
 ## Testing Guidelines
 
 No automated test suite or coverage threshold is configured. Build affected platforms on GitHub Actions. Verify downloaded artifacts for Arabic RTL, English LTR, mixed text, dialogs, menus, keyboard navigation, and downloads. Report CI results separately from visual verification; capture screenshots before claiming visual completion.

@@ -4,12 +4,21 @@
 #define MyAppName            "Nickvision Parabolic"
 #define MyAppShortName       "Parabolic"
 #define MyAppShortNameLower  "parabolic"
-#define MyAppVersion         "2026.5.0"
+#ifndef MyAppVersion
+  #define MyAppVersion "2026.5.0"
+#endif
 #define MyAppPublisher       "Nickvision"
-#define MyAppURL             "https://nickvision.org"
+#define MyAppURL             "https://github.com/2-sa/BearDL"
 #define MyAppExeName         "Nickvision.Parabolic.WinUI.exe"
 #define StartYearCopyright   "2021"
 #define CurrentYear          GetDateTimeString('yyyy','','')
+
+#ifndef InstallerArch
+  #define InstallerArch "x64"
+#endif
+#if InstallerArch != "x64" && InstallerArch != "arm64"
+  #error Unsupported installer architecture
+#endif
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
@@ -35,8 +44,13 @@ ShowLanguageDialog=yes
 UsePreviousLanguage=no
 LanguageDetectionMethod=uilanguage
 
+#if InstallerArch == "arm64"
+ArchitecturesAllowed=arm64
+ArchitecturesInstallIn64BitMode=arm64
+#else
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
+#endif
 
 WizardStyle=modern dynamic windows11
 WizardResizable=yes
@@ -45,7 +59,7 @@ WizardSizePercent=120,130
 DefaultDirName={autopf}\{#MyAppName}
 LicenseFile=..\License.rtf
 OutputDir=..\inno
-OutputBaseFilename=NickvisionParabolicSetup
+OutputBaseFilename=BearDLSetup-{#InstallerArch}
 SetupIconFile=..\resources\org.nickvision.tubeconverter.ico
 Compression=lzma
 SolidCompression=yes

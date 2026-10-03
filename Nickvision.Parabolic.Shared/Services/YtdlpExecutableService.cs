@@ -185,7 +185,7 @@ public class YtdlpExecutableService : DependencyExecutableService, IYtdlpExecuta
             arguments.Add("--windows-filenames");
         }
         var formatSort = string.Empty;
-        if (_configurationService.PreferredVideoCodec != VideoCodec.Any)
+        if (!downloadOptions.UseBestQuality && _configurationService.PreferredVideoCodec != VideoCodec.Any)
         {
             if (!string.IsNullOrEmpty(formatSort))
             {
@@ -202,7 +202,7 @@ public class YtdlpExecutableService : DependencyExecutableService, IYtdlpExecuta
             };
             formatSort += ",res";
         }
-        if (_configurationService.PreferredAudioCodec != AudioCodec.Any)
+        if (!downloadOptions.UseBestQuality && _configurationService.PreferredAudioCodec != AudioCodec.Any)
         {
             if (!string.IsNullOrEmpty(formatSort))
             {
@@ -221,7 +221,7 @@ public class YtdlpExecutableService : DependencyExecutableService, IYtdlpExecuta
             };
             formatSort += ",quality";
         }
-        if (_configurationService.PreferredFrameRate != FrameRate.Any)
+        if (!downloadOptions.UseBestQuality && _configurationService.PreferredFrameRate != FrameRate.Any)
         {
             if (!string.IsNullOrEmpty(formatSort))
             {
@@ -396,7 +396,7 @@ public class YtdlpExecutableService : DependencyExecutableService, IYtdlpExecuta
         var formatString = string.Empty;
         var audioSelector = string.Empty;
         var audioHandled = false;
-        var avoidOpus = OperatingSystem.IsWindows() && downloadOptions.Url.Host.Contains("youtube") && _configurationService.PreferredAudioCodec == AudioCodec.Any && downloadOptions.FileType != MediaFileType.WEBM;
+        var avoidOpus = !downloadOptions.UseBestQuality && OperatingSystem.IsWindows() && downloadOptions.Url.Host.Contains("youtube") && _configurationService.PreferredAudioCodec == AudioCodec.Any && downloadOptions.FileType != MediaFileType.WEBM;
         if (downloadOptions.AudioFormat is not null && downloadOptions.AudioFormat != Format.NoneAudio)
         {
             audioSelector = downloadOptions.AudioFormat switch

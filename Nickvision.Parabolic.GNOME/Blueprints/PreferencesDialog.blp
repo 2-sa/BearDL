@@ -67,6 +67,11 @@ Adw.PreferencesDialog root {
     Adw.PreferencesGroup {
       title: _("Downloads");
 
+      Adw.SwitchRow fastDownloadRow {
+        title: _("Fast Download");
+        subtitle: _("Download links and entire playlists at the best quality to the last save folder, without configuration dialogs.");
+      }
+
       Adw.SpinRow maxNumberOfActiveDownloadsRow {
         title: _("Max Number of Running Downloads");
         numeric: true;

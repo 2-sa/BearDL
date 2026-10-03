@@ -18,7 +18,7 @@ public static class HostApplicationBuilderExtensions
         {
             var appInfo = new AppInfo("org.nickvision.tubeconverter", "Nickvision Parabolic", "Parabolic")
             {
-                Version = new AppVersion("2026.5.0"),
+                Version = new AppVersion(typeof(MainWindowController).Assembly.GetName().Version!.ToString(3)),
                 Changelog = """
                 - Improved time frame downloads to cut with ffmpeg instead of using yt-dlp's broken --download-sections option
                 - Fixed an issue where some playlists throw a requested format not available error
@@ -30,9 +30,9 @@ public static class HostApplicationBuilderExtensions
                 - Fixed an issue where dependencies were missing from the macOS bundle
                 - Updated bundled deno
                 """,
-                SourceRepository = new Uri("https://github.com/NickvisionApps/Parabolic"),
-                IssueTracker = new Uri("https://github.com/NickvisionApps/Parabolic/issues/new"),
-                DiscussionsForum = new Uri("https://github.com/NickvisionApps/Parabolic/discussions"),
+                SourceRepository = new Uri("https://github.com/2-sa/BearDL"),
+                IssueTracker = new Uri("https://github.com/2-sa/BearDL/issues/new"),
+                DiscussionsForum = new Uri("https://github.com/2-sa/BearDL/discussions"),
                 IsPortable = OperatingSystem.IsWindows() && args.Contains("--portable")
             };
             builder.Properties.Add("AppInfo", appInfo);

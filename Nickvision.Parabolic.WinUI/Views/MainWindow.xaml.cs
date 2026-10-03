@@ -66,6 +66,16 @@ public sealed partial class MainWindow : Window
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(TitleBar);
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+        if (MainGrid.FlowDirection == FlowDirection.RightToLeft)
+        {
+            // XAML direction does not move the native Windows caption buttons.
+            AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
+            RtlCaptionButtons.Visibility = Visibility.Visible;
+            SetCaptionLabel(BtnWindowClose, _translationService._("Close"));
+            SetCaptionLabel(BtnWindowMinimize, _translationService._("Minimize"));
+            UpdateMaximizeButton();
+            AppWindow.Changed += (_, _) => UpdateMaximizeButton();
+        }
         BtnPreview.Visibility = _appInfo.Version.IsPreview ? Visibility.Visible : Visibility.Collapsed;
         // Events
         AppWindow.Closing += Window_Closing;
@@ -309,6 +319,47 @@ public sealed partial class MainWindow : Window
                 Theme.Dark => ElementTheme.Dark,
                 _ => ElementTheme.Default
             };
+        }
+    }
+
+    private static void SetCaptionLabel(Button button, string label)
+    {
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(button, label);
+        ToolTipService.SetToolTip(button, label);
+    }
+
+    private void UpdateMaximizeButton()
+    {
+        if (AppWindow.Presenter is OverlappedPresenter presenter)
+        {
+            var maximized = presenter.State == OverlappedPresenterState.Maximized;
+            IconWindowMaximize.Glyph = maximized ? "\uE923" : "\uE922";
+            SetCaptionLabel(BtnWindowMaximize, maximized ? _translationService._("Restore") : _translationService._("Maximize"));
+        }
+    }
+
+    private void WindowClose_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void WindowMinimize_Click(object sender, RoutedEventArgs e)
+    {
+        if (AppWindow.Presenter is OverlappedPresenter presenter)
+        {
+            presenter.Minimize();
+        }
+    }
+
+    private void WindowMaximize_Click(object sender, RoutedEventArgs e)
+    {
+        if (AppWindow.Presenter is OverlappedPresenter presenter)
+        {
+            if (presenter.State == OverlappedPresenterState.Maximized)
+            {
+                presenter.Restore();
+            }
+            else
+            {
+                presenter.Maximize();
+            }
         }
     }
 

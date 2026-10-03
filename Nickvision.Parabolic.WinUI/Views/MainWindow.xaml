@@ -14,197 +14,235 @@
     </Window.SystemBackdrop>
 
     <Grid x:Name="MainGrid" Loaded="Window_Loaded">
+        <Grid.Resources>
+            <Style x:Key="CaptionButtonStyle" TargetType="Button">
+                <Setter Property="Width" Value="46"/>
+                <Setter Property="Height" Value="48"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="CornerRadius" Value="0"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Background" Value="Transparent"/>
+            </Style>
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TitleBar x:Name="TitleBar" Grid.Row="0" IsBackButtonVisible="False" BackRequested="TitleBar_BackRequested">
-            <TitleBar.LeftHeader>
-                <Grid Margin="8,0,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+        <Grid Grid.Row="0" FlowDirection="LeftToRight">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TitleBar x:Name="TitleBar" Grid.Column="1" FlowDirection="{Binding FlowDirection, ElementName=MainGrid}" IsBackButtonVisible="False" BackRequested="TitleBar_BackRequested">
+                <TitleBar.LeftHeader>
+                    <Grid Margin="8,0,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
 
-                    <ImageIcon Grid.Column="0" VerticalAlignment="Center" Height="18" Source="/Assets/org.nickvision.tubeconverter.ico"/>
+                        <ImageIcon Grid.Column="0" VerticalAlignment="Center" Height="18" Source="/Assets/org.nickvision.tubeconverter.ico"/>
 
-                    <TextBlock x:Name="LblTitle" Grid.Column="1" Margin="12,0,6,0" VerticalAlignment="Center" Style="{ThemeResource CaptionTextBlockStyle}"/>
+                        <TextBlock x:Name="LblTitle" Grid.Column="1" Margin="12,0,6,0" VerticalAlignment="Center" Style="{ThemeResource CaptionTextBlockStyle}"/>
 
-                    <MenuBar Grid.Column="2">
-                        <MenuBarItem x:Name="MenuFile">
-                            <MenuFlyoutItem x:Name="MenuAddDownload" Click="AddDownload">
-                                <MenuFlyoutItem.KeyboardAccelerators>
-                                    <KeyboardAccelerator Key="N" Modifiers="Control"/>
-                                </MenuFlyoutItem.KeyboardAccelerators>
+                        <MenuBar Grid.Column="2">
+                            <MenuBarItem x:Name="MenuFile">
+                                <MenuFlyoutItem x:Name="MenuAddDownload" Click="AddDownload">
+                                    <MenuFlyoutItem.KeyboardAccelerators>
+                                        <KeyboardAccelerator Key="N" Modifiers="Control"/>
+                                    </MenuFlyoutItem.KeyboardAccelerators>
 
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE710;"/>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE710;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
 
-                            <MenuFlyoutSeparator/>
+                                <MenuFlyoutSeparator/>
 
-                            <MenuFlyoutItem x:Name="MenuExit" Click="Exit">
-                                <MenuFlyoutItem.KeyboardAccelerators>
-                                    <KeyboardAccelerator Key="F4" Modifiers="Menu"/>
+                                <MenuFlyoutItem x:Name="MenuExit" Click="Exit">
+                                    <MenuFlyoutItem.KeyboardAccelerators>
+                                        <KeyboardAccelerator Key="F4" Modifiers="Menu"/>
 
-                                    <KeyboardAccelerator Key="Q" Modifiers="Control"/>
-                                </MenuFlyoutItem.KeyboardAccelerators>
+                                        <KeyboardAccelerator Key="Q" Modifiers="Control"/>
+                                    </MenuFlyoutItem.KeyboardAccelerators>
 
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE894;"/>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
-                        </MenuBarItem>
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE894;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuBarItem>
 
-                        <MenuBarItem x:Name="MenuEdit">
-                            <MenuFlyoutItem x:Name="MenuKeyring" Click="Keyring">
-                                <MenuFlyoutItem.KeyboardAccelerators>
-                                    <KeyboardAccelerator Key="K" Modifiers="Control"/>
-                                </MenuFlyoutItem.KeyboardAccelerators>
+                            <MenuBarItem x:Name="MenuEdit">
+                                <MenuFlyoutItem x:Name="MenuKeyring" Click="Keyring">
+                                    <MenuFlyoutItem.KeyboardAccelerators>
+                                        <KeyboardAccelerator Key="K" Modifiers="Control"/>
+                                    </MenuFlyoutItem.KeyboardAccelerators>
 
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE72E;"/>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE72E;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
 
-                            <MenuFlyoutItem x:Name="MenuSettings" Click="Settings">
-                                <MenuFlyoutItem.KeyboardAccelerators>
-                                    <KeyboardAccelerator Key="I" Modifiers="Control"/>
-                                </MenuFlyoutItem.KeyboardAccelerators>
+                                <MenuFlyoutItem x:Name="MenuSettings" Click="Settings">
+                                    <MenuFlyoutItem.KeyboardAccelerators>
+                                        <KeyboardAccelerator Key="I" Modifiers="Control"/>
+                                    </MenuFlyoutItem.KeyboardAccelerators>
 
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE713;"/>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
-                        </MenuBarItem>
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE713;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuBarItem>
 
-                        <MenuBarItem x:Name="MenuView">
-                            <MenuFlyoutItem x:Name="MenuHistory" Click="History">
-                                <MenuFlyoutItem.KeyboardAccelerators>
-                                    <KeyboardAccelerator Key="H" Modifiers="Control"/>
-                                </MenuFlyoutItem.KeyboardAccelerators>
+                            <MenuBarItem x:Name="MenuView">
+                                <MenuFlyoutItem x:Name="MenuHistory" Click="History">
+                                    <MenuFlyoutItem.KeyboardAccelerators>
+                                        <KeyboardAccelerator Key="H" Modifiers="Control"/>
+                                    </MenuFlyoutItem.KeyboardAccelerators>
 
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE81C;"/>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
-                        </MenuBarItem>
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE81C;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuBarItem>
 
-                        <MenuBarItem x:Name="MenuDownloads">
-                            <MenuFlyoutItem x:Name="MenuStopAllRemaining" Click="StopAllRemaining">
-                                <MenuFlyoutItem.KeyboardAccelerators>
-                                    <KeyboardAccelerator Key="S" Modifiers="Control,Shift"/>
-                                </MenuFlyoutItem.KeyboardAccelerators>
+                            <MenuBarItem x:Name="MenuDownloads">
+                                <MenuFlyoutItem x:Name="MenuStopAllRemaining" Click="StopAllRemaining">
+                                    <MenuFlyoutItem.KeyboardAccelerators>
+                                        <KeyboardAccelerator Key="S" Modifiers="Control,Shift"/>
+                                    </MenuFlyoutItem.KeyboardAccelerators>
 
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE71A;"/>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE71A;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
 
-                            <MenuFlyoutItem x:Name="MenuRetryAllFailed" Click="RetryAllFailed">
-                                <MenuFlyoutItem.KeyboardAccelerators>
-                                    <KeyboardAccelerator Key="R" Modifiers="Control,Shift"/>
-                                </MenuFlyoutItem.KeyboardAccelerators>
+                                <MenuFlyoutItem x:Name="MenuRetryAllFailed" Click="RetryAllFailed">
+                                    <MenuFlyoutItem.KeyboardAccelerators>
+                                        <KeyboardAccelerator Key="R" Modifiers="Control,Shift"/>
+                                    </MenuFlyoutItem.KeyboardAccelerators>
 
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE72C;"/>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE72C;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
 
-                            <MenuFlyoutSeparator/>
+                                <MenuFlyoutSeparator/>
 
-                            <MenuFlyoutItem x:Name="MenuClearAllQueued" Click="ClearAllQueued">
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE894;"/>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
+                                <MenuFlyoutItem x:Name="MenuClearAllQueued" Click="ClearAllQueued">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE894;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
 
-                            <MenuFlyoutItem x:Name="MenuClearAllCompleted" Click="ClearAllCompleted">
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE894;"/>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
-                        </MenuBarItem>
+                                <MenuFlyoutItem x:Name="MenuClearAllCompleted" Click="ClearAllCompleted">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE894;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuBarItem>
 
-                        <MenuBarItem x:Name="MenuHelp">
-                            <MenuFlyoutItem x:Name="MenuCheckForUpdates" Click="CheckForUpdates">
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xF0C5;"/>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
+                            <MenuBarItem x:Name="MenuHelp">
+                                <MenuFlyoutItem x:Name="MenuCheckForUpdates" Click="CheckForUpdates">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xF0C5;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
 
-                            <MenuFlyoutSeparator/>
+                                <MenuFlyoutSeparator/>
 
-                            <MenuFlyoutItem x:Name="MenuGitHubRepo" Click="GitHubRepo">
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE8F1;"/>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
+                                <MenuFlyoutItem x:Name="MenuGitHubRepo" Click="GitHubRepo">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE8F1;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
 
-                            <MenuFlyoutItem x:Name="MenuReportABug" Click="ReportABug">
-                                <MenuFlyoutItem.KeyboardAccelerators>
-                                    <KeyboardAccelerator Key="I" Modifiers="Control,Shift"/>
-                                </MenuFlyoutItem.KeyboardAccelerators>
+                                <MenuFlyoutItem x:Name="MenuReportABug" Click="ReportABug">
+                                    <MenuFlyoutItem.KeyboardAccelerators>
+                                        <KeyboardAccelerator Key="I" Modifiers="Control,Shift"/>
+                                    </MenuFlyoutItem.KeyboardAccelerators>
 
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEBE8;"/>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xEBE8;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
 
-                            <MenuFlyoutItem x:Name="MenuDiscussions" Click="Discussions">
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE8F2;"/>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
+                                <MenuFlyoutItem x:Name="MenuDiscussions" Click="Discussions">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE8F2;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
 
-                            <MenuFlyoutSeparator/>
+                                <MenuFlyoutSeparator/>
 
-                            <MenuFlyoutItem x:Name="MenuAbout" Click="About">
-                                <MenuFlyoutItem.KeyboardAccelerators>
-                                    <KeyboardAccelerator Key="F1" Modifiers="None"/>
-                                </MenuFlyoutItem.KeyboardAccelerators>
+                                <MenuFlyoutItem x:Name="MenuAbout" Click="About">
+                                    <MenuFlyoutItem.KeyboardAccelerators>
+                                        <KeyboardAccelerator Key="F1" Modifiers="None"/>
+                                    </MenuFlyoutItem.KeyboardAccelerators>
 
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE946;"/>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
-                        </MenuBarItem>
-                    </MenuBar>
-                </Grid>
-            </TitleBar.LeftHeader>
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE946;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuBarItem>
+                        </MenuBar>
+                    </Grid>
+                </TitleBar.LeftHeader>
 
-            <TitleBar.RightHeader>
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <Button x:Name="BtnPreview" Background="Transparent" BorderThickness="0" Visibility="Collapsed">
-                        <Button.Content>
-                            <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="18" Glyph="&#xE794;"/>
-                        </Button.Content>
+                <TitleBar.RightHeader>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Button x:Name="BtnPreview" Background="Transparent" BorderThickness="0" Visibility="Collapsed">
+                            <Button.Content>
+                                <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="18" Glyph="&#xE794;"/>
+                            </Button.Content>
 
-                        <Button.Flyout>
-                            <Flyout>
-                                <TextBlock x:Name="LblPreview" TextWrapping="Wrap"/>
-                            </Flyout>
-                        </Button.Flyout>
+                            <Button.Flyout>
+                                <Flyout>
+                                    <TextBlock x:Name="LblPreview" TextWrapping="Wrap"/>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+
+                        <Button x:Name="BtnUpdateProgress" Background="Transparent" BorderThickness="0" Visibility="Collapsed">
+                            <Button.Content>
+                                <ProgressRing x:Name="RingUpdateProcess" Width="24" Height="24" IsIndeterminate="False"/>
+                            </Button.Content>
+
+                            <Button.Flyout>
+                                <Flyout x:Name="FlyoutUpdateProgress" Placement="Bottom">
+                                    <TextBlock x:Name="LblUpdateProgress" TextWrapping="WrapWholeWords"/>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                    </StackPanel>
+                </TitleBar.RightHeader>
+            </TitleBar>
+
+            <!-- Physical left-side caption controls for RTL; LTR uses Windows caption buttons. -->
+            <Grid Grid.Column="0">
+                <StackPanel x:Name="RtlCaptionButtons" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Collapsed">
+                    <Button x:Name="BtnWindowClose" Style="{StaticResource CaptionButtonStyle}" Click="WindowClose_Click">
+                        <Button.Resources>
+                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#C42B1C"/>
+                            <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#A52317"/>
+                            <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="White"/>
+                            <SolidColorBrush x:Key="ButtonForegroundPressed" Color="White"/>
+                        </Button.Resources>
+                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE8BB;" FontSize="10"/>
                     </Button>
-
-                    <Button x:Name="BtnUpdateProgress" Background="Transparent" BorderThickness="0" Visibility="Collapsed">
-                        <Button.Content>
-                            <ProgressRing x:Name="RingUpdateProcess" Width="24" Height="24" IsIndeterminate="False"/>
-                        </Button.Content>
-
-                        <Button.Flyout>
-                            <Flyout x:Name="FlyoutUpdateProgress" Placement="Bottom">
-                                <TextBlock x:Name="LblUpdateProgress" TextWrapping="WrapWholeWords"/>
-                            </Flyout>
-                        </Button.Flyout>
+                    <Button x:Name="BtnWindowMaximize" Style="{StaticResource CaptionButtonStyle}" Click="WindowMaximize_Click">
+                        <FontIcon x:Name="IconWindowMaximize" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE922;" FontSize="10"/>
+                    </Button>
+                    <Button x:Name="BtnWindowMinimize" Style="{StaticResource CaptionButtonStyle}" Click="WindowMinimize_Click">
+                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE921;" FontSize="10"/>
                     </Button>
                 </StackPanel>
-            </TitleBar.RightHeader>
-        </TitleBar>
+            </Grid>
+
+        </Grid>
 
         <MenuFlyoutSeparator Grid.Row="1"/>
 

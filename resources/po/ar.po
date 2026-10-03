@@ -3140,3 +3140,15 @@ msgstr "ما بعد المعالجة"
 
 #~ msgid "Clear Queued Downloads (Ctrl+Delete)"
 #~ msgstr "امسح التنزيلات التي في قائمة الانتظار (Ctrl+Delete)"
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Minimize"
+msgstr "تصغير"
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Maximize"
+msgstr "تكبير"
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Restore"
+msgstr "استعادة"

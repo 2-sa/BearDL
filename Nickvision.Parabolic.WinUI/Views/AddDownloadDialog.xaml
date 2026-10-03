@@ -20,7 +20,10 @@
         <nickvision:ViewStack x:Name="ViewStack" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <nickvision:ViewStack.Pages>
                 <StackPanel Orientation="Vertical" Spacing="12" MinWidth="400">
-                    <TextBox x:Name="TxtUrl" FlowDirection="LeftToRight" TextChanged="TxtUrl_TextChanged"/>
+                    <StackPanel Spacing="6">
+                        <TextBlock x:Name="LblUrl"/>
+                        <TextBox x:Name="TxtUrl" FlowDirection="LeftToRight" AutomationProperties.LabeledBy="{Binding ElementName=LblUrl}" TextChanged="TxtUrl_TextChanged"/>
+                    </StackPanel>
 
                     <Button x:Name="BtnSelectBatchFile" HorizontalAlignment="Stretch" Click="BtnSelectBatchFile_Click">
                         <Button.Content>
@@ -32,7 +35,9 @@
                         </Button.Content>
                     </Button>
 
-                    <ToggleSwitch x:Name="TglUseAuthentication"/>
+                    <community:SettingsCard x:Name="RowUseAuthentication">
+                        <ToggleSwitch x:Name="TglUseAuthentication" OnContent="" OffContent=""/>
+                    </community:SettingsCard>
 
                     <StackPanel Orientation="Vertical" Spacing="6" Visibility="{x:Bind TglUseAuthentication.IsOn, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ComboBox x:Name="CmbCredential" HorizontalAlignment="Stretch" SelectionChanged="CmbCredential_SelectionChanged">
@@ -48,9 +53,13 @@
                         <PasswordBox x:Name="TxtPassword" FlowDirection="LeftToRight" Visibility="Collapsed"/>
                     </StackPanel>
 
-                    <ToggleSwitch x:Name="TglDownloadImmediatelyAsVideo" Toggled="TglDownloadImmediatelyAsVideo_Toggled"/>
+                    <community:SettingsCard x:Name="RowDownloadImmediatelyAsVideo">
+                        <ToggleSwitch x:Name="TglDownloadImmediatelyAsVideo" OnContent="" OffContent="" Toggled="TglDownloadImmediatelyAsVideo_Toggled"/>
+                    </community:SettingsCard>
 
-                    <ToggleSwitch x:Name="TglDownloadImmediatelyAsAudio" Toggled="TglDownloadImmediatelyAsAudio_Toggled"/>
+                    <community:SettingsCard x:Name="RowDownloadImmediatelyAsAudio">
+                        <ToggleSwitch x:Name="TglDownloadImmediatelyAsAudio" OnContent="" OffContent="" Toggled="TglDownloadImmediatelyAsAudio_Toggled"/>
+                    </community:SettingsCard>
 
                     <TeachingTip x:Name="TeachDownloadImmediately" PreferredPlacement="Bottom"/>
                 </StackPanel>

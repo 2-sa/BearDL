@@ -54,9 +54,11 @@ CloseApplications=yes
 RestartIfNeededByRun=no
 
 [Languages]
+; English is the fallback when the Windows UI language has no matching translation.
+Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "arabic"; MessagesFile: "Languages\Arabic.isl"
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
 Name: "czech"; MessagesFile: "compiler:Languages\Czech.isl"
-Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "hungarian"; MessagesFile: "compiler:Languages\Hungarian.isl"

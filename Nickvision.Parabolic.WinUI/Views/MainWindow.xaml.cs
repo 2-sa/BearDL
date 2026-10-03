@@ -13,6 +13,7 @@ using Nickvision.Parabolic.Shared.Events;
 using Nickvision.Parabolic.Shared.Models;
 using Nickvision.Parabolic.Shared.Services;
 using Nickvision.Parabolic.WinUI.Controls;
+using Nickvision.Parabolic.WinUI.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -39,6 +40,7 @@ public sealed partial class MainWindow : Window
     public MainWindow(IServiceProvider serviceProvider, MainWindowController controller, AppInfo appInfo, IEventsService eventsService, ITranslationService translationService)
     {
         InitializeComponent();
+        LocalizationHelper.Apply(MainGrid, translationService);
         _serviceProvider = serviceProvider;
         _controller = controller;
         _appInfo = appInfo;
@@ -157,6 +159,7 @@ public sealed partial class MainWindow : Window
                 CloseButtonText = _translationService._("I understand"),
                 DefaultButton = ContentDialogButton.Close,
                 RequestedTheme = MainGrid.ActualTheme,
+                FlowDirection = MainGrid.FlowDirection,
                 XamlRoot = MainGrid.XamlRoot
             };
             await disclaimerDialog.ShowAsync();
@@ -175,6 +178,7 @@ public sealed partial class MainWindow : Window
                 CloseButtonText = _translationService._("No"),
                 DefaultButton = ContentDialogButton.Primary,
                 RequestedTheme = MainGrid.ActualTheme,
+                FlowDirection = MainGrid.FlowDirection,
                 XamlRoot = MainGrid.XamlRoot
             };
             if ((await recoverDialog.ShowAsync()) == ContentDialogResult.Primary)
@@ -207,6 +211,7 @@ public sealed partial class MainWindow : Window
                 CloseButtonText = _translationService._("No"),
                 DefaultButton = ContentDialogButton.Close,
                 RequestedTheme = MainGrid.ActualTheme,
+                FlowDirection = MainGrid.FlowDirection,
                 XamlRoot = MainGrid.XamlRoot
             };
             if ((await confirmDialog.ShowAsync()) == ContentDialogResult.Primary)
@@ -277,6 +282,7 @@ public sealed partial class MainWindow : Window
                     CloseButtonText = _translationService._("Close"),
                     DefaultButton = ContentDialogButton.Close,
                     RequestedTheme = MainGrid.ActualTheme,
+                    FlowDirection = MainGrid.FlowDirection,
                     XamlRoot = MainGrid.XamlRoot
                 };
                 await errorDialog.ShowAsync();
@@ -420,6 +426,7 @@ public sealed partial class MainWindow : Window
                 IsActive = true,
             },
             RequestedTheme = MainGrid.ActualTheme,
+            FlowDirection = MainGrid.FlowDirection,
             XamlRoot = MainGrid.XamlRoot
         };
         DispatcherQueue.TryEnqueue(async () => await progressDialog.ShowAsync());

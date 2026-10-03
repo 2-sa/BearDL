@@ -22,7 +22,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <Image x:Name="ImgThumbnail" Grid.Column="0" Width="75" Height="50" Stretch="Uniform"/>
+            <Image FlowDirection="LeftToRight" x:Name="ImgThumbnail" Grid.Column="0" Width="75" Height="50" Stretch="Uniform"/>
 
             <StackPanel Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="12,0,0,0" Orientation="Vertical" Spacing="6">
                 <TextBlock x:Name="LblTitle" TextWrapping="WrapWholeWords"/>
@@ -116,7 +116,7 @@
             <MenuFlyoutSeparator Grid.Row="0" HorizontalAlignment="Stretch"/>
 			
             <ScrollViewer x:Name="ScrollLog" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                <TextBlock x:Name="LblLog" Margin="0,0,12,0" IsTextSelectionEnabled="True"/>
+                <TextBlock x:Name="LblLog" FlowDirection="LeftToRight" Margin="0,0,12,0" IsTextSelectionEnabled="True"/>
             </ScrollViewer>
         </Grid>
     </Grid>

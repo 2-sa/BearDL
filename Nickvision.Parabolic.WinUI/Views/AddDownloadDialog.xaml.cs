@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.WinUI;
+using CommunityToolkit.WinUI;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -56,6 +56,7 @@ public sealed partial class AddDownloadDialog : ContentDialog
     public AddDownloadDialog(AddDownloadDialogController controller, ITranslationService translationService)
     {
         InitializeComponent();
+        LocalizationHelper.Apply(this, translationService);
         _controller = controller;
         _translationService = translationService;
         _discoveryContext = null;

@@ -1,4 +1,4 @@
-﻿using Microsoft.UI;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.Storage.Pickers;
@@ -25,6 +25,7 @@ public sealed partial class SettingsPage : Page
     public SettingsPage(PreferencesViewController controller, ITranslationService translationService)
     {
         InitializeComponent();
+        LocalizationHelper.Apply(this, translationService);
         _controller = controller;
         _translationService = translationService;
         _constructing = true;
@@ -208,6 +209,7 @@ public sealed partial class SettingsPage : Page
         CmbPostprocessingArgumentExecutable.SelectSelectionItem();
         TxtPostprocessingArgumentArgs.Text = string.Empty;
         DlgPostprocessingArgument.PrimaryButtonText = _translationService._("Add");
+        DlgPostprocessingArgument.FlowDirection = FlowDirection;
         DlgPostprocessingArgument.XamlRoot = XamlRoot;
         DlgPostprocessingArgument.RequestedTheme = ActualTheme;
         string? error = null;
@@ -227,6 +229,7 @@ public sealed partial class SettingsPage : Page
                         Content = error,
                         CloseButtonText = _translationService._("OK"),
                         DefaultButton = ContentDialogButton.Close,
+                        FlowDirection = this.FlowDirection,
                         XamlRoot = XamlRoot,
                         RequestedTheme = ActualTheme
                     };
@@ -252,6 +255,7 @@ public sealed partial class SettingsPage : Page
             PrimaryButtonText = _translationService._("Yes"),
             CloseButtonText = _translationService._("No"),
             DefaultButton = ContentDialogButton.Close,
+            FlowDirection = this.FlowDirection,
             XamlRoot = XamlRoot,
             RequestedTheme = ActualTheme
         };
@@ -271,6 +275,7 @@ public sealed partial class SettingsPage : Page
         CmbPostprocessingArgumentExecutable.SelectedItem = _controller.Executables.First(x => x.Value == argument.Executable);
         TxtPostprocessingArgumentArgs.Text = argument.Args;
         DlgPostprocessingArgument.PrimaryButtonText = _translationService._("Update");
+        DlgPostprocessingArgument.FlowDirection = FlowDirection;
         DlgPostprocessingArgument.XamlRoot = XamlRoot;
         DlgPostprocessingArgument.RequestedTheme = ActualTheme;
         string? error = null;
@@ -290,6 +295,7 @@ public sealed partial class SettingsPage : Page
                         Content = error,
                         CloseButtonText = _translationService._("OK"),
                         DefaultButton = ContentDialogButton.Close,
+                        FlowDirection = this.FlowDirection,
                         XamlRoot = XamlRoot,
                         RequestedTheme = ActualTheme
                     };

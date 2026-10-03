@@ -264,7 +264,7 @@
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE71B;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <TextBox x:Name="TxtProxyUrl" TextChanged="Txt_TextChanged"/>
+                                <TextBox x:Name="TxtProxyUrl" FlowDirection="LeftToRight" TextChanged="Txt_TextChanged"/>
                             </community:SettingsCard>
 
                             <community:SettingsCard x:Name="RowCookiesFile">
@@ -338,7 +338,7 @@
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE756;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <TextBox x:Name="TxtYtdlpDiscoveryArgs" TextChanged="Txt_TextChanged"/>
+                                <TextBox x:Name="TxtYtdlpDiscoveryArgs" FlowDirection="LeftToRight" TextChanged="Txt_TextChanged"/>
                             </community:SettingsCard>
 
                             <community:SettingsCard x:Name="RowYtdlpDownloadArgs">
@@ -346,7 +346,7 @@
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE756;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <TextBox x:Name="TxtYtdlpDownloadArgs" TextChanged="Txt_TextChanged"/>
+                                <TextBox x:Name="TxtYtdlpDownloadArgs" FlowDirection="LeftToRight" TextChanged="Txt_TextChanged"/>
                             </community:SettingsCard>
                         </StackPanel>
 
@@ -493,7 +493,7 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
 
-                <TextBox x:Name="TxtPostprocessingArgumentArgs"/>
+                <TextBox x:Name="TxtPostprocessingArgumentArgs" FlowDirection="LeftToRight"/>
             </StackPanel>
         </ContentDialog>
     </Grid>

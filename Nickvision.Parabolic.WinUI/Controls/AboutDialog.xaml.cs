@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Nickvision.Desktop.Application;
 using Nickvision.Desktop.Globalization;
@@ -16,6 +16,7 @@ public sealed partial class AboutDialog : ContentDialog
     public AboutDialog(AppInfo appInfo, ITranslationService translator)
     {
         InitializeComponent();
+        LocalizationHelper.Apply(this, translator);
         _appInfo = appInfo;
         _translator = translator;
         DebugInformation = string.Empty;

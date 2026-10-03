@@ -212,7 +212,7 @@
             <nickvision:ViewStack x:Name="ViewStack" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <nickvision:ViewStack.Pages>
                     <StackPanel Margin="48,48,48,48" HorizontalAlignment="Stretch" Orientation="Vertical" Spacing="12">
-                        <Image HorizontalAlignment="Left" Width="64" Height="64" Source="/Assets/org.nickvision.tubeconverter.ico"/>
+                        <Image FlowDirection="LeftToRight" HorizontalAlignment="Left" Width="64" Height="64" Source="/Assets/org.nickvision.tubeconverter.ico"/>
 
                         <TextBlock x:Name="LblHomeTitle" HorizontalAlignment="Left" Style="{ThemeResource TitleTextBlockStyle}"/>
 

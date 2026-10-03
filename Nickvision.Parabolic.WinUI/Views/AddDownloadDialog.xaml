@@ -17,8 +17,10 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </ContentDialog.Resources>
 
-    <!-- Keep the scrollbar on the right without changing the content's reading direction. -->
-    <ScrollViewer FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+    <!-- Bound measurement before switching flow direction. ContentDialog can measure
+         its content at the window width before clipping it to its 548-DIP surface.
+         Reserve 48 DIPs for the dialog padding and 20 for the right scrollbar. -->
+    <ScrollViewer x:Name="DownloadScrollViewer" MaxWidth="500" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
         <nickvision:ViewStack x:Name="ViewStack" FlowDirection="{Binding FlowDirection, ElementName=DialogRoot}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <nickvision:ViewStack.Pages>
                 <StackPanel Orientation="Vertical" Spacing="12" MinWidth="400">

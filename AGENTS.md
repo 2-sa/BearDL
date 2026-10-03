@@ -29,6 +29,10 @@ Commands run from the repository root:
 
 Keep SDK and gettext setup in CI. Builds update translation catalogs; review generated changes before committing.
 
+## Build & Release Numbering
+
+Every new distributable build must receive a new, increasing version number. Use `.github/workflows/release.yml`, which generates the version from `github.run_number` and passes it to every platform, installer, and release tag. Never reuse a previous release number for changed code. Start a new workflow run for a new build; reserve reruns for retrying failed jobs from the same build. Platform-only workflows with the fallback version `2026.5.0` are validation builds, not distributable releases.
+
 ## Coding Style & Naming Conventions
 
 Use four-space C# indentation, separate-line braces, file-scoped namespaces, explicit imports, and nullable annotations. Use `PascalCase` for types/methods/properties, `camelCase` for locals, `_camelCase` for instance fields, and `s_` for static fields. Preserve existing XML indentation. CI uses codespell; no dedicated formatter configuration exists.

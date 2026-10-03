@@ -338,8 +338,6 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private void WindowClose_Click(object sender, RoutedEventArgs e) => Close();
-
     private void WindowMinimize_Click(object sender, RoutedEventArgs e)
     {
         if (AppWindow.Presenter is OverlappedPresenter presenter)

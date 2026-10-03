@@ -224,7 +224,7 @@
             <!-- Physical left-side caption controls for RTL; LTR uses Windows caption buttons. -->
             <Grid Grid.Column="0">
                 <StackPanel x:Name="RtlCaptionButtons" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Collapsed">
-                    <Button x:Name="BtnWindowClose" Style="{StaticResource CaptionButtonStyle}" Click="WindowClose_Click">
+                    <Button x:Name="BtnWindowClose" Style="{StaticResource CaptionButtonStyle}" Click="Exit">
                         <Button.Resources>
                             <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#C42B1C"/>
                             <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#A52317"/>

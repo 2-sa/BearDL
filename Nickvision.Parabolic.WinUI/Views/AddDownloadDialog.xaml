@@ -60,7 +60,7 @@
                         <PasswordBox x:Name="TxtPassword" FlowDirection="LeftToRight" Visibility="Collapsed"/>
                     </StackPanel>
 
-                    <Grid ColumnSpacing="16" MinHeight="32">
+                    <Grid x:Name="RowDownloadImmediatelyAsVideo" ColumnSpacing="16" MinHeight="32">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
@@ -69,7 +69,7 @@
                         <ToggleSwitch x:Name="TglDownloadImmediatelyAsVideo" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent="" Toggled="TglDownloadImmediatelyAsVideo_Toggled"/>
                     </Grid>
 
-                    <Grid ColumnSpacing="16" MinHeight="32">
+                    <Grid x:Name="RowDownloadImmediatelyAsAudio" ColumnSpacing="16" MinHeight="32">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>

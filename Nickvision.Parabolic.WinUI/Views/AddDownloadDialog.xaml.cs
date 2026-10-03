@@ -153,8 +153,8 @@ public sealed partial class AddDownloadDialog : ContentDialog
         ViewStack.SelectedIndex = (int)Pages.Discover;
         var fastDownload = _controller.FastDownload;
         PrimaryButtonText = _translationService._(fastDownload ? "Download" : "Discover");
-        ((FrameworkElement)TglDownloadImmediatelyAsVideo.Parent).Visibility = fastDownload ? Visibility.Collapsed : Visibility.Visible;
-        ((FrameworkElement)TglDownloadImmediatelyAsAudio.Parent).Visibility = fastDownload ? Visibility.Collapsed : Visibility.Visible;
+        RowDownloadImmediatelyAsVideo.Visibility = fastDownload ? Visibility.Collapsed : Visibility.Visible;
+        RowDownloadImmediatelyAsAudio.Visibility = fastDownload ? Visibility.Collapsed : Visibility.Visible;
         if (!fastDownload)
         {
             TglDownloadImmediatelyAsVideo.IsOn = _controller.PreviousDownloadImmediatelyAsVideo;

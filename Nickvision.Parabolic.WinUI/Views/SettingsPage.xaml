@@ -47,7 +47,7 @@
                 </NavigationViewItem>
             </NavigationView.MenuItems>
 
-            <ScrollViewer FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <ScrollViewer FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
                 <nickvision:ViewStack x:Name="ViewStack" FlowDirection="{Binding FlowDirection, ElementName=PageRoot}" Margin="12,12,12,12">
                     <nickvision:ViewStack.Pages>
                         <StackPanel Spacing="6">
@@ -528,7 +528,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <TextBlock x:Name="LblPostProcessorArgments" Grid.Column="0" VerticalAlignment="Center" Style="{StaticResource NavigationViewItemHeaderTextStyle}"/>
+                                <TextBlock x:Name="LblPostProcessorArgments" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap" Style="{StaticResource NavigationViewItemHeaderTextStyle}"/>
 
                                 <Button x:Name="BtnAddPostProcessorArgument" Grid.Column="1" Click="AddPostprocessingArgument">
                                     <Button.Content>
@@ -541,10 +541,16 @@
                                 </Button>
                             </Grid>
 
-                            <ListView x:Name="ListPostProcessorArguments" SelectionMode="None">
+                            <ListView x:Name="ListPostProcessorArguments" SelectionMode="None" Padding="0">
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                        <Setter Property="Padding" Value="0"/>
+                                    </Style>
+                                </ListView.ItemContainerStyle>
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="parabolic:BindablePostProcessorArgument">
-                                        <community:SettingsCard Margin="-16,6,-12,0" Header="{x:Bind Name, Mode=OneWay}" Description="{x:Bind Args, Mode=OneWay}">
+                                        <community:SettingsCard Margin="0,6,0,0" HorizontalAlignment="Stretch" Header="{x:Bind Name, Mode=OneWay}" Description="{x:Bind Args, Mode=OneWay}">
                                             <community:SettingsCard.HeaderIcon>
                                                 <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE90F;"/>
                                             </community:SettingsCard.HeaderIcon>

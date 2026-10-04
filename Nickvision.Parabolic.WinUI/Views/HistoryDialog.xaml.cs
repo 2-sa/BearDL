@@ -39,8 +39,8 @@ public sealed partial class HistoryDialog : ContentDialog
         Title = _translationService._("History");
         PrimaryButtonText = _translationService._("Close");
         SearchBox.PlaceholderText = _translationService._("Search...");
-        BtnSort.Label = _translationService._("Sort");
-        BtnClearAll.Label = _translationService._("Clear All");
+        LblSort.Text = _translationService._("Sort");
+        LblClearAll.Text = _translationService._("Clear All");
         TglSortNewest.Text = _translationService._("Newest");
         TglSortOldest.Text = _translationService._("Oldest");
         LblLoading.Text = _translationService._("Please wait...");

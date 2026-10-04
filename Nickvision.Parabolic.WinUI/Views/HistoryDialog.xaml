@@ -12,7 +12,7 @@
     mc:Ignorable="d" Style="{StaticResource DefaultContentDialogStyle}"
     DefaultButton="Primary" Loaded="Dialog_Loaded">
     
-    <Grid ColumnSpacing="24">
+    <Grid Width="498" MaxWidth="498" ColumnSpacing="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -21,29 +21,31 @@
 
         <AutoSuggestBox x:Name="SearchBox" Grid.Row="0" QueryIcon="Find" TextChanged="SearchBox_TextChanged"/>
 
-		<CommandBar Grid.Row="1" DefaultLabelPosition="Right" OverflowButtonVisibility="Collapsed">
-            <AppBarButton x:Name="BtnSort">
-                <AppBarButton.Icon>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" Spacing="8" Margin="0,8,0,8">
+            <Button x:Name="BtnSort">
+                <StackPanel Orientation="Horizontal" Spacing="6">
                     <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE8CB;"/>
-                </AppBarButton.Icon>
+                    <TextBlock x:Name="LblSort"/>
+                </StackPanel>
 
-                <AppBarButton.Flyout>
+                <Button.Flyout>
                     <MenuFlyout Placement="Bottom">
                         <RadioMenuFlyoutItem x:Name="TglSortNewest" GroupName="Sort" Click="TglSort_Click"/>
 
                         <RadioMenuFlyoutItem x:Name="TglSortOldest" GroupName="Sort" Click="TglSort_Click"/>
                     </MenuFlyout>
-                </AppBarButton.Flyout>
-            </AppBarButton>
+                </Button.Flyout>
+            </Button>
 
-            <AppBarButton x:Name="BtnClearAll" Click="ClearAll">
-                <AppBarButton.Icon>
+            <Button x:Name="BtnClearAll" Click="ClearAll">
+                <StackPanel Orientation="Horizontal" Spacing="6">
                     <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE74D;"/>
-                </AppBarButton.Icon>
-            </AppBarButton>
-        </CommandBar>
+                    <TextBlock x:Name="LblClearAll"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
 
-        <ScrollViewer Grid.Row="2" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="2" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
             <nickvision:ViewStack x:Name="ViewStack" FlowDirection="{Binding FlowDirection, ElementName=DialogRoot}">
                 <nickvision:ViewStack.Pages>
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Spacing="24">
@@ -56,10 +58,26 @@
 
                     <nickvision:StatusPage x:Name="StatusNoneSearch" Margin="0,24,0,24" Glyph="&#xE721;" IsCompact="True"/>
 
-                    <ListView x:Name="ListDownloads" SelectionMode="None">
+                    <ListView x:Name="ListDownloads" SelectionMode="None" Padding="0">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Padding" Value="0"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="parabolic:BindableHistoricDownloadSelectionItem">
-                                <community:SettingsCard Margin="-12,0,-12,0" Width="500" Header="{x:Bind Label, Mode=OneWay}" Description="{x:Bind Value.Url, Mode=OneWay}">
+                                <community:SettingsCard HorizontalAlignment="Stretch">
+                                    <community:SettingsCard.Resources>
+                                        <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                        <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                    </community:SettingsCard.Resources>
+                                    <community:SettingsCard.Header>
+                                        <TextBlock Text="{x:Bind Label, Mode=OneWay}" TextWrapping="Wrap"/>
+                                    </community:SettingsCard.Header>
+                                    <community:SettingsCard.Description>
+                                        <TextBlock Text="{x:Bind Value.Url, Mode=OneWay}" FlowDirection="LeftToRight" TextWrapping="Wrap"/>
+                                    </community:SettingsCard.Description>
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <Button Click="DownloadAgain" Tag="{x:Bind Value.Url, Mode=OneWay}">
                                             <Button.Content>

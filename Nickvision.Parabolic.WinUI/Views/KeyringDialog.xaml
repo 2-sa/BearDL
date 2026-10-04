@@ -26,8 +26,8 @@
             </StackPanel>
         </Button>
 
-        <ScrollViewer Grid.Row="2" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-            <nickvision:ViewStack x:Name="ViewStack" Width="478" MaxWidth="478" FlowDirection="{Binding FlowDirection, ElementName=DialogRoot}">
+        <ScrollViewer Grid.Row="2" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
+            <nickvision:ViewStack x:Name="ViewStack" FlowDirection="{Binding FlowDirection, ElementName=DialogRoot}">
                 <nickvision:ViewStack.Pages>
                     <nickvision:StatusPage x:Name="StatusNone" Margin="0,24,0,24" Glyph="&#xF540;" IsCompact="True"/>
 

@@ -151,6 +151,7 @@ public sealed partial class AddDownloadDialog : ContentDialog
         CmbCredential.ItemsSource = (await _controller.GetAvailableCredentialsAsync()).ToBindableSelectonItems();
         CmbCredential.SelectSelectionItem();
         ViewStack.SelectedIndex = (int)Pages.Discover;
+        DownloadScrollViewer.Height = double.NaN;
         var fastDownload = _controller.FastDownload;
         PrimaryButtonText = _translationService._(fastDownload ? "Download" : "Discover");
         RowDownloadImmediatelyAsVideo.Visibility = fastDownload ? Visibility.Collapsed : Visibility.Visible;
@@ -244,6 +245,9 @@ public sealed partial class AddDownloadDialog : ContentDialog
         var thumbnailSource = new SoftwareBitmapSource();
         await thumbnailSource.SetBitmapAsync(thumbnailBitmap);
         Title = _translationService._("Configure Download");
+        // Share one viewport across quality, subtitles, and advanced options.
+        // Short pages keep the same size; long pages scroll within the viewport.
+        DownloadScrollViewer.Height = 440;
         PrimaryButtonText = _translationService._("Download");
         CloseButtonText = _translationService._("Cancel");
         SecondaryButtonText = null;

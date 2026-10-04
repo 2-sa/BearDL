@@ -73,9 +73,9 @@ public sealed partial class AddDownloadDialog : ContentDialog
         LblUseAuthentication.Text = _translationService._("Use Authentication");
         AutomationProperties.SetName(TglUseAuthentication, _translationService._("Use Authentication"));
         CmbCredential.Header = _translationService._("Credential");
-        TxtUsername.Header = _translationService._("Username");
+        LblUsername.Text = _translationService._("Username");
         TxtUsername.PlaceholderText = _translationService._("Enter username here");
-        TxtPassword.Header = _translationService._("Password");
+        LblPassword.Text = _translationService._("Password");
         TxtPassword.PlaceholderText = _translationService._("Enter password here");
         LblDownloadImmediatelyAsVideo.Text = _translationService._("Download Immediately as Video");
         AutomationProperties.SetName(TglDownloadImmediatelyAsVideo, _translationService._("Download Immediately as Video"));
@@ -89,7 +89,7 @@ public sealed partial class AddDownloadDialog : ContentDialog
         NavViewItemSingleAdvanced.Text = _translationService._("Advanced");
         TxtSingleSaveFilename.Header = _translationService._("File Name");
         ToolTipService.SetToolTip(BtnSingleRevertFilename, _translationService._("Revert to Title"));
-        TxtSingleSaveFolder.Header = _translationService._("Save Folder");
+        LblSingleSaveFolder.Text = _translationService._("Save Folder");
         ToolTipService.SetToolTip(BtnSingleSelectSaveFolder, _translationService._("Select Save Folder"));
         CmbSingleFileType.Header = _translationService._("File Type");
         TeachSingleFileType.Title = _translationService._("Warning");
@@ -114,7 +114,7 @@ public sealed partial class AddDownloadDialog : ContentDialog
         NavViewItemPlaylistItems.Text = _translationService._("Items");
         NavViewItemPlaylistSubtitles.Text = _translationService._("Subtitles");
         NavViewItemPlaylistAdvanced.Text = _translationService._("Advanced");
-        TxtPlaylistSaveFolder.Header = _translationService._("Save Folder");
+        LblPlaylistSaveFolder.Text = _translationService._("Save Folder");
         ToolTipService.SetToolTip(BtnPlaylistSelectSaveFolder, _translationService._("Select Save Folder"));
         CmbPlaylistFileType.Header = _translationService._("File Type");
         TeachPlaylistFileType.Title = _translationService._("Warning");

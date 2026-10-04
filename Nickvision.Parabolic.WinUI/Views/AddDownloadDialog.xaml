@@ -20,7 +20,7 @@
     <!-- Bound the content as well as its viewport: an RTL child with a long
          title or format can otherwise arrange beyond the clipped dialog.
          Each stage selects its own width; configuration tabs share one size. -->
-    <ScrollViewer x:Name="DownloadScrollViewer" Width="420" MaxWidth="500" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+    <ScrollViewer x:Name="DownloadScrollViewer" Width="420" MaxWidth="500" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
         <nickvision:ViewStack x:Name="ViewStack" Width="400" MaxWidth="400" FlowDirection="{Binding FlowDirection, ElementName=DialogRoot}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <nickvision:ViewStack.Pages>
                 <StackPanel Orientation="Vertical" Spacing="12" MinWidth="400">
@@ -57,9 +57,15 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
 
-                        <TextBox x:Name="TxtUsername" FlowDirection="LeftToRight" Visibility="Collapsed"/>
+                        <StackPanel Spacing="6" Visibility="{Binding Visibility, ElementName=TxtUsername}">
+                            <TextBlock x:Name="LblUsername"/>
+                            <TextBox x:Name="TxtUsername" FlowDirection="LeftToRight" Visibility="Collapsed" AutomationProperties.LabeledBy="{Binding ElementName=LblUsername}"/>
+                        </StackPanel>
 
-                        <PasswordBox x:Name="TxtPassword" FlowDirection="LeftToRight" Visibility="Collapsed"/>
+                        <StackPanel Spacing="6" Visibility="{Binding Visibility, ElementName=TxtPassword}">
+                            <TextBlock x:Name="LblPassword"/>
+                            <PasswordBox x:Name="TxtPassword" FlowDirection="LeftToRight" Visibility="Collapsed" AutomationProperties.LabeledBy="{Binding ElementName=LblPassword}"/>
+                        </StackPanel>
                     </StackPanel>
 
                     <Grid x:Name="RowDownloadImmediatelyAsVideo" ColumnSpacing="16" MinHeight="32">
@@ -155,7 +161,10 @@
                                     </Button.Content>
                                 </Button>
 
-                                <TextBox x:Name="TxtSingleSaveFolder" FlowDirection="LeftToRight" Grid.Row="2" Grid.Column="0" IsReadOnly="True"/>
+                                <StackPanel Grid.Row="2" Grid.Column="0" Spacing="6">
+                                    <TextBlock x:Name="LblSingleSaveFolder"/>
+                                    <TextBox x:Name="TxtSingleSaveFolder" FlowDirection="LeftToRight" IsReadOnly="True" AutomationProperties.LabeledBy="{Binding ElementName=LblSingleSaveFolder}"/>
+                                </StackPanel>
 
                                 <Button x:Name="BtnSingleSelectSaveFolder" Grid.Row="2" Grid.Column="1" Margin="0,28,0,0" Click="BtnSingleSelectSaveFolder_Click">
                                     <Button.Content>
@@ -346,7 +355,10 @@
                                     </StackPanel>
                                 </Grid>
 
-                                <TextBox x:Name="TxtPlaylistSaveFolder" FlowDirection="LeftToRight" Grid.Row="1" Grid.Column="0" IsReadOnly="True"/>
+                                <StackPanel Grid.Row="1" Grid.Column="0" Spacing="6">
+                                    <TextBlock x:Name="LblPlaylistSaveFolder"/>
+                                    <TextBox x:Name="TxtPlaylistSaveFolder" FlowDirection="LeftToRight" IsReadOnly="True" AutomationProperties.LabeledBy="{Binding ElementName=LblPlaylistSaveFolder}"/>
+                                </StackPanel>
 
                                 <Button x:Name="BtnPlaylistSelectSaveFolder" Grid.Row="1" Grid.Column="1" Margin="0,28,0,0" Click="BtnPlaylistSelectSaveFolder_Click">
                                     <Button.Content>

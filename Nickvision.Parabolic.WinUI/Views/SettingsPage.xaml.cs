@@ -140,7 +140,7 @@ public sealed partial class SettingsPage : Page
         TxtPostprocessingArgumentName.PlaceholderText = _translationService._("Enter name here");
         CmbPostprocessingArgumentPostProcessor.Header = _translationService._("Post-Processor");
         CmbPostprocessingArgumentExecutable.Header = _translationService._("Executable");
-        TxtPostprocessingArgumentArgs.Header = _translationService._("Args");
+        LblPostprocessingArgumentArgs.Text = _translationService._("Args");
         TxtPostprocessingArgumentArgs.PlaceholderText = _translationService._("Enter args here");
     }
 

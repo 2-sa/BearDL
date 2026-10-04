@@ -1653,7 +1653,7 @@ msgstr "سجل التغييرات"
 
 #: Nickvision.Parabolic.WinUI/Controls/AboutDialog.xaml.cs:27
 msgid "Debugging"
-msgstr "استكشاف الأخطاء وإصلاحها"
+msgstr "التشخيص"
 
 #: Nickvision.Parabolic.WinUI/Controls/AboutDialog.xaml.cs:28
 msgid "Credits"

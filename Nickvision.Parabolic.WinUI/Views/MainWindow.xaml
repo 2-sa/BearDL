@@ -5,6 +5,7 @@
     xmlns:local="using:Nickvision.Parabolic.WinUI.Views"
     xmlns:nickvision="using:Nickvision.Desktop.WinUI.Controls"
     xmlns:community="using:CommunityToolkit.WinUI.Controls"
+    xmlns:parabolic="using:Nickvision.Parabolic.WinUI.Helpers"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -409,7 +410,7 @@
                                     </NavigationViewItem>
                                 </NavigationView.MenuItems>
 
-                                <ScrollViewer FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                <ScrollViewer FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
                                     <nickvision:ViewStack x:Name="ViewStackDownloads" FlowDirection="{Binding FlowDirection, ElementName=MainGrid}">
                                         <nickvision:ViewStack.Pages>
                                             <nickvision:StatusPage x:Name="StatusNoneDownloads" Glyph="&#xE896;">

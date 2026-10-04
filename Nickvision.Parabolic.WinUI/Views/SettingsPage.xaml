@@ -596,7 +596,10 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
 
-                <TextBox x:Name="TxtPostprocessingArgumentArgs" FlowDirection="LeftToRight"/>
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="LblPostprocessingArgumentArgs"/>
+                    <TextBox x:Name="TxtPostprocessingArgumentArgs" FlowDirection="LeftToRight" AutomationProperties.LabeledBy="{Binding ElementName=LblPostprocessingArgumentArgs}"/>
+                </StackPanel>
             </StackPanel>
         </ContentDialog>
     </Grid>

@@ -82,19 +82,16 @@ public sealed partial class KeyringDialog : ContentDialog
                 var txtUrl = new TextBox()
                 {
                     FlowDirection = FlowDirection.LeftToRight,
-                    Header = _translationService._("URL"),
                     PlaceholderText = _translationService._("Enter url here")
                 };
                 var txtUsername = new TextBox()
                 {
                     FlowDirection = FlowDirection.LeftToRight,
-                    Header = _translationService._("Username"),
                     PlaceholderText = _translationService._("Enter username here")
                 };
                 var txtPassword = new PasswordBox()
                 {
                     FlowDirection = FlowDirection.LeftToRight,
-                    Header = _translationService._("Password"),
                     PlaceholderText = _translationService._("Enter password here")
                 };
                 if (_credentialEditMode == CredentialEditMode.Edit)
@@ -108,7 +105,13 @@ public sealed partial class KeyringDialog : ContentDialog
                 {
                     Orientation = Orientation.Vertical,
                     Spacing = 12,
-                    Children = { txtName, txtUrl, txtUsername, txtPassword }
+                    Children =
+                    {
+                        txtName,
+                        LocalizationHelper.CreateLabeledInput(txtUrl, _translationService._("URL"), FlowDirection),
+                        LocalizationHelper.CreateLabeledInput(txtUsername, _translationService._("Username"), FlowDirection),
+                        LocalizationHelper.CreateLabeledInput(txtPassword, _translationService._("Password"), FlowDirection)
+                    }
                 };
                 string? error = null;
                 do

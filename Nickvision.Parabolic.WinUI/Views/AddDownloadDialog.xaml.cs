@@ -151,7 +151,7 @@ public sealed partial class AddDownloadDialog : ContentDialog
         CmbCredential.ItemsSource = (await _controller.GetAvailableCredentialsAsync()).ToBindableSelectonItems();
         CmbCredential.SelectSelectionItem();
         ViewStack.SelectedIndex = (int)Pages.Discover;
-        DownloadScrollViewer.Height = double.NaN;
+        SetViewport(420);
         var fastDownload = _controller.FastDownload;
         PrimaryButtonText = _translationService._(fastDownload ? "Download" : "Discover");
         RowDownloadImmediatelyAsVideo.Visibility = fastDownload ? Visibility.Collapsed : Visibility.Visible;
@@ -190,6 +190,7 @@ public sealed partial class AddDownloadDialog : ContentDialog
         CloseButtonText = _translationService._("Cancel");
         DefaultButton = ContentDialogButton.None;
         ViewStack.SelectedIndex = (int)Pages.Loading;
+        SetViewport(320);
         DispatcherQueue.TryEnqueue(async () => await DiscoverMediaAsync(cancellationToken.Token));
         result = await base.ShowAsync();
         if (result == ContentDialogResult.Primary)
@@ -216,6 +217,22 @@ public sealed partial class AddDownloadDialog : ContentDialog
         TxtUrl.Text = url.ToString();
         IsPrimaryButtonEnabled = true;
         return await ShowAsync();
+    }
+
+    private void SetViewport(double width, double height = double.NaN)
+    {
+        DownloadScrollViewer.Width = width;
+        DownloadScrollViewer.Height = height;
+        var contentWidth = width - DownloadScrollViewer.Padding.Left - DownloadScrollViewer.Padding.Right;
+        ViewStack.Width = contentWidth;
+        ViewStack.MaxWidth = contentWidth;
+        // Bound every UserControl content presenter, not just the outer scroll
+        // viewer. Hidden pages must receive the same constraint before selection.
+        foreach (var stack in new[] { ViewStackSingle, ViewStackSingleSubtitles, ViewStackPlaylist, ViewStackPlaylistSubtitles })
+        {
+            stack.Width = contentWidth;
+            stack.MaxWidth = contentWidth;
+        }
     }
 
     private Credential? GetSelectedCredential()
@@ -247,7 +264,7 @@ public sealed partial class AddDownloadDialog : ContentDialog
         Title = _translationService._("Configure Download");
         // Share one viewport across quality, subtitles, and advanced options.
         // Short pages keep the same size; long pages scroll within the viewport.
-        DownloadScrollViewer.Height = 440;
+        SetViewport(498, 440);
         PrimaryButtonText = _translationService._("Download");
         CloseButtonText = _translationService._("Cancel");
         SecondaryButtonText = null;

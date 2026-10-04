@@ -17,13 +17,11 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </ContentDialog.Resources>
 
-    <!-- Bound measurement before switching flow direction. ContentDialog can measure
-         its content at the window width before clipping it to its 548-DIP surface.
-         Reserve 48 DIPs for the dialog padding and 20 for the right scrollbar.
-         Keep the width stable across URL edits. Configuration also sets a fixed
-         viewport height so switching tabs cannot resize the dialog. -->
-    <ScrollViewer x:Name="DownloadScrollViewer" Width="500" MaxWidth="500" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
-        <nickvision:ViewStack x:Name="ViewStack" FlowDirection="{Binding FlowDirection, ElementName=DialogRoot}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <!-- Bound the content as well as its viewport: an RTL child with a long
+         title or format can otherwise arrange beyond the clipped dialog.
+         Each stage selects its own width; configuration tabs share one size. -->
+    <ScrollViewer x:Name="DownloadScrollViewer" Width="420" MaxWidth="500" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+        <nickvision:ViewStack x:Name="ViewStack" Width="400" MaxWidth="400" FlowDirection="{Binding FlowDirection, ElementName=DialogRoot}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <nickvision:ViewStack.Pages>
                 <StackPanel Orientation="Vertical" Spacing="12" MinWidth="400">
                     <StackPanel Spacing="6">

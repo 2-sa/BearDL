@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Nickvision.Desktop.Application;
 using Nickvision.Desktop.Globalization;
 using Nickvision.Desktop.Network;
@@ -16,8 +18,10 @@ using Nickvision.Parabolic.WinUI.Controls;
 using Nickvision.Parabolic.WinUI.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.System;
+using Windows.Graphics;
 using WinRT;
 
 namespace Nickvision.Parabolic.WinUI.Views;
@@ -67,6 +71,7 @@ public sealed partial class MainWindow : Window
         AppWindow.SetIcon(_appInfo.Version!.IsPreview ? "./Assets/org.nickvision.tubeconverter-devel.ico" : "./Assets/org.nickvision.tubeconverter.ico");
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(TitleBar);
+        TitleBar.LayoutUpdated += (_, _) => UpdateTitleBarInputRegions();
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         if (MainGrid.FlowDirection == FlowDirection.RightToLeft)
         {
@@ -323,6 +328,55 @@ public sealed partial class MainWindow : Window
                 Theme.Dark => ElementTheme.Dark,
                 _ => ElementTheme.Default
             };
+        }
+    }
+
+    private void UpdateTitleBarInputRegions()
+    {
+        if (TitleBar.XamlRoot is null)
+        {
+            return;
+        }
+        // WinUI 2.0 marks the whole header as interactive, including empty
+        // space beside the menus. Only actual menus and buttons need input.
+        var regions = new List<RectInt32>();
+        var scale = TitleBar.XamlRoot.RasterizationScale;
+        void CollectControls(DependencyObject element)
+        {
+            if (element is UIElement uiElement &&
+                (uiElement.Visibility != Visibility.Visible || !uiElement.IsHitTestVisible))
+            {
+                return;
+            }
+            if (element is FrameworkElement control && (control is Button || control is MenuBar))
+            {
+                if (control.ActualWidth > 0 && control.ActualHeight > 0)
+                {
+                    var bounds = control.TransformToVisual((UIElement)Content).TransformBounds(
+                        new Windows.Foundation.Rect(0, 0, control.ActualWidth, control.ActualHeight));
+                    var left = (int)Math.Floor(bounds.Left * scale);
+                    var top = (int)Math.Floor(bounds.Top * scale);
+                    regions.Add(new RectInt32
+                    {
+                        X = left,
+                        Y = top,
+                        Width = (int)Math.Ceiling(bounds.Right * scale) - left,
+                        Height = (int)Math.Ceiling(bounds.Bottom * scale) - top
+                    });
+                }
+                return;
+            }
+            for (var i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
+            {
+                CollectControls(VisualTreeHelper.GetChild(element, i));
+            }
+        }
+        CollectControls(TitleBar);
+        CollectControls(RtlCaptionButtons);
+        var inputSource = InputNonClientPointerSource.GetForWindowId(AppWindow.Id);
+        if (!inputSource.GetRegionRects(NonClientRegionKind.Passthrough).SequenceEqual(regions))
+        {
+            inputSource.SetRegionRects(NonClientRegionKind.Passthrough, regions.ToArray());
         }
     }
 

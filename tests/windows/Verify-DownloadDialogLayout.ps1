@@ -5,6 +5,17 @@ param([int]$AppProcessId = 0)
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName UIAutomationClient
 Add-Type -AssemblyName UIAutomationTypes
+if (-not ('BearDLWindowDpi' -as [type])) {
+    Add-Type @'
+using System;
+using System.Runtime.InteropServices;
+public static class BearDLWindowDpi
+{
+    [DllImport("user32.dll")]
+    public static extern uint GetDpiForWindow(IntPtr window);
+}
+'@
+}
 
 $appProcess = if ($AppProcessId) {
     Get-Process -Id $AppProcessId
@@ -24,6 +35,12 @@ function Find-DialogElement([string]$Id) {
 $left = (Find-DialogElement 'BtnSingleRevertFilename').Current.BoundingRectangle.Left
 $right = (Find-DialogElement 'TxtSingleSaveFolder').Current.BoundingRectangle.Right
 $failures = @()
+$thumbnailWidth = (Find-DialogElement 'ImgSingleThumbnail').Current.BoundingRectangle.Width
+$scale = [BearDLWindowDpi]::GetDpiForWindow($appProcess.MainWindowHandle) / 96.0
+$expectedThumbnailWidth = 150 * $scale
+if ($thumbnailWidth -lt ($expectedThumbnailWidth - 2)) {
+    $failures += "Thumbnail is clipped (visible width $thumbnailWidth, expected $expectedThumbnailWidth)."
+}
 foreach ($id in @('ImgSingleThumbnail', 'NavViewItemSingleGeneral',
                    'CmbSingleFileType', 'CmbSingleVideoFormat', 'CmbSingleAudioFormat')) {
     $element = Find-DialogElement $id

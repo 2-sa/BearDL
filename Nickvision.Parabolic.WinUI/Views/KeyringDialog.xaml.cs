@@ -49,7 +49,7 @@ public sealed partial class KeyringDialog : ContentDialog
         Title = _translationService._("Keyring");
         PrimaryButtonText = _translationService._("Close");
         SearchBox.PlaceholderText = _translationService._("Search...");
-        BtnAdd.Label = _translationService._("Add");
+        LblAdd.Text = _translationService._("Add");
         StatusNone.Title = _translationService._("No Credentials");
         StatusNone.Description = _translationService._("There are no credentials in your keyring");
         StatusNoneSearch.Title = _translationService._("No Credentials");

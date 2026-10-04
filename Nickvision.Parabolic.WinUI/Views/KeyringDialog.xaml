@@ -10,7 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" Style="{StaticResource DefaultContentDialogStyle}"
     DefaultButton="Primary" Loaded="Dialog_Loaded">
-    <Grid ColumnSpacing="24">
+    <Grid Width="498" MaxWidth="498" ColumnSpacing="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -19,25 +19,40 @@
 
         <AutoSuggestBox x:Name="SearchBox" Grid.Row="0" QueryIcon="Find" TextChanged="SearchBox_TextChanged"/>
 
-        <CommandBar Grid.Row="1" DefaultLabelPosition="Right" OverflowButtonVisibility="Collapsed">
-            <AppBarButton x:Name="BtnAdd" Click="Add">
-                <AppBarButton.Icon>
-                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE710;"/>
-                </AppBarButton.Icon>
-            </AppBarButton>
-        </CommandBar>
+        <Button x:Name="BtnAdd" Grid.Row="1" HorizontalAlignment="Left" Margin="0,8,0,8" Click="Add">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE710;"/>
+                <TextBlock x:Name="LblAdd"/>
+            </StackPanel>
+        </Button>
 
         <ScrollViewer Grid.Row="2" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-            <nickvision:ViewStack x:Name="ViewStack" FlowDirection="{Binding FlowDirection, ElementName=DialogRoot}">
+            <nickvision:ViewStack x:Name="ViewStack" Width="478" MaxWidth="478" FlowDirection="{Binding FlowDirection, ElementName=DialogRoot}">
                 <nickvision:ViewStack.Pages>
                     <nickvision:StatusPage x:Name="StatusNone" Margin="0,24,0,24" Glyph="&#xF540;" IsCompact="True"/>
 
                     <nickvision:StatusPage x:Name="StatusNoneSearch" Margin="0,24,0,24" Glyph="&#xE721;" IsCompact="True"/>
 
-                    <ListView x:Name="ListCredentials" SelectionMode="None">
+                    <ListView x:Name="ListCredentials" SelectionMode="None" Padding="0">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Padding" Value="0"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="parabolic:BindableCredentialSelectionItem">
-                                <community:SettingsCard Margin="-12,0,-12,0" Width="500" Header="{x:Bind Label, Mode=OneWay}" Description="{x:Bind Value.Url, Mode=OneWay}">
+                                <community:SettingsCard HorizontalAlignment="Stretch">
+                                    <community:SettingsCard.Resources>
+                                        <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                        <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                    </community:SettingsCard.Resources>
+                                    <community:SettingsCard.Header>
+                                        <TextBlock Text="{x:Bind Label, Mode=OneWay}" TextWrapping="Wrap"/>
+                                    </community:SettingsCard.Header>
+                                    <community:SettingsCard.Description>
+                                        <TextBlock Text="{x:Bind Value.Url, Mode=OneWay}" FlowDirection="LeftToRight" TextWrapping="Wrap"/>
+                                    </community:SettingsCard.Description>
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <Button Click="Edit" Tag="{x:Bind Value, Mode=OneWay}">
                                             <Button.Content>

@@ -123,6 +123,11 @@ public class MainWindowController
     public async Task CheckForUpdatesAsync(bool showNotificationForNoUpdates)
     {
         _logger.LogInformation("Checking for updates...");
+        if (showNotificationForNoUpdates)
+        {
+            // The shared updater service otherwise reuses GitHub's release list for up to six hours.
+            RefreshAppReleaseCache();
+        }
         var stableAppVersion = await _updaterService.GetLatestStableVersionAsync();
         var stableYtdlpVersion = await _ytdlpExecutableService.GetLatestStableVersionAsync();
         var stableDenoVersion = await _denoExecutableService.GetLatestStableVersionAsync();
@@ -185,6 +190,32 @@ public class MainWindowController
             {
                 _notificationService.Send(new AppNotification(_translationService._("No update available"), NotificationSeverity.Warning));
             }
+        }
+    }
+
+    private void RefreshAppReleaseCache()
+    {
+        if (_appInfo.SourceRepository is null)
+        {
+            return;
+        }
+        var repositoryParts = _appInfo.SourceRepository.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (repositoryParts.Length < 2)
+        {
+            return;
+        }
+        var cachePath = Path.Combine(UserDirectories.Cache, "Nickvision", $"{repositoryParts[0]}-{repositoryParts[1]}-releases.json");
+        try
+        {
+            if (File.Exists(cachePath))
+            {
+                File.Delete(cachePath);
+                _logger.LogInformation("Cleared cached GitHub releases before a manual update check.");
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning($"Unable to clear cached GitHub releases before a manual update check: {e}");
         }
     }
 

@@ -1,5 +1,19 @@
 # Repository Guidelines
 
+## Start Here & Current Authorization
+
+Read [docs/CURRENT_TASK.md](docs/CURRENT_TASK.md) before making changes, and
+[docs/RELEASING.md](docs/RELEASING.md) before building or delivering an update.
+Verify the current Git status, branch, remote, and workflow state rather than
+assuming the handoff snapshot is still current. Preserve pending local changes.
+
+The user's latest instruction is to keep changes local and **not make a commit
+until explicitly asked**. Do not commit, push, or start a new distributable build
+without that authorization. When the user later authorizes delivery, target
+`origin` (`2-sa/BearDL`) and `main` unless they explicitly choose another target.
+Update the current-task document after meaningful progress so a new conversation
+can continue without reconstructing the previous chat.
+
 ## Repository Identity & Goal
 
 BearDL ([2-sa/BearDL](https://github.com/2-sa/BearDL), `origin`) forks [NickvisionApps/Parabolic](https://github.com/NickvisionApps/Parabolic). Target contributions to BearDL unless explicitly contributing upstream. Existing `Nickvision.Parabolic.*` names are inherited.
@@ -20,6 +34,11 @@ This .NET 10 yt-dlp frontend follows MVC:
 ## Build, Test, and Development Commands
 
 Prefer GitHub Actions for dependency installation, builds, automated checks, and packaging. Keep the local machine focused on editing, source inspection, and lightweight Git checks; do not install build toolchains or run local builds unless the user requests it. Use the fork's `.github/workflows/windows.yml` for Windows builds and deliver its artifacts for visual testing.
+
+Ask first and wait for explicit permission before downloading or installing any
+program, SDK, runtime, build tool, or development certificate on the user's
+device. A request to build or update the app does not authorize installing tools.
+Keep toolchain installation and certificate setup on GitHub runners.
 
 Commands run from the repository root:
 
@@ -43,9 +62,25 @@ Apply the `arabic-ui` skill to Arabic interface work. Derive direction from the 
 
 Isolate URLs, paths, and numeric expressions as LTR where needed without reversing stored text. Use concise Arabic and gettext plural forms.
 
+Keep Arabic field labels in the language-directed container; give LTR direction
+only to the URL, path, username, password, or argument input. Use separate labels
+with `AutomationProperties.LabeledBy` when an LTR input would move its header to
+the wrong side. `LocalizationHelper.CreateLabeledInput` supports dynamic forms.
+
 Keep toggle labels and switches in one horizontal row: Arabic labels on the right, switches on the left. Reserve a separate column for the switch; allow long labels to wrap within their own column. Disable responsive stacking for toggle settings cards. Preserve accessible labels and dependent settings.
 
 Keep vertical scrollbars on the right in every window. Give scrolling containers LTR direction and reserve scrollbar space; explicitly restore the UI language direction on their content.
+
+Constrain the content width as well as the scroll viewport when direction changes
+inside a scrolling container. Use `ScrollViewportHelper.ConstrainContentWidth`
+to account for padding and content margins as the viewport changes. Avoid fixed
+500-DIP list cards and negative margins that make RTL text or icons extend beyond
+the visible area. Stretch list item content within the available width.
+
+Keep the initial URL dialog and media-discovery progress dialog compact. Quality,
+subtitle, and advanced pages share a fixed configuration viewport so selecting a
+tab cannot shrink or enlarge the dialog. Empty title-bar space must remain
+draggable; menus and caption buttons must retain their own input regions.
 
 ## Testing Guidelines
 

@@ -1,8 +1,36 @@
 # BearDL automatic releases
 
+Read [CURRENT_TASK.md](CURRENT_TASK.md) first. The user currently requires all new
+edits to stay local until explicitly asking for a commit. Do not interpret this
+release guide as authorization to commit, push, install tools, or start a build.
+When delivery is authorized, use `2-sa/BearDL` and the user's chosen `main` branch.
+Keep SDKs, build tools, dependencies, and certificate setup on GitHub runners.
+Ask and wait for explicit permission before downloading or installing software
+on the user's device; a build request does not grant that permission.
+
 `.github/workflows/release.yml` builds and publishes every push to `main`.
 Run **Build and release BearDL** manually to build the selected branch as well.
 Pull request checks and standalone platform workflows produce artifacts only.
+
+## Windows download before release publication
+
+Windows jobs upload `BearDLSetup-x64` and `BearDLSetup-arm64` artifacts as soon as
+their packaging completes. They can be downloaded while Linux or macOS jobs are
+still running; there is no need to wait for the final release job.
+
+Get the artifact IDs with:
+
+```powershell
+gh api repos/2-sa/BearDL/actions/runs/RUN_ID/artifacts
+```
+
+Give the verified link
+`https://github.com/2-sa/BearDL/actions/runs/RUN_ID/artifacts/ARTIFACT_ID`.
+Explain that this downloads a ZIP containing the EXE, rather than presenting it
+as a direct EXE link. For a published release, use the verified tag-specific
+`https://github.com/2-sa/BearDL/releases/download/VERSION/BearDLSetup-x64.exe`
+link. Check that it belongs to the commit containing the requested fix; the
+`latest` URL can still point to an older build until publication finishes.
 
 ## Version and publication
 

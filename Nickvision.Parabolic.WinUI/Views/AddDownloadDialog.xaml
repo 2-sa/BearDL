@@ -45,7 +45,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock x:Name="LblUseAuthentication" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                        <ToggleSwitch x:Name="TglUseAuthentication" Grid.Column="1" FlowDirection="LeftToRight" parabolic:ToggleSwitchHelper.Direction="{Binding FlowDirection, ElementName=DialogRoot}" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
+                        <ToggleSwitch x:Name="TglUseAuthentication" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                     </Grid>
 
                     <StackPanel Orientation="Vertical" Spacing="6" Visibility="{x:Bind TglUseAuthentication.IsOn, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -74,7 +74,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock x:Name="LblDownloadImmediatelyAsVideo" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                        <ToggleSwitch x:Name="TglDownloadImmediatelyAsVideo" Grid.Column="1" FlowDirection="LeftToRight" parabolic:ToggleSwitchHelper.Direction="{Binding FlowDirection, ElementName=DialogRoot}" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent="" Toggled="TglDownloadImmediatelyAsVideo_Toggled"/>
+                        <ToggleSwitch x:Name="TglDownloadImmediatelyAsVideo" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent="" Toggled="TglDownloadImmediatelyAsVideo_Toggled"/>
                     </Grid>
 
                     <Grid x:Name="RowDownloadImmediatelyAsAudio" ColumnSpacing="16" MinHeight="32">
@@ -83,7 +83,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock x:Name="LblDownloadImmediatelyAsAudio" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                        <ToggleSwitch x:Name="TglDownloadImmediatelyAsAudio" Grid.Column="1" FlowDirection="LeftToRight" parabolic:ToggleSwitchHelper.Direction="{Binding FlowDirection, ElementName=DialogRoot}" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent="" Toggled="TglDownloadImmediatelyAsAudio_Toggled"/>
+                        <ToggleSwitch x:Name="TglDownloadImmediatelyAsAudio" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent="" Toggled="TglDownloadImmediatelyAsAudio_Toggled"/>
                     </Grid>
 
                     <TeachingTip x:Name="TeachDownloadImmediately" PreferredPlacement="Bottom"/>
@@ -255,7 +255,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock x:Name="LblSingleSplitChapters" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                    <ToggleSwitch x:Name="TglSingleSplitChapters" Grid.Column="1" FlowDirection="LeftToRight" parabolic:ToggleSwitchHelper.Direction="{Binding FlowDirection, ElementName=DialogRoot}" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
+                                    <ToggleSwitch x:Name="TglSingleSplitChapters" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                                 </Grid>
 
                                 <Grid ColumnSpacing="16" MinHeight="32">
@@ -264,7 +264,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock x:Name="LblSingleExportDescription" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                    <ToggleSwitch x:Name="TglSingleExportDescription" Grid.Column="1" FlowDirection="LeftToRight" parabolic:ToggleSwitchHelper.Direction="{Binding FlowDirection, ElementName=DialogRoot}" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
+                                    <ToggleSwitch x:Name="TglSingleExportDescription" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                                 </Grid>
 
                                 <Grid ColumnSpacing="16" MinHeight="32">
@@ -273,7 +273,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock x:Name="LblSingleExcludeFromHistory" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                    <ToggleSwitch x:Name="TglSingleExcludeFromHistory" Grid.Column="1" FlowDirection="LeftToRight" parabolic:ToggleSwitchHelper.Direction="{Binding FlowDirection, ElementName=DialogRoot}" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
+                                    <ToggleSwitch x:Name="TglSingleExcludeFromHistory" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                                 </Grid>
 
                                 <ComboBox x:Name="CmbSinglePostProcessorArgument" HorizontalAlignment="Stretch">
@@ -435,7 +435,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock x:Name="LblPlaylistReverseDownloadOrder" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                    <ToggleSwitch x:Name="TglPlaylistReverseDownloadOrder" Grid.Column="1" FlowDirection="LeftToRight" parabolic:ToggleSwitchHelper.Direction="{Binding FlowDirection, ElementName=DialogRoot}" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
+                                    <ToggleSwitch x:Name="TglPlaylistReverseDownloadOrder" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                                 </Grid>
 
                                 <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ColumnSpacing="16" MinHeight="32">
@@ -444,7 +444,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock x:Name="LblPlaylistNumberTitles" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                    <ToggleSwitch x:Name="TglPlaylistNumberTitles" Grid.Column="1" FlowDirection="LeftToRight" parabolic:ToggleSwitchHelper.Direction="{Binding FlowDirection, ElementName=DialogRoot}" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent="" Toggled="TglPlaylistNumberTitles_Toggled"/>
+                                    <ToggleSwitch x:Name="TglPlaylistNumberTitles" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent="" Toggled="TglPlaylistNumberTitles_Toggled"/>
                                 </Grid>
 
                                 <TeachingTip x:Name="TeachPlaylistNumberTitles" PreferredPlacement="Bottom" Target="{x:Bind TglPlaylistNumberTitles}"/>
@@ -547,7 +547,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock x:Name="LblPlaylistExportM3U" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                    <ToggleSwitch x:Name="TglPlaylistExportM3U" Grid.Column="1" FlowDirection="LeftToRight" parabolic:ToggleSwitchHelper.Direction="{Binding FlowDirection, ElementName=DialogRoot}" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
+                                    <ToggleSwitch x:Name="TglPlaylistExportM3U" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                                 </Grid>
                                 
                                 <Grid ColumnSpacing="16" MinHeight="32">
@@ -556,7 +556,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock x:Name="LblPlaylistSplitChapters" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                    <ToggleSwitch x:Name="TglPlaylistSplitChapters" Grid.Column="1" FlowDirection="LeftToRight" parabolic:ToggleSwitchHelper.Direction="{Binding FlowDirection, ElementName=DialogRoot}" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
+                                    <ToggleSwitch x:Name="TglPlaylistSplitChapters" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                                 </Grid>
 
                                 <Grid ColumnSpacing="16" MinHeight="32">
@@ -565,7 +565,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock x:Name="LblPlaylistExportDescription" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                    <ToggleSwitch x:Name="TglPlaylistExportDescription" Grid.Column="1" FlowDirection="LeftToRight" parabolic:ToggleSwitchHelper.Direction="{Binding FlowDirection, ElementName=DialogRoot}" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
+                                    <ToggleSwitch x:Name="TglPlaylistExportDescription" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                                 </Grid>
 
                                 <Grid ColumnSpacing="16" MinHeight="32">
@@ -574,7 +574,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock x:Name="LblPlaylistExcludeFromHistory" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                    <ToggleSwitch x:Name="TglPlaylistExcludeFromHistory" Grid.Column="1" FlowDirection="LeftToRight" parabolic:ToggleSwitchHelper.Direction="{Binding FlowDirection, ElementName=DialogRoot}" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
+                                    <ToggleSwitch x:Name="TglPlaylistExcludeFromHistory" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                                 </Grid>
 
                                 <ComboBox x:Name="CmbPlaylistPostProcessorArgument" HorizontalAlignment="Stretch">

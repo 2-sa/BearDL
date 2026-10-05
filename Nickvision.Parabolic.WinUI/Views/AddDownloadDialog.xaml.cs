@@ -58,6 +58,19 @@ public sealed partial class AddDownloadDialog : ContentDialog
     {
         InitializeComponent();
         LocalizationHelper.Apply(this, translationService);
+        ToggleSwitchHelper.Apply(FlowDirection,
+            TglUseAuthentication,
+            TglDownloadImmediatelyAsVideo,
+            TglDownloadImmediatelyAsAudio,
+            TglSingleSplitChapters,
+            TglSingleExportDescription,
+            TglSingleExcludeFromHistory,
+            TglPlaylistReverseDownloadOrder,
+            TglPlaylistNumberTitles,
+            TglPlaylistExportM3U,
+            TglPlaylistSplitChapters,
+            TglPlaylistExportDescription,
+            TglPlaylistExcludeFromHistory);
         _controller = controller;
         _translationService = translationService;
         _discoveryContext = null;

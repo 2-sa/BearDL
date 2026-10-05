@@ -7,29 +7,21 @@ namespace Nickvision.Parabolic.WinUI.Helpers;
 
 public static class ToggleSwitchHelper
 {
-    public static readonly DependencyProperty DirectionProperty = DependencyProperty.RegisterAttached(
-        "Direction", typeof(FlowDirection), typeof(ToggleSwitchHelper),
-        new PropertyMetadata(FlowDirection.LeftToRight, OnDirectionChanged));
-
-    public static FlowDirection GetDirection(DependencyObject element) => (FlowDirection)element.GetValue(DirectionProperty);
-
-    public static void SetDirection(DependencyObject element, FlowDirection value) => element.SetValue(DirectionProperty, value);
-
-    private static void OnDirectionChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+    public static void Apply(FlowDirection direction, params ToggleSwitch[] toggles)
     {
-        if (sender is not ToggleSwitch toggle)
+        // Use the localized owner's direction directly. ElementName bindings
+        // inside ViewStack.Pages depend on the page being attached to a namescope;
+        // inactive pages must receive the same direction before they are shown.
+        foreach (var toggle in toggles)
         {
-            return;
+            // Labels are separate and OnContent/OffContent are empty. Reflect
+            // the native animation and input surface without changing IsOn.
+            toggle.FlowDirection = FlowDirection.LeftToRight;
+            toggle.RenderTransformOrigin = new Point(0.5, 0.5);
+            toggle.RenderTransform = new ScaleTransform
+            {
+                ScaleX = direction == FlowDirection.RightToLeft ? -1 : 1
+            };
         }
-        // These switches have separate labels and empty on/off content. Mirror
-        // the native control, including its animation and drag surface, without
-        // reversing text or changing IsOn. Keep template layout LTR to avoid
-        // combining implicit RTL layout with this explicit reflection.
-        toggle.FlowDirection = FlowDirection.LeftToRight;
-        toggle.RenderTransformOrigin = new Point(0.5, 0.5);
-        toggle.RenderTransform = new ScaleTransform
-        {
-            ScaleX = (FlowDirection)args.NewValue == FlowDirection.RightToLeft ? -1 : 1
-        };
     }
 }

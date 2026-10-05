@@ -27,6 +27,25 @@ public sealed partial class SettingsPage : Page
     {
         InitializeComponent();
         LocalizationHelper.Apply(this, translationService);
+        ToggleSwitchHelper.Apply(FlowDirection,
+            TglPreviewUpdates,
+            TglPreventSuspend,
+            TglFastDownload,
+            TglOverwriteFiles,
+            TglIncludeMediaId,
+            TglIncludeAutoSubtitles,
+            TglIncludeSuperResolutions,
+            TglUsePartFiles,
+            TglUseSponsorBlock,
+            TglLimitSpeed,
+            TglUseAria,
+            TglTranslateMetadataAndChapters,
+            TglEmbedMetadata,
+            TglRemoveSourceData,
+            TglEmbedThumbnails,
+            TglCropAudioThumbnails,
+            TglEmbedChapters,
+            TglEmbedSubtitles);
         _controller = controller;
         _translationService = translationService;
         _constructing = true;

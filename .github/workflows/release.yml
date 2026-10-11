@@ -57,14 +57,14 @@ jobs:
         run: |
           set -euo pipefail
           mkdir release
-          find artifacts -type f \( -name 'BearDLSetup-*.exe' -o -name 'BearDL-macOS-*.zip' -o -name 'BearDL-linux-*.flatpak' \) -exec cp {} release/ \;
+          find artifacts -type f \( -name 'BearDLSetup-*.exe' -o -name 'BearDL-macOS-*.zip' -o -name 'BearDL-macOS-*.dmg' -o -name 'BearDL-linux-*.flatpak' \) -exec cp {} release/ \;
           for arch in x64 arm64; do
             (cd "artifacts/BearDLPortable-$arch" && zip -qr "../../release/BearDLPortable-$arch.zip" .)
           done
-          for file in BearDLSetup-x64.exe BearDLSetup-arm64.exe BearDLPortable-x64.zip BearDLPortable-arm64.zip BearDL-macOS-x64.zip BearDL-macOS-arm64.zip BearDL-linux-x86_64.flatpak BearDL-linux-aarch64.flatpak; do
+          for file in BearDLSetup-x64.exe BearDLSetup-arm64.exe BearDLPortable-x64.zip BearDLPortable-arm64.zip BearDL-macOS-x64.zip BearDL-macOS-arm64.zip BearDL-macOS-x64.dmg BearDL-macOS-arm64.dmg BearDL-linux-x86_64.flatpak BearDL-linux-aarch64.flatpak; do
             test -s "release/$file"
           done
-          (cd release && sha256sum *.exe *.zip *.flatpak > SHA256SUMS.txt)
+          (cd release && sha256sum *.exe *.zip *.dmg *.flatpak > SHA256SUMS.txt)
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -76,7 +76,7 @@ jobs:
           BearDL builds for Windows, macOS, and Linux from the same source commit.
 
           - Windows: x64/ARM64 installers and portable ZIPs.
-          - macOS: Apple Silicon (arm64) and Intel (x64); macOS 15 or later. Extract the ZIP and move BearDL.app to Applications. These bundles use ad-hoc signing and are not Apple-notarized.
+          - macOS: Apple Silicon (arm64) and Intel (x64); macOS 15 or later. Open the DMG and drag BearDL.app to Applications. ZIP bundles are also available. These bundles use ad-hoc signing and are not Apple-notarized.
           - Linux: x86_64/aarch64 Flatpak bundles.
           - Includes Arabic RTL improvements and optional Fast Download (best quality, MP4 video, full playlists).
           - SHA256SUMS.txt contains checksums for all packages.

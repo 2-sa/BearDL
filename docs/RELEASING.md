@@ -46,6 +46,7 @@ assets together:
 - `BearDLSetup-x64.exe`, `BearDLSetup-arm64.exe`
 - `BearDLPortable-x64.zip`, `BearDLPortable-arm64.zip`
 - `BearDL-macOS-x64.zip`, `BearDL-macOS-arm64.zip`
+- `BearDL-macOS-x64.dmg`, `BearDL-macOS-arm64.dmg`
 - `BearDL-linux-x86_64.flatpak`, `BearDL-linux-aarch64.flatpak`
 - `SHA256SUMS.txt`
 
@@ -58,6 +59,13 @@ upstream projects. Draft releases and Actions artifacts are not application upda
 
 Windows bundles include runtime and media tools. macOS ZIPs preserve executable
 permissions and contain the app and dependencies; builds target macOS 15 or later.
+The macOS workflow also creates compressed read-only DMGs with an Applications
+shortcut for drag-and-drop installation. It verifies the disk image, mounts it
+read-only, and checks the bundled app's signature before uploading both the DMG
+and ZIP. Apple Silicon users should select `BearDL-macOS-arm64.dmg`; Intel users
+should select `BearDL-macOS-x64.dmg`. Changing the package format does not fix or
+verify startup crashes.
+
 The macOS app is ad-hoc signed, not Apple-notarized. Flatpak requires its referenced
 GNOME runtime. CI success does not establish visual or download correctness.
 

@@ -58,8 +58,27 @@ jobs:
           codesign --force --deep --sign - resources/macos/BearDL.app
           codesign --verify --deep --strict resources/macos/BearDL.app
           ditto -c -k --sequesterRsrc --keepParent resources/macos/BearDL.app BearDL-macOS-${{ matrix.variant.arch }}.zip
+      - name: Create and verify DMG
+        env:
+          PACKAGE_ARCH: ${{ matrix.variant.arch }}
+        run: |
+          set -euo pipefail
+          staging_dir=$(mktemp -d "$RUNNER_TEMP/beardl-dmg.XXXXXX")
+          mount_dir=$(mktemp -d "$RUNNER_TEMP/beardl-dmg-mount.XXXXXX")
+          dmg_path="$GITHUB_WORKSPACE/BearDL-macOS-$PACKAGE_ARCH.dmg"
+          ditto resources/macos/BearDL.app "$staging_dir/BearDL.app"
+          ln -s /Applications "$staging_dir/Applications"
+          hdiutil create -volname "BearDL $RELEASE_VERSION" -srcfolder "$staging_dir" -format UDZO "$dmg_path"
+          hdiutil verify "$dmg_path"
+          hdiutil attach "$dmg_path" -readonly -nobrowse -mountpoint "$mount_dir"
+          trap 'hdiutil detach "$mount_dir"' EXIT
+          test -d "$mount_dir/BearDL.app"
+          test "$(readlink "$mount_dir/Applications")" = /Applications
+          codesign --verify --deep --strict "$mount_dir/BearDL.app"
       - uses: actions/upload-artifact@v4
         with:
-          path: ${{ github.workspace }}/BearDL-macOS-${{ matrix.variant.arch }}.zip
+          path: |
+            ${{ github.workspace }}/BearDL-macOS-${{ matrix.variant.arch }}.zip
+            ${{ github.workspace }}/BearDL-macOS-${{ matrix.variant.arch }}.dmg
           name: BearDL-macOS-${{ matrix.variant.arch }}
           if-no-files-found: error

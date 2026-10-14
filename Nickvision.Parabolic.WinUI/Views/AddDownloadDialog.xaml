@@ -39,6 +39,20 @@
                         </Button.Content>
                     </Button>
 
+                    <StackPanel x:Name="RowFastSaveFolder" Spacing="6" Visibility="Collapsed">
+                        <TextBlock x:Name="LblFastSaveFolder"/>
+                        <Grid ColumnSpacing="6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TxtFastSaveFolder" Grid.Column="0" FlowDirection="LeftToRight" IsReadOnly="True" AutomationProperties.LabeledBy="{Binding ElementName=LblFastSaveFolder}"/>
+                            <Button x:Name="BtnFastSelectSaveFolder" Grid.Column="1" Click="BtnFastSelectSaveFolder_Click">
+                                <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B7;" FontSize="18"/>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+
                     <Grid ColumnSpacing="16" MinHeight="32">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>

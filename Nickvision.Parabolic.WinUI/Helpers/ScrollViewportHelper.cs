@@ -47,7 +47,13 @@ public static class ScrollViewportHelper
         // viewport, including its reserved scrollbar space and content margins.
         var width = Math.Max(0, scrollViewer.ActualWidth - scrollViewer.Padding.Left - scrollViewer.Padding.Right
             - content.Margin.Left - content.Margin.Right);
-        content.Width = width;
-        content.MaxWidth = width;
+        if (content.Width != width)
+        {
+            content.Width = width;
+        }
+        if (content.MaxWidth != width)
+        {
+            content.MaxWidth = width;
+        }
     }
 }

@@ -1,10 +1,14 @@
-name: Subtitle plugin checks
+name: Download and subtitle checks
 on:
   workflow_call:
   pull_request:
     paths:
       - 'resources/yt-dlp-plugins/**'
       - 'tests/plugins/**'
+      - 'tests/duplicates/**'
+      - 'Nickvision.Parabolic.Shared/Models/DuplicateDownload.cs'
+      - 'Nickvision.Parabolic.Shared/Services/DownloadService.cs'
+      - 'Nickvision.Parabolic.Shared/Controllers/AddDownloadDialogController.cs'
       - '.github/workflows/plugins.yml'
   workflow_dispatch:
 
@@ -12,6 +16,16 @@ permissions:
   contents: read
 
 jobs:
+  duplicate-downloads:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+      - name: Check duplicate download detection
+        run: dotnet run --project tests/duplicates/DuplicateDownloadChecks.csproj --configuration Release
+
   subtitles:
     runs-on: ubuntu-latest
     strategy:

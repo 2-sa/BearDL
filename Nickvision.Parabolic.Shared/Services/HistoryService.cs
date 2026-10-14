@@ -4,6 +4,7 @@ using Nickvision.Parabolic.Shared.Helpers;
 using Nickvision.Parabolic.Shared.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Nickvision.Parabolic.Shared.Services;
@@ -119,6 +120,41 @@ public class HistoryService : IHistoryService
             _logger.LogError("Failed to clear historic downloads.");
         }
         return res;
+    }
+
+    public async Task<IReadOnlyDictionary<Uri, string>> GetSavedFilesAsync(IReadOnlyCollection<Uri> urls)
+    {
+        var files = new Dictionary<Uri, string>();
+        var length = Length;
+        if (urls.Count == 0 || length == HistoryLength.Never)
+        {
+            return files;
+        }
+        await EnsureTableAsync();
+        var now = DateTime.Now;
+        // Use the URL primary key, and bound parameters per query for playlists.
+        // Do not load, sort, prune, or check files from unrelated history rows.
+        foreach (var batch in urls.Chunk(256))
+        {
+            using var command = await _databaseService.SelectAllFromTableAsync(TableName);
+            var parameters = new string[batch.Length];
+            for (var i = 0; i < batch.Length; i++)
+            {
+                parameters[i] = $"@url{i}";
+                command.Parameters.AddWithValue(parameters[i], batch[i].ToString());
+            }
+            command.CommandText = $"SELECT url, path, downloadedOn FROM {TableName} WHERE url IN ({string.Join(",", parameters)})";
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                if (length != HistoryLength.Forever && (now - DateTime.Parse(reader.GetString(2))).TotalDays > (int)length)
+                {
+                    continue;
+                }
+                files[new Uri(reader.GetString(0))] = reader.GetString(1);
+            }
+        }
+        return files;
     }
 
     public async Task<IReadOnlyList<HistoricDownload>> GetAllAsync()

@@ -3,6 +3,7 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Windows.Storage.Pickers;
 using Nickvision.Desktop.Globalization;
@@ -24,6 +25,7 @@ namespace Nickvision.Parabolic.WinUI.Views;
 
 public sealed partial class AddDownloadDialog : ContentDialog
 {
+    private bool _isOpen;
     private enum Pages
     {
         Discover = 0,
@@ -72,6 +74,9 @@ public sealed partial class AddDownloadDialog : ContentDialog
             TglPlaylistExportDescription,
             TglPlaylistExcludeFromHistory);
         _controller = controller;
+        _controller.ConfirmDuplicateDownloadAsync = ConfirmDuplicateDownloadAsync;
+        Opened += (_, _) => _isOpen = true;
+        Closed += (_, _) => _isOpen = false;
         _translationService = translationService;
         _discoveryContext = null;
         _isUpdatingSubtitleSelection = false;
@@ -84,6 +89,9 @@ public sealed partial class AddDownloadDialog : ContentDialog
         TxtUrl.PlaceholderText = _translationService._("Enter media url here");
         LblSelectBatchFile.Text = _translationService._("Select Batch File");
         LblUseAuthentication.Text = _translationService._("Use Authentication");
+        LblFastSaveFolder.Text = _translationService._("Save Folder");
+        ToolTipService.SetToolTip(BtnFastSelectSaveFolder, _translationService._("Select Save Folder"));
+        AutomationProperties.SetName(BtnFastSelectSaveFolder, _translationService._("Select Save Folder"));
         AutomationProperties.SetName(TglUseAuthentication, _translationService._("Use Authentication"));
         CmbCredential.Header = _translationService._("Credential");
         LblUsername.Text = _translationService._("Username");
@@ -166,6 +174,8 @@ public sealed partial class AddDownloadDialog : ContentDialog
         ViewStack.SelectedIndex = (int)Pages.Discover;
         SetViewport(420);
         var fastDownload = _controller.FastDownload;
+        RowFastSaveFolder.Visibility = fastDownload ? Visibility.Visible : Visibility.Collapsed;
+        TxtFastSaveFolder.Text = _controller.PreviousSaveFolder;
         PrimaryButtonText = _translationService._(fastDownload ? "Download" : "Discover");
         RowDownloadImmediatelyAsVideo.Visibility = fastDownload ? Visibility.Collapsed : Visibility.Visible;
         RowDownloadImmediatelyAsAudio.Visibility = fastDownload ? Visibility.Collapsed : Visibility.Visible;
@@ -194,7 +204,7 @@ public sealed partial class AddDownloadDialog : ContentDialog
         {
             // The URL dialog has closed. Prepare and queue every item in the
             // background; this task handles failures through app notifications.
-            _ = _controller.AddFastDownloadsAsync(new Uri(TxtUrl.Text), TglUseAuthentication.IsOn ? GetSelectedCredential() : null);
+            _ = _controller.AddFastDownloadsAsync(new Uri(TxtUrl.Text), TglUseAuthentication.IsOn ? GetSelectedCredential() : null, TxtFastSaveFolder.Text);
             return result;
         }
         var cancellationToken = new CancellationTokenSource();
@@ -309,8 +319,8 @@ public sealed partial class AddDownloadDialog : ContentDialog
             TxtSingleEndTime.Text = _discoveryContext.Items[0].EndTime;
             if (TglDownloadImmediatelyAsVideo.IsOn || TglDownloadImmediatelyAsAudio.IsOn)
             {
-                await DownloadSingleAsync();
                 Hide();
+                await DownloadSingleAsync();
             }
         }
         else
@@ -343,10 +353,82 @@ public sealed partial class AddDownloadDialog : ContentDialog
             CmbPlaylistPostProcessorArgument.SelectSelectionItem();
             if (TglDownloadImmediatelyAsVideo.IsOn || TglDownloadImmediatelyAsAudio.IsOn)
             {
-                await DownloadPlaylistAsync();
                 Hide();
+                await DownloadPlaylistAsync();
             }
         }
+    }
+
+    private async Task<bool> ConfirmDuplicateDownloadAsync(string message)
+    {
+        // Immediate-download discovery may still have its dialog open.
+        if (_isOpen)
+        {
+            var closed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            void OnClosed(ContentDialog sender, ContentDialogClosedEventArgs args) => closed.TrySetResult(true);
+            Closed += OnClosed;
+            Hide();
+            await closed.Task;
+            Closed -= OnClosed;
+        }
+        // Fast discovery can finish while a different app dialog is open.
+        // Wait for that dialog instead of opening two ContentDialogs at once.
+        while (VisualTreeHelper.GetOpenPopupsForXamlRoot(XamlRoot)
+            .Select(popup => FindContentDialog(popup.Child))
+            .FirstOrDefault(item => item is not null) is ContentDialog openDialog)
+        {
+            var closed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            void OnClosed(ContentDialog sender, ContentDialogClosedEventArgs args) => closed.TrySetResult(true);
+            openDialog.Closed += OnClosed;
+            await closed.Task;
+            openDialog.Closed -= OnClosed;
+        }
+        var dialog = new ContentDialog
+        {
+            Title = _translationService._("Duplicate Download"),
+            Content = new ScrollViewer
+            {
+                FlowDirection = FlowDirection.LeftToRight,
+                Padding = new Thickness(0, 0, 20, 0),
+                MaxHeight = 320,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Content = new TextBlock
+                {
+                    Text = message,
+                    FlowDirection = FlowDirection,
+                    TextWrapping = TextWrapping.Wrap
+                }
+            },
+            PrimaryButtonText = _translationService._("Download Again"),
+            CloseButtonText = _translationService._("Cancel"),
+            DefaultButton = ContentDialogButton.Close,
+            FlowDirection = FlowDirection,
+            RequestedTheme = RequestedTheme,
+            XamlRoot = XamlRoot
+        };
+        return await dialog.ShowAsync() == ContentDialogResult.Primary;
+    }
+
+    private static ContentDialog? FindContentDialog(DependencyObject? element)
+    {
+        if (element is ContentDialog dialog)
+        {
+            return dialog;
+        }
+        if (element is null)
+        {
+            return null;
+        }
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
+        {
+            var childDialog = FindContentDialog(VisualTreeHelper.GetChild(element, i));
+            if (childDialog is not null)
+            {
+                return childDialog;
+            }
+        }
+        return null;
     }
 
     private Task DownloadSingleAsync() => _controller.AddSingleDownloadAsync(_discoveryContext!,
@@ -441,6 +523,28 @@ public sealed partial class AddDownloadDialog : ContentDialog
     }
 
     private void BtnSingleRevertFilename_Click(object? sender, RoutedEventArgs e) => TxtSingleSaveFilename.Text = _discoveryContext!.Items[0].Label;
+
+    private async void BtnFastSelectSaveFolder_Click(object? sender, RoutedEventArgs e)
+    {
+        BtnFastSelectSaveFolder.IsEnabled = false;
+        try
+        {
+            var picker = new FolderPicker(WindowId!.Value)
+            {
+                SuggestedStartLocation = PickerLocationId.Downloads
+            };
+            await Task.Yield();
+            var folder = await picker.PickSingleFolderAsync();
+            if (folder is not null)
+            {
+                TxtFastSaveFolder.Text = folder.Path;
+            }
+        }
+        finally
+        {
+            BtnFastSelectSaveFolder.IsEnabled = true;
+        }
+    }
 
     private async void BtnSingleSelectSaveFolder_Click(object? sender, RoutedEventArgs e)
     {

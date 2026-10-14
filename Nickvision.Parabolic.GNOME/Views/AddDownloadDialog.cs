@@ -32,6 +32,10 @@ public class AddDownloadDialog : Adw.Dialog
     private Adw.EntryRow? _urlRow;
     [Gtk.Connect("selectBatchFileRow")]
     private Adw.ButtonRow? _selectBatchFileRow;
+    [Gtk.Connect("fastSaveFolderRow")]
+    private Adw.ActionRow? _fastSaveFolderRow;
+    [Gtk.Connect("fastSelectSaveFolderButton")]
+    private Gtk.Button? _fastSelectSaveFolderButton;
     [Gtk.Connect("authenticationCredentialRow")]
     private Adw.ComboRow? _authenticationCredentialRow;
     [Gtk.Connect("authenticationUsernameRow")]
@@ -169,9 +173,12 @@ public class AddDownloadDialog : Adw.Dialog
         _playlistItemsRows = new List<Adw.EntryRow>();
         _playlistItemsCheckButtons = new List<Gtk.CheckButton>();
         _builder.Connect(this);
+        _controller.ConfirmDuplicateDownloadAsync = ConfirmDuplicateDownloadAsync;
         // Load
         _downloadImmediatelyAsVideoRow!.Active = _controller.PreviousDownloadImmediatelyAsVideo;
         _downloadImmediatelyAsAudioRow!.Active = _controller.PreviousDownloadImmediatelyAsAudio;
+        _fastSaveFolderRow!.Subtitle = _controller.PreviousSaveFolder;
+        _fastSaveFolderRow.Visible = _controller.FastDownload;
         if (_controller.FastDownload)
         {
             _downloadImmediatelyAsVideoRow.Visible = false;
@@ -182,6 +189,7 @@ public class AddDownloadDialog : Adw.Dialog
         OnClosed += Dialog_OnClosed;
         _urlRow!.OnChanged += UrlRow_OnChanged;
         _selectBatchFileRow!.OnActivated += SelectBathFileRow_OnActivated;
+        _fastSelectSaveFolderButton!.OnClicked += FastSelectSaveFolderButton_OnClicked;
         _authenticationCredentialRow!.OnNotify += AuthenticationCredentialRow_OnNotify;
         _downloadImmediatelyAsVideoRow!.OnNotify += DownloadImmediatelyAsVideoRow_OnNotify;
         _downloadImmediatelyAsAudioRow!.OnNotify += DownloadImmediatelyAsAudioRow_OnNotify;
@@ -229,6 +237,20 @@ public class AddDownloadDialog : Adw.Dialog
             }
             catch { }
         }
+    }
+
+    private Task<bool> ConfirmDuplicateDownloadAsync(string message)
+    {
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var dialog = Adw.AlertDialog.New(_translationService._("Duplicate Download"), message);
+        dialog.BodyUseMarkup = false;
+        dialog.AddResponse("cancel", _translationService._("Cancel"));
+        dialog.AddResponse("download", _translationService._("Download Again"));
+        dialog.SetDefaultResponse("cancel");
+        dialog.SetCloseResponse("cancel");
+        dialog.OnResponse += (_, e) => completion.TrySetResult(e.Response == "download");
+        dialog.Present(_parent);
+        return completion.Task;
     }
 
     private async Task DownloadSingleAsync()
@@ -347,7 +369,7 @@ public class AddDownloadDialog : Adw.Dialog
         {
             var url = new Uri(_urlRow!.Text_!);
             Close();
-            _ = _controller.AddFastDownloadsAsync(url, credential);
+            _ = _controller.AddFastDownloadsAsync(url, credential, _fastSaveFolderRow!.Subtitle);
             return;
         }
         _cancellationTokenSource = new CancellationTokenSource();
@@ -517,6 +539,26 @@ public class AddDownloadDialog : Adw.Dialog
     }
 
     private async void SingleRevertToTitleButton_OnClicked(Gtk.Button sender, EventArgs e) => _singleSaveFilenameRow!.Text_ = _discoveryContext!.Items[0].Label;
+
+    private async void FastSelectSaveFolderButton_OnClicked(Gtk.Button sender, EventArgs e)
+    {
+        _fastSelectSaveFolderButton!.Sensitive = false;
+        var fileDialog = Gtk.FileDialog.New();
+        fileDialog.Title = _translationService._("Select Save Folder");
+        try
+        {
+            var res = await fileDialog.SelectFolderAsync(_parent);
+            if (res is not null)
+            {
+                _fastSaveFolderRow!.Subtitle = res.GetPath();
+            }
+        }
+        catch { }
+        finally
+        {
+            _fastSelectSaveFolderButton.Sensitive = true;
+        }
+    }
 
     private async void SingleSelectSaveFolderButton_OnClicked(Gtk.Button sender, EventArgs e)
     {

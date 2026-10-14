@@ -31,6 +31,7 @@ public sealed partial class SettingsPage : Page
             TglPreviewUpdates,
             TglPreventSuspend,
             TglFastDownload,
+            TglWarnBeforeDuplicateDownload,
             TglOverwriteFiles,
             TglIncludeMediaId,
             TglIncludeAutoSubtitles,
@@ -73,6 +74,9 @@ public sealed partial class SettingsPage : Page
         RowFastDownload.Header = _translationService._("Fast Download");
         RowFastDownload.Description = _translationService._("Download links and entire playlists at the best quality to the last save folder, without configuration dialogs.");
         AutomationProperties.SetName(TglFastDownload, (string)RowFastDownload.Header);
+        RowWarnBeforeDuplicateDownload.Header = _translationService._("Warn Before Duplicate Downloads");
+        RowWarnBeforeDuplicateDownload.Description = _translationService._("Ask before adding a link that is already downloading or has a saved file.");
+        AutomationProperties.SetName(TglWarnBeforeDuplicateDownload, (string)RowWarnBeforeDuplicateDownload.Header);
         RowOverwriteFiles.Header = _translationService._("Overwrite Existing Files");
         AutomationProperties.SetName(TglOverwriteFiles, (string)RowOverwriteFiles.Header);
         RowIncludeMediaId.Header = _translationService._("Include Media Id in Title");
@@ -169,6 +173,7 @@ public sealed partial class SettingsPage : Page
         CmbTranslationLanguage.SelectSelectionItem();
         TglPreviewUpdates.IsOn = _controller.AllowPreviewUpdates;
         TglFastDownload.IsOn = _controller.FastDownload;
+        TglWarnBeforeDuplicateDownload.IsOn = _controller.WarnBeforeDuplicateDownload;
         TglPreventSuspend.IsOn = _controller.PreventSuspend;
         CmbHistoryLength.SelectSelectionItem();
         NumActiveDownloads.Value = _controller.MaxNumberOfActiveDownloads;
@@ -351,6 +356,7 @@ public sealed partial class SettingsPage : Page
         _controller.TranslationLanguage = (CmbTranslationLanguage.SelectedItem as BindableSelectionItem)!.ToSelectionItem<string>()!;
         _controller.AllowPreviewUpdates = TglPreviewUpdates.IsOn;
         _controller.FastDownload = TglFastDownload.IsOn;
+        _controller.WarnBeforeDuplicateDownload = TglWarnBeforeDuplicateDownload.IsOn;
         _controller.PreventSuspend = TglPreventSuspend.IsOn;
         _controller.HistoryLength = (CmbHistoryLength.SelectedItem as BindableSelectionItem)!.ToSelectionItem<HistoryLength>()!;
         _controller.MaxNumberOfActiveDownloads = (int)NumActiveDownloads.Value;

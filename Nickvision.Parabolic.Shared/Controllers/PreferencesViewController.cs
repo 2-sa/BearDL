@@ -151,6 +151,13 @@ public class PreferencesViewController
         set => _configurationService.FastDownload = value;
     }
 
+    public bool WarnBeforeDuplicateDownload
+    {
+        get => _configurationService.WarnBeforeDuplicateDownload;
+
+        set => _configurationService.WarnBeforeDuplicateDownload = value;
+    }
+
     public int AriaMaxConnectionsPerServer
     {
         get => _configurationService.AriaMaxConnectionsPerServer;

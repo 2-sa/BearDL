@@ -471,7 +471,7 @@ msgstr "إعادة محاولة التنزيلات الفاشلة"
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:93
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:110
 msgid "Clear All Queued"
-msgstr "مسح التنزيلات في قائمة الانتظار"
+msgstr "مسح التنزيلات المنتظرة"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:23
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:94
@@ -515,7 +515,7 @@ msgstr "قيد التنزيل"
 #: Nickvision.Parabolic.WinUI/Controls/DownloadRow.xaml.cs:75
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:115
 msgid "Queued"
-msgstr "في قائمة الانتظار"
+msgstr "بانتظار التنزيل"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:155
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:116
@@ -1408,7 +1408,7 @@ msgstr "تعذّرت إزالة التنزيلات القابلة للاستعا
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:235
 msgid "An error occurred while clearing queued downloads"
-msgstr "تعذّر مسح التنزيلات في قائمة الانتظار"
+msgstr "تعذّر مسح التنزيلات المنتظرة"
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:249
 #, csharp-format
@@ -3153,6 +3153,30 @@ msgstr "استعادة"
 #. Fast download setting
 msgid "Fast Download"
 msgstr "التنزيل السريع"
+
+msgid "Warn Before Duplicate Downloads"
+msgstr "التنبيه قبل تكرار التنزيل"
+
+msgid "Ask before adding a link that is already downloading or has a saved file."
+msgstr "اسأل قبل تنزيل رابط ينزّل الآن أو له ملف محفوظ."
+
+msgid "Duplicate Download"
+msgstr "تنزيل مكرر"
+
+msgid "This link is already downloading or waiting to download."
+msgstr "هذا الرابط ينزّل الآن أو ينتظر دوره."
+
+msgid "This link was downloaded before and its file still exists."
+msgstr "سبق تنزيل هذا الرابط وملفه ما زال موجودًا."
+
+msgid "This link appears more than once in this request."
+msgstr "تكرر هذا الرابط في الطلب نفسه."
+
+msgid "There are more duplicate links in this request."
+msgstr "توجد روابط مكررة أخرى في هذا الطلب."
+
+msgid "Do you want to download again?"
+msgstr "هل تريد التنزيل مرة أخرى؟"
 
 msgid "Download links and entire playlists at the best quality to the last save folder, without configuration dialogs."
 msgstr "تنزيل الروابط وقوائم التشغيل كاملةً بأعلى جودة إلى مجلد الحفظ السابق، دون عرض نوافذ التهيئة."

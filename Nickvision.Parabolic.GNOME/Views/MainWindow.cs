@@ -266,9 +266,9 @@ public class MainWindow : Adw.ApplicationWindow
     private void App_AppNotificationSent(object? sender, AppNotificationSentEventArgs e)
     {
         var toast = Adw.Toast.New(e.Notification.Message);
+        toast.Timeout = 5;
         if (e.Notification.Action == "update")
         {
-            toast.Timeout = 0;
             toast.ButtonLabel = _translationService._("View");
             toast.OnButtonClicked += async (_, _) =>
             {
@@ -278,7 +278,6 @@ public class MainWindow : Adw.ApplicationWindow
         }
         else if (e.Notification.Action == "update-ytdlp")
         {
-            toast.Timeout = 0;
             toast.ButtonLabel = _translationService._("Update");
             toast.OnButtonClicked += async (_, _) =>
             {
@@ -293,7 +292,6 @@ public class MainWindow : Adw.ApplicationWindow
         }
         else if (e.Notification.Action == "update-deno")
         {
-            toast.Timeout = 0;
             toast.ButtonLabel = _translationService._("Update");
             toast.OnButtonClicked += async (_, _) =>
             {
@@ -308,7 +306,6 @@ public class MainWindow : Adw.ApplicationWindow
         }
         else if (e.Notification.Action == "error" && !string.IsNullOrEmpty(e.Notification.ActionParam))
         {
-            toast.Timeout = 0;
             toast.ButtonLabel = _translationService._("Details");
             toast.OnButtonClicked += (_, _) =>
             {

@@ -29,6 +29,13 @@ public static class IConfigurationServiceExtensions
             set => configurationService.Set("FastDownload", value);
         }
 
+        public bool WarnBeforeDuplicateDownload
+        {
+            get => configurationService.Get("WarnBeforeDuplicateDownload", true);
+
+            set => configurationService.Set("WarnBeforeDuplicateDownload", value);
+        }
+
         public int AriaMaxConnectionsPerServer
         {
             get => configurationService.Get("AriaMaxConnectionsPerServer", 16);

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -40,6 +41,10 @@ public sealed partial class MainWindow : Window
     private readonly AppInfo _appInfo;
     private readonly ITranslationService _translationService;
     private readonly Dictionary<int, DownloadRow> _downloadRows;
+    private readonly DispatcherQueueTimer _notificationTimer;
+    private readonly List<RectInt32> _titleBarInputRegions = new(8);
+    private bool _titleBarUpdateQueued;
+    private bool _isClosed;
     private RoutedEventHandler? _notificationClickHandler;
 
     public MainWindow(IServiceProvider serviceProvider, MainWindowController controller, AppInfo appInfo, IEventsService eventsService, ITranslationService translationService)
@@ -52,6 +57,25 @@ public sealed partial class MainWindow : Window
         _appInfo = appInfo;
         _translationService = translationService;
         _downloadRows = new Dictionary<int, DownloadRow>();
+        _notificationTimer = DispatcherQueue.CreateTimer();
+        _notificationTimer.Interval = TimeSpan.FromSeconds(5);
+        _notificationTimer.IsRepeating = false;
+        _notificationTimer.Tick += (_, _) => InfoBar.IsOpen = false;
+        InfoBar.Closed += (_, _) =>
+        {
+            _notificationTimer.Stop();
+            if (_notificationClickHandler is not null)
+            {
+                BtnInfoBar.Click -= _notificationClickHandler;
+                _notificationClickHandler = null;
+            }
+            BtnInfoBar.Visibility = Visibility.Collapsed;
+        };
+        Closed += (_, _) =>
+        {
+            _isClosed = true;
+            _notificationTimer.Stop();
+        };
         _notificationClickHandler = null;
         // Config
         AppWindow.TitleBar.PreferredTheme = _controller.Theme switch
@@ -71,7 +95,7 @@ public sealed partial class MainWindow : Window
         AppWindow.SetIcon(_appInfo.Version!.IsPreview ? "./Assets/org.nickvision.tubeconverter-devel.ico" : "./Assets/org.nickvision.tubeconverter.ico");
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(TitleBar);
-        TitleBar.LayoutUpdated += (_, _) => UpdateTitleBarInputRegions();
+        TitleBar.LayoutUpdated += (_, _) => QueueTitleBarInputRegionUpdate();
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         if (MainGrid.FlowDirection == FlowDirection.RightToLeft)
         {
@@ -246,6 +270,7 @@ public sealed partial class MainWindow : Window
 
     private void App_AppNotificationSent(object? sender, AppNotificationSentEventArgs e)
     {
+        _notificationTimer.Stop();
         if (_notificationClickHandler is not null)
         {
             BtnInfoBar.Click -= _notificationClickHandler;
@@ -310,6 +335,7 @@ public sealed partial class MainWindow : Window
         }
         BtnInfoBar.Visibility = _notificationClickHandler is not null ? Visibility.Visible : Visibility.Collapsed;
         InfoBar.IsOpen = true;
+        _notificationTimer.Start();
     }
 
     private void App_ConfigurationSaved(object? sender, ConfigurationSavedEventArgs args)
@@ -331,6 +357,26 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private void QueueTitleBarInputRegionUpdate()
+    {
+        if (_titleBarUpdateQueued || _isClosed)
+        {
+            return;
+        }
+        _titleBarUpdateQueued = true;
+        if (!DispatcherQueue.TryEnqueue(() =>
+        {
+            _titleBarUpdateQueued = false;
+            if (!_isClosed)
+            {
+                UpdateTitleBarInputRegions();
+            }
+        }))
+        {
+            _titleBarUpdateQueued = false;
+        }
+    }
+
     private void UpdateTitleBarInputRegions()
     {
         if (TitleBar.XamlRoot is null)
@@ -339,44 +385,45 @@ public sealed partial class MainWindow : Window
         }
         // WinUI 2.0 marks the whole header as interactive, including empty
         // space beside the menus. Only actual menus and buttons need input.
-        var regions = new List<RectInt32>();
+        _titleBarInputRegions.Clear();
         var scale = TitleBar.XamlRoot.RasterizationScale;
-        void CollectControls(DependencyObject element)
-        {
-            if (element is UIElement uiElement &&
-                (uiElement.Visibility != Visibility.Visible || !uiElement.IsHitTestVisible))
-            {
-                return;
-            }
-            if (element is FrameworkElement control && (control is Button || control is MenuBar))
-            {
-                if (control.ActualWidth > 0 && control.ActualHeight > 0)
-                {
-                    var bounds = control.TransformToVisual((UIElement)Content).TransformBounds(
-                        new Windows.Foundation.Rect(0, 0, control.ActualWidth, control.ActualHeight));
-                    var left = (int)Math.Floor(bounds.Left * scale);
-                    var top = (int)Math.Floor(bounds.Top * scale);
-                    regions.Add(new RectInt32
-                    {
-                        X = left,
-                        Y = top,
-                        Width = (int)Math.Ceiling(bounds.Right * scale) - left,
-                        Height = (int)Math.Ceiling(bounds.Bottom * scale) - top
-                    });
-                }
-                return;
-            }
-            for (var i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
-            {
-                CollectControls(VisualTreeHelper.GetChild(element, i));
-            }
-        }
-        CollectControls(TitleBar);
-        CollectControls(RtlCaptionButtons);
+        CollectTitleBarControls(TitleBar, scale);
+        CollectTitleBarControls(RtlCaptionButtons, scale);
         var inputSource = InputNonClientPointerSource.GetForWindowId(AppWindow.Id);
-        if (!inputSource.GetRegionRects(NonClientRegionKind.Passthrough).SequenceEqual(regions))
+        if (!inputSource.GetRegionRects(NonClientRegionKind.Passthrough).SequenceEqual(_titleBarInputRegions))
         {
-            inputSource.SetRegionRects(NonClientRegionKind.Passthrough, regions.ToArray());
+            inputSource.SetRegionRects(NonClientRegionKind.Passthrough, _titleBarInputRegions.ToArray());
+        }
+    }
+
+    private void CollectTitleBarControls(DependencyObject element, double scale)
+    {
+        if (element is UIElement uiElement &&
+            (uiElement.Visibility != Visibility.Visible || !uiElement.IsHitTestVisible))
+        {
+            return;
+        }
+        if (element is FrameworkElement control && (control is Button || control is MenuBar))
+        {
+            if (control.ActualWidth > 0 && control.ActualHeight > 0)
+            {
+                var bounds = control.TransformToVisual((UIElement)Content).TransformBounds(
+                    new Windows.Foundation.Rect(0, 0, control.ActualWidth, control.ActualHeight));
+                var left = (int)Math.Floor(bounds.Left * scale);
+                var top = (int)Math.Floor(bounds.Top * scale);
+                _titleBarInputRegions.Add(new RectInt32
+                {
+                    X = left,
+                    Y = top,
+                    Width = (int)Math.Ceiling(bounds.Right * scale) - left,
+                    Height = (int)Math.Ceiling(bounds.Bottom * scale) - top
+                });
+            }
+            return;
+        }
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
+        {
+            CollectTitleBarControls(VisualTreeHelper.GetChild(element, i), scale);
         }
     }
 

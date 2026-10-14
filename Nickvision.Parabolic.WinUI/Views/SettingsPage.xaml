@@ -144,6 +144,14 @@
                                 <ToggleSwitch x:Name="TglFastDownload" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
+                            <community:SettingsCard x:Name="RowWarnBeforeDuplicateDownload">
+                                <community:SettingsCard.Resources>
+                                    <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                    <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+                                </community:SettingsCard.Resources>
+                                <ToggleSwitch x:Name="TglWarnBeforeDuplicateDownload" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
+                            </community:SettingsCard>
+
                             <community:SettingsCard x:Name="RowActiveDownloads">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE896;"/>

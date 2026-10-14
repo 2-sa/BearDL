@@ -72,6 +72,11 @@ Adw.PreferencesDialog root {
         subtitle: _("Download links and entire playlists at the best quality to the last save folder, without configuration dialogs.");
       }
 
+      Adw.SwitchRow warnBeforeDuplicateDownloadRow {
+        title: _("Warn Before Duplicate Downloads");
+        subtitle: _("Ask before adding a link that is already downloading or has a saved file.");
+      }
+
       Adw.SpinRow maxNumberOfActiveDownloadsRow {
         title: _("Max Number of Running Downloads");
         numeric: true;

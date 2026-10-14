@@ -14,6 +14,7 @@ public interface IHistoryService
     Task<bool> AddAsync(IReadOnlyList<HistoricDownload> downloads);
     Task<bool> ClearAsync();
     Task<IReadOnlyList<HistoricDownload>> GetAllAsync();
+    Task<IReadOnlyDictionary<Uri, string>> GetSavedFilesAsync(IReadOnlyCollection<Uri> urls);
     Task<bool> RemoveAsync(HistoricDownload download);
     Task<bool> RemoveAsync(Uri uri);
     Task<bool> UpdateAsync(HistoricDownload download);

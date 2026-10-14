@@ -19,6 +19,7 @@ namespace Nickvision.Parabolic.Shared.Controllers;
 public class AddDownloadDialogController
 {
     private static AddDownloadTeachType _shownTeachTypeFlag;
+    private static readonly SemaphoreSlim s_fastDownloadSlots = new(2, 2);
 
     private readonly ILogger<AddDownloadDialogController> _logger;
     private readonly IHostApplicationLifetime _applicationLifetime;
@@ -38,6 +39,7 @@ public class AddDownloadDialogController
     public bool PreviousReverseDownloadOrder => _configurationService.PreviousReverseDownloadOrder;
     public string PreviousSaveFolder => _configurationService.PreviousSaveFolder;
     public bool FastDownload => _configurationService.FastDownload;
+    public Func<string, Task<bool>>? ConfirmDuplicateDownloadAsync { get; set; }
     public bool PreviousSplitChapters => _configurationService.PreviousSplitChapters;
     public Dictionary<MediaFileType, string> PreviousVideoFormatIds => _configurationService.PreviousVideoFormatIds;
 
@@ -70,15 +72,20 @@ public class AddDownloadDialogController
         set => _configurationService.PreviousDownloadImmediatelyAsVideo = value;
     }
 
-    public async Task AddFastDownloadsAsync(Uri url, Credential? credential)
+    public async Task AddFastDownloadsAsync(Uri url, Credential? credential, string? selectedSaveFolder = null)
     {
         // Snapshot the destination before background discovery. Do not overwrite
         // the quality and file type remembered by the normal configuration dialog.
-        var saveFolder = _configurationService.PreviousSaveFolder;
+        var hasSelectedSaveFolder = !string.IsNullOrEmpty(selectedSaveFolder);
+        var saveFolder = hasSelectedSaveFolder ? selectedSaveFolder! : _configurationService.PreviousSaveFolder;
         var cancellationToken = _applicationLifetime.ApplicationStopping;
+        var acquiredSlot = false;
         _notificationService.Send(new AppNotification(_translationService._("Preparing downloads in the background"), NotificationSeverity.Information));
         try
         {
+            // Bound background extraction processes and retained playlist data.
+            await s_fastDownloadSlots.WaitAsync(cancellationToken);
+            acquiredSlot = true;
             var result = url.IsFile
                 ? await _discoveryService.GetForBatchFileAsync(url.LocalPath, credential, cancellationToken)
                 : await _discoveryService.GetForUrlAsync(url, credential, cancellationToken);
@@ -92,7 +99,7 @@ public class AddDownloadDialogController
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var media = result.Media[i];
-                var folder = string.IsNullOrEmpty(media.SuggestedSaveFolder) ? saveFolder : media.SuggestedSaveFolder;
+                var folder = hasSelectedSaveFolder || string.IsNullOrEmpty(media.SuggestedSaveFolder) ? saveFolder : media.SuggestedSaveFolder;
                 if (result.IsPlaylist)
                 {
                     folder = Path.Combine(folder, result.Title.SanitizeForFilename(_configurationService.LimitCharacters));
@@ -114,7 +121,16 @@ public class AddDownloadDialogController
                 });
             }
             cancellationToken.ThrowIfCancellationRequested();
-            await _downloadService.AddAsync(options, false);
+            if (!await _downloadService.AddWithDuplicateCheckAsync(options, false, ConfirmDuplicatesAsync))
+            {
+                return;
+            }
+            if (hasSelectedSaveFolder)
+            {
+                using var transaction = await _configurationService.CreateTransactionAsync();
+                _configurationService.PreviousSaveFolder = saveFolder;
+                await transaction.CommitAsync();
+            }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -128,6 +144,13 @@ public class AddDownloadDialogController
                 Action = "error",
                 ActionParam = e.ToString()
             });
+        }
+        finally
+        {
+            if (acquiredSlot)
+            {
+                s_fastDownloadSlots.Release();
+            }
         }
     }
 
@@ -222,7 +245,10 @@ public class AddDownloadDialogController
         await transaction.CommitAsync();
         try
         {
-            await _downloadService.AddAsync(options, excludeFromHistory);
+            if (!await _downloadService.AddWithDuplicateCheckAsync(options, excludeFromHistory, ConfirmDuplicatesAsync))
+            {
+                return;
+            }
             if (exportM3U)
             {
                 await m3uFile.WriteAsync(Path.Combine(saveFolder, context.Title.SanitizeForFilename(_configurationService.LimitCharacters), $"{context.Title.SanitizeForFilename(_configurationService.LimitCharacters)}.m3u"));
@@ -301,7 +327,7 @@ public class AddDownloadDialogController
         await transaction.CommitAsync();
         try
         {
-            await _downloadService.AddAsync(options, excludeFromHistory);
+            await _downloadService.AddWithDuplicateCheckAsync(new[] { options }, excludeFromHistory, ConfirmDuplicatesAsync);
         }
         catch (Exception e)
         {
@@ -450,6 +476,33 @@ public class AddDownloadDialogController
             });
             return null;
         }
+    }
+
+    private Task<bool> ConfirmDuplicatesAsync(IReadOnlyList<DuplicateDownload> duplicates)
+    {
+        var lines = new List<string>();
+        foreach (var duplicate in duplicates.Take(8))
+        {
+            lines.Add(duplicate.Reason switch
+            {
+                DuplicateDownloadReason.Active => _translationService._("This link is already downloading or waiting to download."),
+                DuplicateDownloadReason.Saved => _translationService._("This link was downloaded before and its file still exists."),
+                _ => _translationService._("This link appears more than once in this request.")
+            });
+            lines.Add($"\u2066{duplicate.Url}\u2069");
+            if (duplicate.Path is not null)
+            {
+                lines.Add($"\u2066{duplicate.Path}\u2069");
+            }
+            lines.Add(string.Empty);
+        }
+        if (duplicates.Count > 8)
+        {
+            lines.Add(_translationService._("There are more duplicate links in this request."));
+        }
+        lines.Add(_translationService._("Do you want to download again?"));
+        // Never silently approve a duplicate if no view handles confirmation.
+        return ConfirmDuplicateDownloadAsync?.Invoke(string.Join(Environment.NewLine, lines)) ?? Task.FromResult(false);
     }
 
     public async Task<IReadOnlyList<SelectionItem<Credential?>>> GetAvailableCredentialsAsync()

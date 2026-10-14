@@ -31,6 +31,8 @@ public class PreferencesDialog : Adw.PreferencesDialog
     private Adw.SwitchRow? _preventSuspendRow;
     [Gtk.Connect("fastDownloadRow")]
     private Adw.SwitchRow? _fastDownloadRow;
+    [Gtk.Connect("warnBeforeDuplicateDownloadRow")]
+    private Adw.SwitchRow? _warnBeforeDuplicateDownloadRow;
     [Gtk.Connect("historyLengthRow")]
     private Adw.ComboRow? _historyLengthRow;
     [Gtk.Connect("maxNumberOfActiveDownloadsRow")]
@@ -135,6 +137,7 @@ public class PreferencesDialog : Adw.PreferencesDialog
         _previewUpdatesRow!.Active = _controller.AllowPreviewUpdates;
         _preventSuspendRow!.Active = _controller.PreventSuspend;
         _fastDownloadRow!.Active = _controller.FastDownload;
+        _warnBeforeDuplicateDownloadRow!.Active = _controller.WarnBeforeDuplicateDownload;
         _historyLengthRow!.SetModel(_controller.HistoryLengths);
         _maxNumberOfActiveDownloadsRow!.Value = _controller.MaxNumberOfActiveDownloads;
         _overwriteExistingFilesRow!.Active = _controller.OverwriteExistingFiles;
@@ -183,6 +186,7 @@ public class PreferencesDialog : Adw.PreferencesDialog
         _controller.AllowPreviewUpdates = _previewUpdatesRow!.Active;
         _controller.PreventSuspend = _preventSuspendRow!.Active;
         _controller.FastDownload = _fastDownloadRow!.Active;
+        _controller.WarnBeforeDuplicateDownload = _warnBeforeDuplicateDownloadRow!.Active;
         _controller.HistoryLength = _controller.HistoryLengths[(int)_historyLengthRow!.Selected];
         _controller.MaxNumberOfActiveDownloads = (int)_maxNumberOfActiveDownloadsRow!.Value;
         _controller.OverwriteExistingFiles = _overwriteExistingFilesRow!.Active;

@@ -6,8 +6,9 @@ using Nickvision.Parabolic.Shared.Helpers;
 using Nickvision.Parabolic.Shared.Models;
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Nickvision.Parabolic.Shared.Services;
@@ -23,6 +24,7 @@ public class DownloadService : IDisposable, IDownloadService
     private readonly Dictionary<int, Download> _downloading;
     private readonly Dictionary<int, Download> _queued;
     private readonly Dictionary<int, Download> _completed;
+    private readonly SemaphoreSlim _additionLock = new(1, 1);
 
     public event EventHandler<DownloadAddedEventArgs>? DownloadAdded;
     public event EventHandler<DownloadCompletedEventArgs>? DownloadCompleted;
@@ -66,6 +68,41 @@ public class DownloadService : IDisposable, IDownloadService
                 }
             }
             return failed;
+        }
+    }
+
+    public async Task<bool> AddWithDuplicateCheckAsync(IReadOnlyList<DownloadOptions> options, bool excludeFromHistory, Func<IReadOnlyList<DuplicateDownload>, Task<bool>> confirm)
+    {
+        // Keep user additions serialized through both confirmation and queuing,
+        // so simultaneous background discoveries cannot miss each other.
+        await _additionLock.WaitAsync();
+        try
+        {
+            if (_configurationService.WarnBeforeDuplicateDownload)
+            {
+                var requestedUrls = options.Select(item => item.Url).ToHashSet();
+                var savedFiles = new Dictionary<Uri, string>(await _historyService.GetSavedFilesAsync(requestedUrls));
+                // Completed rows still protect files when history is disabled.
+                foreach (var item in _completed.Values)
+                {
+                    if (requestedUrls.Contains(item.Options.Url) && item.Status == DownloadStatus.Success)
+                    {
+                        savedFiles[item.Options.Url] = item.FilePath;
+                    }
+                }
+                var activeUrls = _downloading.Values.Concat(_queued.Values).Select(item => item.Options.Url).Where(requestedUrls.Contains).ToHashSet();
+                var duplicates = DuplicateDownloadDetector.Find(options.Select(item => item.Url), activeUrls, savedFiles);
+                if (duplicates.Count > 0 && !await confirm(duplicates))
+                {
+                    return false;
+                }
+            }
+            await AddAsync(options, excludeFromHistory);
+            return true;
+        }
+        finally
+        {
+            _additionLock.Release();
         }
     }
 

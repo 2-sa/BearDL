@@ -1,225 +1,71 @@
-<div align="center">
+<div dir="rtl" align="right">
 
-![](resources/banner.png)
+# بير دي إل
 
-# 🎬 Parabolic
+واجهة لتنزيل الوسائط بواسطة [yt-dlp](https://github.com/yt-dlp/yt-dlp)، مشتقة من [Parabolic](https://github.com/NickvisionApps/Parabolic)، مع تحسينات للعربية واتجاه RTL وحزم لويندوز وماك ولينكس.
 
-### *A powerful yt-dlp frontend*
+[الإصدارات](https://github.com/2-sa/BearDL/releases) · [المساهمة](CONTRIBUTING.md) · [دليل المشروع](docs/PROJECT_AND_COMMIT_GUIDE.md) · [حالة العمل](docs/CURRENT_TASK.md)
 
-[![Translation status](https://hosted.weblate.org/widgets/nickvision-tube-converter/-/app/svg-badge.svg)](https://hosted.weblate.org/engage/nickvision-tube-converter/)
-[![Powered by Weblate](https://img.shields.io/badge/Powered%20by-Weblate-blue?style=flat-square)](https://weblate.org/en/)
+## المميزات
 
-[Features](#-features) •
-[Installation](#-installation) •
-[Screenshots](#-screenshots) •
-[Building](#-building-manually) •
-[Contributing](#-contributing)
+- تنزيل الفيديو والصوت بصيغ مثل MP4 وWEBM وMP3 وOPUS وFLAC وWAV، بحسب الوسائط المتاحة.
+- تنزيلات متزامنة مع إيقاف واستئناف وإعادة محاولة، وسجل واستعادة للتنزيلات.
+- قوائم تشغيل وملفات روابط، واختيار عناصر القائمة وخيارات الجودة والترجمة والقصّ.
+- تنزيل الترجمات المتاحة، بما فيها المولّدة عند تفعيلها، ودمج البيانات والصور والفصول حسب الإعدادات والصيغة.
+- تنزيل سريع بأفضل جودة دون صفحات التهيئة، مع دعم الروابط وقوائم التشغيل.
+- تحسينات عربية في النصوص والاتجاه والعناوين والحوارات والتمرير. يستخدم ويندوز واجهة <span dir="ltr">WinUI</span>، ويستخدم ماك ولينكس واجهة <span dir="ltr">GTK</span> مشتركة.
 
-</div>
+أضاف المصدر أيضًا اختيار مجلد الحفظ من صفحة التنزيل السريع، والتنبيه قبل تكرار التنزيل مع خيار لتعطيله، وإغلاق إشعارات التطبيق بعد خمس ثوانٍ. قد يتأخر الإصدار المنشور عن المصدر؛ راجع [حالة العمل](docs/CURRENT_TASK.md) للمشكلات المعلّقة ونتائج البناء. فحص المصدر ونجاح البناء الآلي لا يثبتان صحة الواجهة أثناء التشغيل.
 
-## ✨ Features
+## التنزيل والتثبيت
 
-<table>
-<tr>
-<td width="50%">
+نزّل حزم **BearDL** من [إصدارات هذا المستودع](https://github.com/2-sa/BearDL/releases). اختر الحزمة المناسبة لمعمارية جهازك:
 
-### 🌐 Versatile Downloads
-Powerful frontend for **yt-dlp** with support for [hundreds of sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md)
+| النظام | الحزم |
+| --- | --- |
+| ويندوز x64 | <code dir="ltr">BearDLSetup-x64.exe</code> أو <code dir="ltr">BearDLPortable-x64.zip</code> |
+| ويندوز ARM64 | <code dir="ltr">BearDLSetup-arm64.exe</code> أو <code dir="ltr">BearDLPortable-arm64.zip</code> |
+| ماك — أبل سيليكون | <code dir="ltr">BearDL-macOS-arm64.dmg</code> أو <code dir="ltr">BearDL-macOS-arm64.zip</code> |
+| ماك — إنتل | <code dir="ltr">BearDL-macOS-x64.dmg</code> أو <code dir="ltr">BearDL-macOS-x64.zip</code> |
+| لينكس x86_64 | <code dir="ltr">BearDL-linux-x86_64.flatpak</code> |
+| لينكس ARM64 | <code dir="ltr">BearDL-linux-aarch64.flatpak</code> |
 
-### 🎵 Multiple Formats
-Download in **mp4**, **webm**, **mp3**, **opus**, **flac**, and **wav**
+على ماك، افتح DMG واسحب <code dir="ltr">BearDL.app</code> إلى مجلد التطبيقات، أو فك ZIP وانقل التطبيق. تستهدف الحزم ماك 15 أو أحدث، وتستخدم توقيعًا محليًا دون توثيق أبل. تغيير صيغة الحزمة لا يعالج وحده انهيار التشغيل؛ يوجد بلاغ معلق موضح في [حالة العمل](docs/CURRENT_TASK.md).
 
-</td>
-<td width="50%">
+تحتاج حزمة لينكس إلى Flatpak وبيئة GNOME التي يشير إليها ملف الحزمة. تحتوي إصدارات ويندوز على الاعتمادات المجمّعة. ينشر الإصدار <code dir="ltr">SHA256SUMS.txt</code> لبصمات الحزم. ملفات إجراءات البناء مخرجات بناء، وقد لا تمثل إصدارًا منشورًا أو تحديثًا متاحًا داخل التطبيق.
 
-### ⚡ Concurrent Downloads
-Run **multiple downloads** at the same time
+إصدارات Parabolic ونسخته على Flathub تخص المشروع الأصلي؛ لا تعتبرها بديلًا مطابقًا لحزم BearDL.
 
-### 📝 Complete Metadata
-Support for downloading **metadata** and **video subtitles**
+## إضافة المتصفح
 
-</td>
-</tr>
-</table>
+راجع [تعليمات الإضافة](extension/README.md) للتثبيت والاستخدام. ترسل الإضافة الرابط إلى التطبيق عبر البروتوكول الموروث <code dir="ltr">parabolic://</code>؛ يلزم تطبيق مسجل لهذا البروتوكول. صفحة فايرفوكس المذكورة في دليل الإضافة تخص إضافة Parabolic الأصلية، ولا تعني وجود إصدار مستقل منشور باسم BearDL في المتجر.
 
-## ⚖️ Legal Copyright Disclaimer
+## صور الواجهات
 
-> [!CAUTION]
-> Videos on YouTube and other sites may be subject to DMCA protection. The authors of Parabolic do not endorse, and are not responsible for, the use of this application in means that will violate these laws.
+الصور التالية موروثة من المشروع الأصلي، وقد لا تعكس أحدث تعديلات BearDL أو واجهته العربية.
 
-## 📥 Installation
+| واجهة ويندوز | واجهة لينكس وماك |
+| --- | --- |
+| ![صفحة ويندوز الرئيسية](Nickvision.Parabolic.WinUI/Screenshots/Home.png) | ![صفحة لينكس وماك الرئيسية](Nickvision.Parabolic.GNOME/Screenshots/Home.png) |
+| ![إضافة تنزيل في ويندوز](Nickvision.Parabolic.WinUI/Screenshots/AddDownloadDialog.png) | ![إضافة تنزيل في لينكس وماك](Nickvision.Parabolic.GNOME/Screenshots/AddDownloadDialog.png) |
 
-### Choose your platform
+## التطوير والتوثيق
 
-<table>
-<tr>
-<td width="25%">
+المشروع مبني على <span dir="ltr">.NET 10</span>، والحل <code dir="ltr">Nickvision.Parabolic.slnx</code>. المنطق المشترك في <code dir="ltr">Nickvision.Parabolic.Shared</code>، وواجهتا ويندوز و<span dir="ltr">GTK</span> في مشروعيهما. أسماء <code dir="ltr">Nickvision.Parabolic.*</code> موروثة؛ لا تغيّرها دون مراجعة الموارد والتخزين والتغليف.
 
-#### Linux
+| الوثيقة | الغرض |
+| --- | --- |
+| [تعليمات المساعد](AGENTS.md) | تعليمات العمل للمساعد وحدود الإذن |
+| [دليل المشروع والكوميتات](docs/PROJECT_AND_COMMIT_GUIDE.md) | بنية المشروع ومسار التنزيل والكوميتات الـ22 |
+| [الحالة الحالية](docs/CURRENT_TASK.md) | الحالة الموحدة والمشكلات وخطوات الاستمرار |
+| [دليل الإصدار](docs/RELEASING.md) | البناء والتغليف والترقيم والنشر على GitHub |
+| [مراجعة الموارد](docs/RESOURCE_REVIEW_2026-10-14.md) | مراجعة الموارد وقياساتها وحدود التحقق |
+| [دليل المساهمة](CONTRIBUTING.md) | بلاغات المشكلات والترجمة والمساهمة بالكود |
 
-<a href='https://flathub.org/apps/details/org.nickvision.tubeconverter'>
-<img width='200' alt='Download on Flathub' src='https://flathub.org/api/badge?locale=en'/>
-</a>
+تُفضّل إجراءات البناء على GitHub للبناء والاختبارات والتغليف. تنزيل أدوات على جهاز المستخدم أو تثبيتها يحتاج إذنًا منفصلًا؛ طلب تعديل الكود لا يمنح إذنًا بالكوميت أو الرفع أو بدء إصدار. التفاصيل في تعليمات العمل ودليل الإصدار.
 
-</td>
-<td width="25%">
+## الترخيص ونسبة المشروع
 
-#### Windows
-
-<a href="https://github.com/NickvisionApps/Parabolic/releases">
-<img width='180' alt="Download from Releases" src="https://upload.wikimedia.org/wikipedia/commons/e/e2/Windows_logo_and_wordmark_-_2021.svg"/>
-</a>
-
-Download the latest version from **Releases**
-
-</td>
-<td width="25%">
-
-#### macOS
-
-<a href="https://github.com/NickvisionApps/Parabolic/releases">
-<img width='80' alt="Download from Releases" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Apple_Computer_Logo_rainbow.svg/250px-Apple_Computer_Logo_rainbow.svg.png"/>
-</a>
-
-Download the latest version from **Releases**
-
-</td>
-<td width="25%">
-
-#### Browser Extensions
-
-[![get-the-addon](extension/resources/firefox.png)](https://addons.mozilla.org/en-US/firefox/addon/parabolic/)
-
-**Chrome:** See [extension folder](https://github.com/NickvisionApps/Parabolic/tree/main/extension) for manual installation instructions
-
-</td>
-</tr>
-</table>
-
-### 🌍 Translation Status
-
-<div align="center">
-
-[![Translation Status](https://hosted.weblate.org/widget/nickvision-tube-converter/multi-auto.svg)](https://hosted.weblate.org/engage/nickvision-tube-converter/)
-
-**Help us translate Parabolic!** [Click here to contribute](https://hosted.weblate.org/projects/nickvision-tube-converter/)
+الكود مرخّص بـ[MIT](LICENSE)، مع الاحتفاظ بحقوق Nickvision واعتمادات المشروع الأصلي. قد تحمل المكتبات والأدوات المجمّعة تراخيصها الخاصة. استخدم التنزيلات بما يحترم حقوق أصحاب المحتوى والقوانين السارية.
 
 </div>
-
-## 💬 Chat & Community
-
-<div align="center">
-
-Join our community on Matrix!
-
-<a href='https://matrix.to/#/#nickvision:matrix.org'>
-<img width='160' alt='Join our room' src='https://user-images.githubusercontent.com/17648453/196094077-c896527d-af6d-4b43-a5d8-e34a00ffd8f6.png'/>
-</a>
-
-</div>
-
-## 🤝 Contributing
-
-We'd love your contribution! See [**CONTRIBUTING.md**](CONTRIBUTING.md) for details on:
-
-- 🐛 How to report bugs
-- 💡 How to suggest new features
-- 🔧 How to contribute code
-- 📖 How to improve documentation
-
-## 📸 Screenshots
-
-<details>
-<summary><b>🖥️ GNOME Interface</b></summary>
-
-<br>
-
-| Home Page | Active Downloads |
-|:---:|:---:|
-| ![Home Page](Nickvision.Parabolic.GNOME/Screenshots/Home.png) | ![Downloading](Nickvision.Parabolic.GNOME/Screenshots/Downloading.png) |
-
-| Dark Mode | Add Download |
-|:---:|:---:|
-| ![Dark Mode](Nickvision.Parabolic.GNOME/Screenshots/DarkMode.png) | ![Add Download Dialog](Nickvision.Parabolic.GNOME/Screenshots/AddDownloadDialog.png) |
-
-</details>
-
-<details>
-<summary><b>🪟 Windows Interface (WinUI)</b></summary>
-
-<br>
-
-| Home Page | Active Downloads |
-|:---:|:---:|
-| ![Home Page](Nickvision.Parabolic.WinUI/Screenshots/Home.png) | ![Downloading](Nickvision.Parabolic.WinUI/Screenshots/Downloading.png) |
-
-| Dark Mode | Add Download |
-|:---:|:---:|
-| ![Dark Mode](Nickvision.Parabolic.WinUI/Screenshots/DarkMode.png) | ![Add Download Dialog](Nickvision.Parabolic.WinUI/Screenshots/AddDownloadDialog.png) |
-
-</details>
-
-<details>
-<summary><b>🧩 Chrome Extension</b></summary>
-
-<br>
-
-| Options Page | Right Click Menu |
-|:---:|:---:|
-| ![Options Page](extension/resources/Options.png) | ![Right Click Menu](extension/resources/ChromiumContextMenu.png) |
-
-https://github.com/user-attachments/assets/9bd47723-8623-4e47-8e69-d21ac68bdef8
-
-</details>
-
-<details>
-<summary><b>🦊 Firefox Extension</b></summary>
-
-<br>
-
-| Options Page | Right Click Menu |
-|:---:|:---:|
-| ![Options Page](extension/resources/Options.png) | ![Right Click Menu](extension/resources/FirefoxContextMenu.png) |
-
-https://github.com/user-attachments/assets/866cc587-e9c9-4cc0-bb81-e628e9fc2373
-
-</details>
-
-## 🔨 Building
-
-Parabolic is a .NET 10 project and can easily be built on any platform. Besides .NET 10, the following are required system dependencies for building each project:
-
-### 📦 Dependencies
-
-#### Shared
-- [gettext](https://www.gnu.org/software/gettext/)
-  - Can be installed on Windows using `msys2`
-
-#### WinUI
-- [WindowsAppSDK](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/)
-
-#### GNOME
-- [Gtk4](https://docs.gtk.org/gtk4/)
-- [libadwaita](https://gitlab.gnome.org/GNOME/libadwaita)
-- [blueprint-compiler](https://gitlab.gnome.org/GNOME/blueprint-compiler)
-  - Can be installed on Windows using `msys2`
-
-### 🏗️ Build Process
-
-Once all dependencies are available on the system, simply run:
-
-**WinUI:**
-```bash
-dotnet run --project Nickvision.Parabolic.WinUI
-```
-
-**GNOME:**
-```bash
-dotnet run --project Nickvision.Parabolic.GNOME
-```
-
-## 📜 Code of Conduct
-
-This project follows the [**GNOME Code of Conduct**](https://conduct.gnome.org/).
-
-We expect all participants to treat each other with respect and contribute to a welcoming and inclusive community.

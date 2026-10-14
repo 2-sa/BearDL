@@ -1,91 +1,81 @@
-# Repository Guidelines
+# BearDL Repository Guidelines
 
-## Start Here & Current Authorization
+## Start here
 
-Read [docs/CURRENT_TASK.md](docs/CURRENT_TASK.md) before making changes, and
-[docs/RELEASING.md](docs/RELEASING.md) before building or delivering an update.
-Verify the current Git status, branch, remote, and workflow state rather than
-assuming the handoff snapshot is still current. Preserve pending local changes.
+This is the inner Git repository. When starting from the outer workspace, enter `BearDL/` before Git commands. Use repository-relative paths in documentation; do not include personal device paths.
 
-The user's latest instruction is to keep changes local and **not make a commit
-until explicitly asked**. Do not commit, push, or start a new distributable build
-without that authorization. When the user later authorizes delivery, target
-`origin` (`2-sa/BearDL`) and `main` unless they explicitly choose another target.
-Update the current-task document after meaningful progress so a new conversation
-can continue without reconstructing the previous chat.
+Read these documents in order:
 
-## Repository Identity & Goal
+1. [docs/CURRENT_TASK.md](docs/CURRENT_TASK.md): live task, authorization, pending problems, and continuation steps.
+2. [docs/RELEASING.md](docs/RELEASING.md): build and delivery workflow.
+3. [docs/PROJECT_AND_COMMIT_GUIDE.md](docs/PROJECT_AND_COMMIT_GUIDE.md): architecture and the 22 historical commits.
+4. [docs/RESOURCE_REVIEW_2026-10-14.md](docs/RESOURCE_REVIEW_2026-10-14.md): resource review, measurements, and their limits.
 
-BearDL ([2-sa/BearDL](https://github.com/2-sa/BearDL), `origin`) forks [NickvisionApps/Parabolic](https://github.com/NickvisionApps/Parabolic). Target contributions to BearDL unless explicitly contributing upstream. Existing `Nickvision.Parabolic.*` names are inherited.
+Inspect `git status --short`, `git diff`, branch, remotes, and relevant CI results. Preserve local edits and new files. Treat dated history as evidence, not as the current task or reusable permission. Follow the latest direct user instruction; summarize the current state and unresolved work before editing.
 
-The fork's primary goal is complete Arabic RTL support across navigation, menus, text, toolbars, dialogs, settings, and download rows. Translation alone does not satisfy this goal.
+## Authorization and delivery
 
-## Project Structure & Module Organization
+Keep changes local until the user explicitly authorizes a commit or delivery. Do not commit, push, or start a distributable build on your own. A previous authorized delivery does not authorize unrelated later changes. When delivery is authorized, use `origin` (`2-sa/BearDL`) and `main` unless the user chooses another target.
 
-This .NET 10 yt-dlp frontend follows MVC:
+Ask and wait before downloading or installing software, SDKs, runtimes, build tools, or development certificates on the user's device. A build request does not grant installation permission. Prefer existing tools for lightweight checks and GitHub Actions for dependency setup, application builds, and packaging. Do not run local application builds unless requested.
 
-- `Nickvision.Parabolic.Shared/`: shared controllers, models, events, and services; keep business logic here.
-- `Nickvision.Parabolic.WinUI/`: Windows views, XAML controls, and assets.
-- `Nickvision.Parabolic.GNOME/`: GNOME views, Blueprint layouts, and resources.
-- `extension/`: browser extension.
-- `resources/`: artwork, gettext catalogs (`po/`), and yt-dlp plugins.
-- `flatpak/`, `inno/`, `.github/workflows/`: packaging and CI.
+A push to `main` starts `.github/workflows/release.yml`. Confirm the built commit and artifacts before sharing download links. New distributable code needs a new increasing version, assigned by the release workflow as `2026.5.(100 + github.run_number)`. Reruns retry the same code and version; do not reuse an old version for changed code. Standalone platform workflows with fallback `2026.5.0` are validation builds.
 
-## Build, Test, and Development Commands
+## Repository identity and architecture
 
-Prefer GitHub Actions for dependency installation, builds, automated checks, and packaging. Keep the local machine focused on editing, source inspection, and lightweight Git checks; do not install build toolchains or run local builds unless the user requests it. Use the fork's `.github/workflows/windows.yml` for Windows builds and deliver its artifacts for visual testing.
+[BearDL](https://github.com/2-sa/BearDL) forks [NickvisionApps/Parabolic](https://github.com/NickvisionApps/Parabolic). Target this fork by default and retain upstream attribution. Existing `Nickvision.Parabolic.*` and application identifiers are inherited; renaming them can affect resources, storage, launch protocols, and packaging.
 
-Ask first and wait for explicit permission before downloading or installing any
-program, SDK, runtime, build tool, or development certificate on the user's
-device. A request to build or update the app does not authorize installing tools.
-Keep toolchain installation and certificate setup on GitHub runners.
+The fork aims for native Arabic wording and complete RTL behavior while preserving English layouts. Translation alone does not satisfy that goal.
 
-Commands run from the repository root:
+- `Nickvision.Parabolic.Shared/`: controllers, services, models, events, configuration extensions, and shared business logic.
+- `Nickvision.Parabolic.WinUI/`: Windows XAML, controls, and views.
+- `Nickvision.Parabolic.GNOME/`: GTK/libadwaita C# views and `Blueprints/` for both Linux and macOS.
+- `resources/po/`: gettext translations; `resources/yt-dlp-plugins/`: bundled extractors.
+- `extension/`: browser integration using the inherited launch protocol.
+- `.github/workflows/`, `flatpak/`, `inno/`, `resources/macos/`, `resources/linux/`: CI and packaging.
+- `tests/`: regression checks; `docs/`: role-specific guides.
 
-- `git diff --check`: local whitespace check.
-- `dotnet build Nickvision.Parabolic.Shared`: compile shared code on a configured runner.
-- `dotnet publish Nickvision.Parabolic.WinUI -c Release`: release publishing; use the workflow's runtime, platform, and restore arguments.
+The solution is `Nickvision.Parabolic.slnx`, using .NET 10. Keep business behavior in Shared and implement UI changes in both frontends when requested for all platforms. WinUI changes do not propagate to GTK automatically. Check existing features before proposing additions.
 
-Keep SDK and gettext setup in CI. Builds update translation catalogs; review generated changes before committing.
+## Coding and resources
 
-## Build & Release Numbering
+Use four-space C# indentation, separate-line braces, file-scoped namespaces, explicit imports, and nullable annotations. Use `PascalCase` for types, methods, and properties; `camelCase` for locals; `_camelCase` for instance fields; `s_` for static fields. Preserve established XML formatting. CI uses codespell.
 
-Every new distributable build must receive a new, increasing version number. Use `.github/workflows/release.yml`, which generates the version from `github.run_number` and passes it to every platform, installer, and release tag. Never reuse a previous release number for changed code. Start a new workflow run for a new build; reserve reruns for retrying failed jobs from the same build. Platform-only workflows with the fallback version `2026.5.0` are validation builds, not distributable releases.
+Use the UI dispatcher when modifying WinUI controls and the existing GLib dispatch path for GTK. Only one WinUI ContentDialog may be open at a time; handle actual closure and shutdown when queuing confirmations. Qualify types or use aliases when imported namespaces expose the same name, such as the two `DispatcherQueueTimer` types.
 
-## Coding Style & Naming Conventions
+Avoid unnecessary polling, per-layout allocations, full-history scans for a single URL, and unbounded background extraction. Keep waits asynchronous, release gates in `finally`, stop timers when their owner closes, and detach handlers that retain message data. Compare resource samples with identical inputs and distinguish UI overhead from yt-dlp/FFmpeg work.
 
-Use four-space C# indentation, separate-line braces, file-scoped namespaces, explicit imports, and nullable annotations. Use `PascalCase` for types/methods/properties, `camelCase` for locals, `_camelCase` for instance fields, and `s_` for static fields. Preserve existing XML indentation. CI uses codespell; no dedicated formatter configuration exists.
+## Arabic and RTL
 
-## Arabic & RTL Guidelines
+Apply the `arabic-ui` skill to Arabic UI and documentation. Use concise native phrasing, gettext plural forms, and the active UI language to determine direction. Keep English LTR intact. Mirror directional arrows only, not artwork or nondirectional icons.
 
-Apply the `arabic-ui` skill to Arabic interface work. Derive direction from the active UI language using native toolkit direction support. Preserve English LTR layouts. Place Arabic navigation on the right and review alignment, spacing, focus order, and popup placement. Mirror directional arrows only, preserving nondirectional icons and artwork.
+Keep Arabic labels in language-directed containers. Isolate URL, path, username, password, argument, and numeric text as LTR where needed without changing stored values. Use separate labels and `AutomationProperties.LabeledBy`; `LocalizationHelper.CreateLabeledInput` supports dynamic fields.
 
-Isolate URLs, paths, and numeric expressions as LTR where needed without reversing stored text. Use concise Arabic and gettext plural forms.
+Keep toggle labels and switches in one row: Arabic label right, switch left. Reserve a separate column for the switch, allow label wrapping, and disable responsive stacking for toggle settings cards. Apply `ToggleSwitchHelper.Apply` directly to new named WinUI toggles after localization, including hidden pages. Preserve `IsOn`, accessibility, and dependent options. The required Arabic knob direction is off on the right and on on the left.
 
-Keep Arabic field labels in the language-directed container; give LTR direction
-only to the URL, path, username, password, or argument input. Use separate labels
-with `AutomationProperties.LabeledBy` when an LTR input would move its header to
-the wrong side. `LocalizationHelper.CreateLabeledInput` supports dynamic forms.
+Keep vertical scrollbars on the right: scrolling container LTR, content restored to the UI direction. Use `ScrollViewportHelper.ConstrainContentWidth` to account for padding and margins. Avoid fixed 500-DIP cards and negative margins; stretch list contents within the viewport.
 
-Keep toggle labels and switches in one horizontal row: Arabic labels on the right, switches on the left. Reserve a separate column for the switch; allow long labels to wrap within their own column. Disable responsive stacking for toggle settings cards. Preserve accessible labels and dependent settings.
+Keep the URL and discovery dialogs compact. Configuration tabs share one fixed viewport. Empty title-bar space must remain draggable; menus and caption buttons must retain correct hit regions after layout and DPI changes.
 
-Keep vertical scrollbars on the right in every window. Give scrolling containers LTR direction and reserve scrollbar space; explicitly restore the UI language direction on their content.
+Keep Arabic `translation-credits` empty as requested. Preserve other project credits, license files, and the attribution on the pinned Inno Setup translation. Review generated PO changes without restoring removed credits.
 
-Constrain the content width as well as the scroll viewport when direction changes
-inside a scrolling container. Use `ScrollViewportHelper.ConstrainContentWidth`
-to account for padding and content margins as the viewport changes. Avoid fixed
-500-DIP list cards and negative margins that make RTL text or icons extend beyond
-the visible area. Stretch list item content within the available width.
+## Validation
 
-Keep the initial URL dialog and media-discovery progress dialog compact. Quality,
-subtitle, and advanced pages share a fixed configuration viewport so selecting a
-tab cannot shrink or enlarge the dialog. Empty title-bar space must remain
-draggable; menus and caption buttons must retain their own input regions.
+Run `git diff --check` locally and inspect affected source, XAML, Blueprint, and translation keys with gettext contexts. Do not call XML parsing a successful XAML build.
 
-## Testing Guidelines
+`.github/workflows/plugins.yml` runs these checks on configured runners before release builds:
 
-Subtitle plugin regression tests live in `tests/plugins/`; `.github/workflows/plugins.yml` checks bundled and latest yt-dlp before release builds. No .NET test suite or coverage threshold is configured. Build affected platforms on GitHub Actions. Verify downloaded artifacts for Arabic RTL, English LTR, mixed text, dialogs, menus, keyboard navigation, and downloads. Report CI results separately from visual verification; capture screenshots before claiming visual completion.
+- `python -m unittest discover -s tests/plugins -v`: subtitle extraction against bundled and latest yt-dlp.
+- `dotnet run --project tests/duplicates/DuplicateDownloadChecks.csproj --configuration Release`: duplicate detection and bounded allocation/file-check scenarios.
 
-## Commit & Pull Request Guidelines
+These are focused checks, not a comprehensive .NET/UI test suite or a guarantee about whole-app CPU and memory. Build every affected platform on Actions. Build steps can update translation catalogs; review generated changes before committing.
 
-History mixes descriptive subjects with `fix:` and `docs(readme):`. Keep commits focused. PRs should include behavior changes, relevant issues, validation results, and UI screenshots. Follow `CONTRIBUTING.md` for translation and private security reporting.
+Verify artifacts for Arabic RTL, English LTR, mixed technical text, toggle states, scrolling, title-bar dragging, dialogs, keyboard navigation, normal/fast/batch/playlist downloads, and Windows updating. Resource benchmarks, compilation, release publication, installed behavior, and visual acceptance are separate results. Capture screenshots before claiming visual completion. The read-only `tests/windows/Verify-DownloadDialogLayout.ps1` supplements visual checks.
+
+## Documentation and review
+
+Keep `CURRENT_TASK.md` as the single current-state and handoff document. Keep architecture/history in `PROJECT_AND_COMMIT_GUIDE.md`, build rules in `RELEASING.md`, and measurements in the resource report. Do not recreate a parallel dated handoff with conflicting authorization or stale build status.
+
+After meaningful progress, update the current-state document with what changed, what was tested, known failures, and the next step. Do not start another release just to record build status unless requested.
+
+Follow [CONTRIBUTING.md](CONTRIBUTING.md) for contribution, translation, and private security reporting. Keep commits focused. PR descriptions should state the final behavior, affected platforms, validation, and any unverified runtime or visual result; attach screenshots for UI changes.

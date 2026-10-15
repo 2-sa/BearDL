@@ -179,6 +179,24 @@ bundle_dylib() {
             dep_name="$(basename "$dep_path")"
             install_name_tool -change "$dep_path" "@rpath/$dep_name" "$FRAMEWORKS_DIR/$lib_name" 2>/dev/null || true
             bundle_dylib "$dep_path"
+        elif [[ "$dep_path" == @rpath/* || "$dep_path" == @loader_path/* ]]; then
+            # Dependency recorded as a relative rpath reference (e.g. libsharpyuv
+            # split out of libwebp). The install name is already relocatable, but
+            # the actual library file must be present in Frameworks.
+            dep_name="$(basename "$dep_path")"
+            if [[ ! -f "$FRAMEWORKS_DIR/$dep_name" ]]; then
+                local resolved=""
+                if [[ -f "$BREW_PREFIX/lib/$dep_name" ]]; then
+                    resolved="$BREW_PREFIX/lib/$dep_name"
+                else
+                    resolved="$(find "$BREW_PREFIX" -name "$dep_name" -type f 2>/dev/null | head -n1)"
+                fi
+                if [[ -n "$resolved" ]]; then
+                    bundle_dylib "$resolved"
+                else
+                    warn "Could not resolve $dep_path referenced by $lib_name"
+                fi
+            fi
         fi
     done < <(otool -L "$lib_path" | tail -n +2)
 }

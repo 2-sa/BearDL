@@ -1,12 +1,11 @@
 import copy
 import json
-import sys
 import unittest
-from pathlib import Path
 from unittest.mock import patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]
-                       / 'resources/yt-dlp-plugins/xhamster_subtitles'))
+from plugin_paths import add_plugin_paths
+
+add_plugin_paths()
 
 from yt_dlp.extractor.xhamster import XHamsterIE
 from yt_dlp_plugins.extractor.xhamster_subtitles import XHamsterSubtitlesIE

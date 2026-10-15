@@ -1,11 +1,10 @@
-import sys
 import unittest
-from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]
-                       / 'resources/yt-dlp-plugins/cookie_challenge'))
+from plugin_paths import add_plugin_paths
+
+add_plugin_paths()
 
 from yt_dlp.extractor.common import InfoExtractor
 from yt_dlp.utils import ExtractorError

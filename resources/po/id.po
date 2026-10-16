@@ -455,8 +455,8 @@ msgid "Keyboard Shortcuts"
 msgstr "Pintasan Keyboard"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:11
-msgid "About Parabolic"
-msgstr "Tentang Parabolic"
+msgid "About BearDL"
+msgstr "Tentang BearDL"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:17
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:91
@@ -1140,11 +1140,11 @@ msgstr "Disclaimer Legal Hak Cipta"
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:151
 msgid ""
 "Videos on YouTube and other sites may be subject to DMCA protection. The "
-"authors of Parabolic do not endorse, and are not responsible for, the use of "
+"authors of BearDL do not endorse, and are not responsible for, the use of "
 "this application in means that will violate these laws."
 msgstr ""
 "Video dalam YouTube dan situs lainnya dapat tunduk pada perlindungan DMCA. "
-"Pencipta Parabolic tidak membenarkan, serta tidak bertanggung jawab atas "
+"Pencipta BearDL tidak membenarkan, serta tidak bertanggung jawab atas "
 "penggunaan aplikasi ini untuk tujuan yang melanggar hukum tersebut."
 
 #: Nickvision.Parabolic.GNOME/Views/MainWindow.cs:199
@@ -1160,10 +1160,10 @@ msgstr "Pulihkan Unduhan?"
 #: Nickvision.Parabolic.GNOME/Views/MainWindow.cs:211
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:173
 msgid ""
-"There are downloads available to recover from when Parabolic crashed. Would "
+"There are downloads available to recover from when BearDL crashed. Would "
 "you like to download them again?"
 msgstr ""
-"Terdapat unduhan yang dapat dipulihkan setelah Parabolic mengalami crash. "
+"Terdapat unduhan yang dapat dipulihkan setelah BearDL mengalami crash. "
 "Apakah anda ingin mengunduhnya kembali?"
 
 #: Nickvision.Parabolic.GNOME/Views/MainWindow.cs:212
@@ -1376,8 +1376,8 @@ msgid "A credential with that name does not exist"
 msgstr "Kredensial dengan nama tersebut tidak ada"
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:61
-msgid "Parabolic"
-msgstr "Parabolic"
+msgid "BearDL"
+msgstr "BearDL"
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:62
 msgid "Download web video and audio."
@@ -1762,11 +1762,11 @@ msgstr "Peringatan"
 
 #: Nickvision.Parabolic.WinUI/Views/AddDownloadDialog.xaml.cs:83
 msgid ""
-"Parabolic will download media based off of previously configured options and "
+"BearDL will download media based off of previously configured options and "
 "sensible defaults. Options including save folder, format, and subtitle "
 "selection will not be shown."
 msgstr ""
-"Parabolic akan mengunduh media berdasarkan pengaturan yang pernah diatur dan "
+"BearDL akan mengunduh media berdasarkan pengaturan yang pernah diatur dan "
 "default yang wajar. Opsi seperti pemilihan folder penyimpanan, pemilihan "
 "format, dan pemilihan subtitel tidak akan ditunjukkan."
 
@@ -1891,8 +1891,8 @@ msgid "Submit"
 msgstr "Simpan"
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:43
-msgid "Update Parabolic and dependencies, such as yt-dlp, to beta versions"
-msgstr "Perbarui Parabolic dan dependensi, seperti yt-dlp, ke versi beta"
+msgid "Update BearDL and dependencies, such as yt-dlp, to beta versions"
+msgstr "Perbarui BearDL dan dependensi, seperti yt-dlp, ke versi beta"
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:44
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:48

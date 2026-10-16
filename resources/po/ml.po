@@ -458,7 +458,7 @@ msgid "Keyboard Shortcuts"
 msgstr ""
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:11
-msgid "About Parabolic"
+msgid "About BearDL"
 msgstr ""
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:17
@@ -1121,7 +1121,7 @@ msgstr ""
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:151
 msgid ""
 "Videos on YouTube and other sites may be subject to DMCA protection. The "
-"authors of Parabolic do not endorse, and are not responsible for, the use of "
+"authors of BearDL do not endorse, and are not responsible for, the use of "
 "this application in means that will violate these laws."
 msgstr ""
 
@@ -1138,7 +1138,7 @@ msgstr ""
 #: Nickvision.Parabolic.GNOME/Views/MainWindow.cs:211
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:173
 msgid ""
-"There are downloads available to recover from when Parabolic crashed. Would "
+"There are downloads available to recover from when BearDL crashed. Would "
 "you like to download them again?"
 msgstr ""
 
@@ -1349,7 +1349,7 @@ msgid "A credential with that name does not exist"
 msgstr ""
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:61
-msgid "Parabolic"
+msgid "BearDL"
 msgstr ""
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:62
@@ -1716,7 +1716,7 @@ msgstr ""
 
 #: Nickvision.Parabolic.WinUI/Views/AddDownloadDialog.xaml.cs:83
 msgid ""
-"Parabolic will download media based off of previously configured options and "
+"BearDL will download media based off of previously configured options and "
 "sensible defaults. Options including save folder, format, and subtitle "
 "selection will not be shown."
 msgstr ""
@@ -1839,7 +1839,7 @@ msgid "Submit"
 msgstr ""
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:43
-msgid "Update Parabolic and dependencies, such as yt-dlp, to beta versions"
+msgid "Update BearDL and dependencies, such as yt-dlp, to beta versions"
 msgstr ""
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:44

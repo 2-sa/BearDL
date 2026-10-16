@@ -191,7 +191,7 @@ public sealed partial class MainWindow : Window
                     {
                         new TextBlock()
                         {
-                            Text = _translationService._("Videos on YouTube and other sites may be subject to DMCA protection. The authors of Parabolic do not endorse, and are not responsible for, the use of this application in means that will violate these laws."),
+                            Text = _translationService._("Videos on YouTube and other sites may be subject to DMCA protection. The authors of BearDL do not endorse, and are not responsible for, the use of this application in means that will violate these laws."),
                             TextWrapping = TextWrapping.WrapWholeWords
                         },
                         checkBox
@@ -214,7 +214,7 @@ public sealed partial class MainWindow : Window
             var recoverDialog = new ContentDialog()
             {
                 Title = _translationService._("Recover Downloads?"),
-                Content = _translationService._("There are downloads available to recover from when Parabolic crashed. Would you like to download them again?"),
+                Content = _translationService._("There are downloads available to recover from when BearDL crashed. Would you like to download them again?"),
                 PrimaryButtonText = _translationService._("Yes"),
                 CloseButtonText = _translationService._("No"),
                 DefaultButton = ContentDialogButton.Primary,

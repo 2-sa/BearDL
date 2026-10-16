@@ -457,8 +457,8 @@ msgid "Keyboard Shortcuts"
 msgstr "キーボードショートカット"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:11
-msgid "About Parabolic"
-msgstr "Parabolic について"
+msgid "About BearDL"
+msgstr "BearDL について"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:17
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:91
@@ -1135,11 +1135,11 @@ msgstr "著作権に関する法的免責事項"
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:151
 msgid ""
 "Videos on YouTube and other sites may be subject to DMCA protection. The "
-"authors of Parabolic do not endorse, and are not responsible for, the use of "
+"authors of BearDL do not endorse, and are not responsible for, the use of "
 "this application in means that will violate these laws."
 msgstr ""
 "YouTube やその他のサイト上の動画は、DMCAによる保護の対象となる場合がありま"
-"す。Parabolic はこれらの法律に違反する形での本アプリケーションの使用を推奨せ"
+"す。BearDL はこれらの法律に違反する形での本アプリケーションの使用を推奨せ"
 "ず、またその使用について一切の責任を負いません。"
 
 #: Nickvision.Parabolic.GNOME/Views/MainWindow.cs:199
@@ -1155,7 +1155,7 @@ msgstr "中断されたダウンロードを復元しますか？"
 #: Nickvision.Parabolic.GNOME/Views/MainWindow.cs:211
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:173
 msgid ""
-"There are downloads available to recover from when Parabolic crashed. Would "
+"There are downloads available to recover from when BearDL crashed. Would "
 "you like to download them again?"
 msgstr ""
 "Prabolicのクラッシュにより中断されたダウンロードがあります。再度ダウンロード"
@@ -1367,8 +1367,8 @@ msgid "A credential with that name does not exist"
 msgstr "その名前の資格情報は存在しません"
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:61
-msgid "Parabolic"
-msgstr "Parabolic"
+msgid "BearDL"
+msgstr "BearDL"
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:62
 msgid "Download web video and audio."
@@ -1753,11 +1753,11 @@ msgstr "警告"
 
 #: Nickvision.Parabolic.WinUI/Views/AddDownloadDialog.xaml.cs:83
 msgid ""
-"Parabolic will download media based off of previously configured options and "
+"BearDL will download media based off of previously configured options and "
 "sensible defaults. Options including save folder, format, and subtitle "
 "selection will not be shown."
 msgstr ""
-"Parabolic は、以前に設定されたオプションや適切なデフォルト値に基づいてメディ"
+"BearDL は、以前に設定されたオプションや適切なデフォルト値に基づいてメディ"
 "アをダウンロードします。保存先フォルダー、形式、字幕選択などのオプションは表"
 "示されません。"
 
@@ -1881,8 +1881,8 @@ msgid "Submit"
 msgstr "送信"
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:43
-msgid "Update Parabolic and dependencies, such as yt-dlp, to beta versions"
-msgstr "Parabolic と依存関係 (yt-dlp等) をベータ版にアップデート"
+msgid "Update BearDL and dependencies, such as yt-dlp, to beta versions"
+msgstr "BearDL と依存関係 (yt-dlp等) をベータ版にアップデート"
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:44
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:48

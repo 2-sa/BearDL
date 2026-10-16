@@ -62,7 +62,7 @@ public sealed partial class SettingsPage : Page
         RowTranslationLanguage.Description = _translationService._("An application restart is required for a change to take effect");
         CmbTranslationLanguage.ItemsSource = _controller.AvailableTranslationLanguages.ToBindableSelectonItems();
         RowPreviewUpdates.Header = _translationService._("Receive Preview Updates");
-        RowPreviewUpdates.Description = _translationService._("Update Parabolic and dependencies, such as yt-dlp, to beta versions");
+        RowPreviewUpdates.Description = _translationService._("Update BearDL and dependencies, such as yt-dlp, to beta versions");
         AutomationProperties.SetName(TglPreviewUpdates, (string)RowPreviewUpdates.Header);
         RowPreventSuspend.Header = _translationService._("Prevent Suspend");
         RowPreventSuspend.Description = _translationService._("Prevent the computer from sleeping while downloads are running");

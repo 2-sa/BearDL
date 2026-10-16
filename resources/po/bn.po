@@ -475,8 +475,8 @@ msgstr "কিবোর্ডের সংক্ষিপ্তাদি"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:11
 #, fuzzy
-msgid "About Parabolic"
-msgstr "প্যারাবোলিক"
+msgid "About BearDL"
+msgstr "BearDL"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:17
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:91
@@ -1179,7 +1179,7 @@ msgstr ""
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:151
 msgid ""
 "Videos on YouTube and other sites may be subject to DMCA protection. The "
-"authors of Parabolic do not endorse, and are not responsible for, the use of "
+"authors of BearDL do not endorse, and are not responsible for, the use of "
 "this application in means that will violate these laws."
 msgstr ""
 
@@ -1198,11 +1198,11 @@ msgstr "পুনঃ অধঃগ্রহণ"
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:173
 #, fuzzy
 msgid ""
-"There are downloads available to recover from when Parabolic crashed. Would "
+"There are downloads available to recover from when BearDL crashed. Would "
 "you like to download them again?"
 msgstr ""
 "কিছু অধঃগ্রহণাদি এখনও চলছে।\n"
-"আপনি নিশ্চিতভাবে প্যারাবোলিক বন্ধ করতে ও অধঃগ্রহণাদি থামাতে চান?"
+"আপনি নিশ্চিতভাবে BearDL বন্ধ করতে ও অধঃগ্রহণাদি থামাতে চান?"
 
 #: Nickvision.Parabolic.GNOME/Views/MainWindow.cs:212
 #: Nickvision.Parabolic.GNOME/Views/MainWindow.cs:243
@@ -1427,8 +1427,8 @@ msgid "A credential with that name does not exist"
 msgstr ""
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:61
-msgid "Parabolic"
-msgstr "প্যারাবোলিক"
+msgid "BearDL"
+msgstr "BearDL"
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:62
 #, fuzzy
@@ -1810,7 +1810,7 @@ msgstr ""
 
 #: Nickvision.Parabolic.WinUI/Views/AddDownloadDialog.xaml.cs:83
 msgid ""
-"Parabolic will download media based off of previously configured options and "
+"BearDL will download media based off of previously configured options and "
 "sensible defaults. Options including save folder, format, and subtitle "
 "selection will not be shown."
 msgstr ""
@@ -1942,7 +1942,7 @@ msgid "Submit"
 msgstr ""
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:43
-msgid "Update Parabolic and dependencies, such as yt-dlp, to beta versions"
+msgid "Update BearDL and dependencies, such as yt-dlp, to beta versions"
 msgstr ""
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:44

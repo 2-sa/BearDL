@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Parabolic Extension",
+  "name": "BearDL Extension",
   "version": "1.4",
-  "description": "Opens specified links in Parabolic for download",
+  "description": "Opens specified links in BearDL for download",
   "homepage_url": "https://github.com/NickvisionApps/Parabolic",
   "permissions": [
     "activeTab",
@@ -31,14 +31,14 @@
         "default": "Alt+P",
         "mac": "Alt+P"
       },
-      "description": "Opens current tab in Parabolic."
+      "description": "Opens current tab in BearDL."
     },
     "open-parabolic-options": {
       "suggested_key": {
         "default": "Alt+O",
         "mac": "Alt+O"
       },
-      "description": "Opens Parabolic Options page."
+      "description": "Opens BearDL Options page."
     }
   }
 }

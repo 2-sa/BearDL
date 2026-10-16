@@ -58,7 +58,7 @@ public class MainWindowController
         // Events
         _configurationService.Saved += ConfigurationService_Saved;
         // Translate strings
-        _appInfo.ShortName = translationService._("Parabolic");
+        _appInfo.ShortName = "BearDL";
         _appInfo.Description = translationService._("Download web video and audio.");
         _appInfo.ExtraLinks.Add(translationService._("Matrix Chat"), new Uri("https://matrix.to/#/#nickvision:matrix.org"));
         _appInfo.Developers.Add("Nicholas Logozzo", "https://github.com/nlogozzo");

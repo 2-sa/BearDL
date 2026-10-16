@@ -458,8 +458,8 @@ msgid "Keyboard Shortcuts"
 msgstr "Συντομεύσεις Πληκτρολογίου"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:11
-msgid "About Parabolic"
-msgstr "Πληροφορίες για το Parabolic"
+msgid "About BearDL"
+msgstr "Πληροφορίες για το BearDL"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:17
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:91
@@ -1158,11 +1158,11 @@ msgstr "Νομική Δήλωση Αποποίησης Ευθύνης Σχετι
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:151
 msgid ""
 "Videos on YouTube and other sites may be subject to DMCA protection. The "
-"authors of Parabolic do not endorse, and are not responsible for, the use of "
+"authors of BearDL do not endorse, and are not responsible for, the use of "
 "this application in means that will violate these laws."
 msgstr ""
 "Τα βίντεο στο YouTube και σε άλλους ιστότοπους ενδέχεται να υπόκεινται στην "
-"προστασία του νόμου DMCA. Οι δημιουργοί του Parabolic δεν υποστηρίζουν τη "
+"προστασία του νόμου DMCA. Οι δημιουργοί του BearDL δεν υποστηρίζουν τη "
 "χρήση αυτής της εφαρμογής με τρόπους που παραβιάζουν τους νόμους αυτούς και "
 "δεν φέρουν καμία ευθύνη για κάτι τέτοιο."
 
@@ -1179,10 +1179,10 @@ msgstr "Ανάκτηση Λήψεων;"
 #: Nickvision.Parabolic.GNOME/Views/MainWindow.cs:211
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:173
 msgid ""
-"There are downloads available to recover from when Parabolic crashed. Would "
+"There are downloads available to recover from when BearDL crashed. Would "
 "you like to download them again?"
 msgstr ""
-"Υπάρχουν διαθέσιμες λήψεις για ανάκτηση από τότε που το Parabolic "
+"Υπάρχουν διαθέσιμες λήψεις για ανάκτηση από τότε που το BearDL "
 "διακόπηκε . Θέλετε να γίνει ξανά λήψη τους;"
 
 #: Nickvision.Parabolic.GNOME/Views/MainWindow.cs:212
@@ -1397,8 +1397,8 @@ msgid "A credential with that name does not exist"
 msgstr "Δεν υπάρχει διαπιστευτήριο με αυτό το όνομα"
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:61
-msgid "Parabolic"
-msgstr "Parabolic"
+msgid "BearDL"
+msgstr "BearDL"
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:62
 msgid "Download web video and audio."
@@ -1783,11 +1783,11 @@ msgstr "Προειδοποίηση"
 
 #: Nickvision.Parabolic.WinUI/Views/AddDownloadDialog.xaml.cs:83
 msgid ""
-"Parabolic will download media based off of previously configured options and "
+"BearDL will download media based off of previously configured options and "
 "sensible defaults. Options including save folder, format, and subtitle "
 "selection will not be shown."
 msgstr ""
-"Το Parabolic θα κατεβάσει τα πολυμέσα βάσει των επιλογών που έχουν ρυθμιστεί "
+"Το BearDL θα κατεβάσει τα πολυμέσα βάσει των επιλογών που έχουν ρυθμιστεί "
 "προηγουμένως και τις λογικές προεπιλογές. Οι επιλογές όπως ο φάκελος "
 "αποθήκευσης, η μορφή και η επιλογή υποτίτλων δεν θα εμφανίζονται."
 
@@ -1915,9 +1915,9 @@ msgid "Submit"
 msgstr "Υποβολή"
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:43
-msgid "Update Parabolic and dependencies, such as yt-dlp, to beta versions"
+msgid "Update BearDL and dependencies, such as yt-dlp, to beta versions"
 msgstr ""
-"Ενημέρωση του Parabolic και των εξαρτήσεών του, όπως το yt-dlp, σε εκδόσεις "
+"Ενημέρωση του BearDL και των εξαρτήσεών του, όπως το yt-dlp, σε εκδόσεις "
 "beta"
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:44

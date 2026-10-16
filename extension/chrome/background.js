@@ -25,7 +25,7 @@ function openParabolicUrl(url) {
 function createContextMenu() {
   chrome.contextMenus.create({
     id: "openParabolicLink",
-    title: "Open link in Parabolic",
+    title: "Open link in BearDL",
     contexts: ["link", "page"]
   });
 }

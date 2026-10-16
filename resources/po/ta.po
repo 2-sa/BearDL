@@ -468,8 +468,8 @@ msgid "Keyboard Shortcuts"
 msgstr "விசைப்பலகை குறுக்குவழிகள்"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:11
-msgid "About Parabolic"
-msgstr "பரபோலிக் பற்றி"
+msgid "About BearDL"
+msgstr "BearDL பற்றி"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:17
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:91
@@ -1186,7 +1186,7 @@ msgstr ""
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:151
 msgid ""
 "Videos on YouTube and other sites may be subject to DMCA protection. The "
-"authors of Parabolic do not endorse, and are not responsible for, the use of "
+"authors of BearDL do not endorse, and are not responsible for, the use of "
 "this application in means that will violate these laws."
 msgstr ""
 
@@ -1205,10 +1205,10 @@ msgstr "மீட்டெடுக்கப்பட்டது {} பதி�
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:173
 #, fuzzy
 msgid ""
-"There are downloads available to recover from when Parabolic crashed. Would "
+"There are downloads available to recover from when BearDL crashed. Would "
 "you like to download them again?"
 msgstr ""
-"பரபோலிக் செயலிழந்தபோது மீட்க பதிவிறக்கங்கள் உள்ளன. அவற்றை மீட்டெடுக்க விரும்புகிறீர்களா?"
+"BearDL செயலிழந்தபோது மீட்க பதிவிறக்கங்கள் உள்ளன. அவற்றை மீட்டெடுக்க விரும்புகிறீர்களா?"
 
 #: Nickvision.Parabolic.GNOME/Views/MainWindow.cs:212
 #: Nickvision.Parabolic.GNOME/Views/MainWindow.cs:243
@@ -1424,8 +1424,8 @@ msgid "A credential with that name does not exist"
 msgstr "இந்த பெயருடன் ஒரு உரையாடல் ஏற்கனவே உள்ளது."
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:61
-msgid "Parabolic"
-msgstr "பரபோலிக்"
+msgid "BearDL"
+msgstr "BearDL"
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:62
 #, fuzzy
@@ -1819,7 +1819,7 @@ msgstr "எச்சரிக்கை"
 
 #: Nickvision.Parabolic.WinUI/Views/AddDownloadDialog.xaml.cs:83
 msgid ""
-"Parabolic will download media based off of previously configured options and "
+"BearDL will download media based off of previously configured options and "
 "sensible defaults. Options including save folder, format, and subtitle "
 "selection will not be shown."
 msgstr ""
@@ -1953,7 +1953,7 @@ msgid "Submit"
 msgstr ""
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:43
-msgid "Update Parabolic and dependencies, such as yt-dlp, to beta versions"
+msgid "Update BearDL and dependencies, such as yt-dlp, to beta versions"
 msgstr ""
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:44

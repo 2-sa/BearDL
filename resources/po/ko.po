@@ -467,8 +467,8 @@ msgid "Keyboard Shortcuts"
 msgstr "키보드 단축키"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:11
-msgid "About Parabolic"
-msgstr "Parabolic에 대하여"
+msgid "About BearDL"
+msgstr "BearDL에 대하여"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:17
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:91
@@ -1176,7 +1176,7 @@ msgstr ""
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:151
 msgid ""
 "Videos on YouTube and other sites may be subject to DMCA protection. The "
-"authors of Parabolic do not endorse, and are not responsible for, the use of "
+"authors of BearDL do not endorse, and are not responsible for, the use of "
 "this application in means that will violate these laws."
 msgstr ""
 
@@ -1195,7 +1195,7 @@ msgstr "다운로드 {} 개가 복구됨"
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:173
 #, fuzzy
 msgid ""
-"There are downloads available to recover from when Parabolic crashed. Would "
+"There are downloads available to recover from when BearDL crashed. Would "
 "you like to download them again?"
 msgstr "다운로드가 진행 중입니다. 정말로 종료하시겠습니까?"
 
@@ -1415,8 +1415,8 @@ msgid "A credential with that name does not exist"
 msgstr "이 이름의 자격 증명이 이미 존재합니다."
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:61
-msgid "Parabolic"
-msgstr "Parabolic"
+msgid "BearDL"
+msgstr "BearDL"
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:62
 #, fuzzy
@@ -1814,7 +1814,7 @@ msgstr "경고"
 
 #: Nickvision.Parabolic.WinUI/Views/AddDownloadDialog.xaml.cs:83
 msgid ""
-"Parabolic will download media based off of previously configured options and "
+"BearDL will download media based off of previously configured options and "
 "sensible defaults. Options including save folder, format, and subtitle "
 "selection will not be shown."
 msgstr ""
@@ -1945,7 +1945,7 @@ msgid "Submit"
 msgstr ""
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:43
-msgid "Update Parabolic and dependencies, such as yt-dlp, to beta versions"
+msgid "Update BearDL and dependencies, such as yt-dlp, to beta versions"
 msgstr ""
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:44

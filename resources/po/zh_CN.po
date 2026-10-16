@@ -450,8 +450,8 @@ msgid "Keyboard Shortcuts"
 msgstr "快捷键"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:11
-msgid "About Parabolic"
-msgstr "关于 Parabolic"
+msgid "About BearDL"
+msgstr "关于 BearDL"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:17
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:91
@@ -1132,10 +1132,10 @@ msgstr "法律版权声明"
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:151
 msgid ""
 "Videos on YouTube and other sites may be subject to DMCA protection. The "
-"authors of Parabolic do not endorse, and are not responsible for, the use of "
+"authors of BearDL do not endorse, and are not responsible for, the use of "
 "this application in means that will violate these laws."
 msgstr ""
-"YouTube 和其他网站视频可能受《数字千年版权法案》(DMCA) 保护。Parabolic 的作者"
+"YouTube 和其他网站视频可能受《数字千年版权法案》(DMCA) 保护。BearDL 的作者"
 "对违法使用此应用的行为不认可、也不承担相应后果。"
 
 #: Nickvision.Parabolic.GNOME/Views/MainWindow.cs:199
@@ -1152,7 +1152,7 @@ msgstr "恢复下载？"
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:173
 #, fuzzy
 msgid ""
-"There are downloads available to recover from when Parabolic crashed. Would "
+"There are downloads available to recover from when BearDL crashed. Would "
 "you like to download them again?"
 msgstr "这种行为是不可逆转的. 你确定要删除它吗?"
 
@@ -1365,8 +1365,8 @@ msgid "A credential with that name does not exist"
 msgstr "此名称的凭据不存在"
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:61
-msgid "Parabolic"
-msgstr "Parabolic"
+msgid "BearDL"
+msgstr "BearDL"
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:62
 #, fuzzy
@@ -1758,11 +1758,11 @@ msgstr "警告"
 
 #: Nickvision.Parabolic.WinUI/Views/AddDownloadDialog.xaml.cs:83
 msgid ""
-"Parabolic will download media based off of previously configured options and "
+"BearDL will download media based off of previously configured options and "
 "sensible defaults. Options including save folder, format, and subtitle "
 "selection will not be shown."
 msgstr ""
-"Parabolic 将根据此前配置和默认配置下载媒体文件。保存文件夹、保存格式和字幕等"
+"BearDL 将根据此前配置和默认配置下载媒体文件。保存文件夹、保存格式和字幕等"
 "选项将不显示。"
 
 #: Nickvision.Parabolic.WinUI/Views/AddDownloadDialog.xaml.cs:94
@@ -1884,8 +1884,8 @@ msgid "Submit"
 msgstr "提交"
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:43
-msgid "Update Parabolic and dependencies, such as yt-dlp, to beta versions"
-msgstr "更新 Parabolic 及 yt-dlp 等其依赖项到 beta 版本"
+msgid "Update BearDL and dependencies, such as yt-dlp, to beta versions"
+msgstr "更新 BearDL 及 yt-dlp 等其依赖项到 beta 版本"
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:44
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:48

@@ -195,7 +195,7 @@ public class MainWindow : Adw.ApplicationWindow
         {
             var chkBox = Gtk.CheckButton.New();
             chkBox.Label = _translationService._("Don't show this message again");
-            var disclaimerDialog = Adw.AlertDialog.New(_translationService._("Legal Copyright Disclaimer"), _translationService._("Videos on YouTube and other sites may be subject to DMCA protection. The authors of Parabolic do not endorse, and are not responsible for, the use of this application in means that will violate these laws."));
+            var disclaimerDialog = Adw.AlertDialog.New(_translationService._("Legal Copyright Disclaimer"), _translationService._("Videos on YouTube and other sites may be subject to DMCA protection. The authors of BearDL do not endorse, and are not responsible for, the use of this application in means that will violate these laws."));
             disclaimerDialog.AddResponse("ok", _translationService._("I understand"));
             disclaimerDialog.SetDefaultResponse("ok");
             disclaimerDialog.SetCloseResponse("ok");
@@ -208,7 +208,7 @@ public class MainWindow : Adw.ApplicationWindow
         }
         if (_controller.RecoverableDownloadsCount > 0)
         {
-            var recoverDialog = Adw.AlertDialog.New(_translationService._("Recover Downloads?"), _translationService._("There are downloads available to recover from when Parabolic crashed. Would you like to download them again?"));
+            var recoverDialog = Adw.AlertDialog.New(_translationService._("Recover Downloads?"), _translationService._("There are downloads available to recover from when BearDL crashed. Would you like to download them again?"));
             recoverDialog.AddResponse("yes", _translationService._("Yes"));
             recoverDialog.AddResponse("no", _translationService._("No"));
             recoverDialog.SetResponseAppearance("yes", Adw.ResponseAppearance.Suggested);

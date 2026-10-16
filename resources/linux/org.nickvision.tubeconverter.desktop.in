@@ -1,6 +1,6 @@
 [Desktop Entry]
 Version=1.0
-Name=Parabolic
+Name=BearDL
 Comment=Download web video and audio
 Exec=@LIB_DIR@/@OUTPUT_NAME@ %u
 Icon=@APP_ID@

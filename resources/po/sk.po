@@ -455,8 +455,8 @@ msgid "Keyboard Shortcuts"
 msgstr "Klávesové skratky"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:11
-msgid "About Parabolic"
-msgstr "O aplikácii Parabolic"
+msgid "About BearDL"
+msgstr "O aplikácii BearDL"
 
 #: Nickvision.Parabolic.GNOME/Blueprints/MainWindow.blp:17
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:91
@@ -1144,11 +1144,11 @@ msgstr "Právne upozornenie o autorských právach"
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:151
 msgid ""
 "Videos on YouTube and other sites may be subject to DMCA protection. The "
-"authors of Parabolic do not endorse, and are not responsible for, the use of "
+"authors of BearDL do not endorse, and are not responsible for, the use of "
 "this application in means that will violate these laws."
 msgstr ""
 "Videá na YouTube a iných platformách môžu podliehať ochrane DMCA. Autori "
-"aplikácie Parabolic nevyjadrujú súhlas s používaním tejto aplikácie "
+"aplikácie BearDL nevyjadrujú súhlas s používaním tejto aplikácie "
 "spôsobom, ktorý by mohol porušovať zákony a nenesú zodpovednosť za akékoľvek "
 "nelegálne používanie."
 
@@ -1165,11 +1165,11 @@ msgstr "Obnoviť sťahovanie?"
 #: Nickvision.Parabolic.GNOME/Views/MainWindow.cs:211
 #: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:173
 msgid ""
-"There are downloads available to recover from when Parabolic crashed. Would "
+"There are downloads available to recover from when BearDL crashed. Would "
 "you like to download them again?"
 msgstr ""
 "K dispozícii sú súbory na stiahnutie, ktoré je možné obnoviť po zlyhaní "
-"programu Parabolic. Chcete ich stiahnuť znovu?"
+"programu BearDL. Chcete ich stiahnuť znovu?"
 
 #: Nickvision.Parabolic.GNOME/Views/MainWindow.cs:212
 #: Nickvision.Parabolic.GNOME/Views/MainWindow.cs:243
@@ -1378,8 +1378,8 @@ msgid "A credential with that name does not exist"
 msgstr "Prístupový údaj s týmto názvom neexistuje"
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:61
-msgid "Parabolic"
-msgstr "Parabolic"
+msgid "BearDL"
+msgstr "BearDL"
 
 #: Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs:62
 msgid "Download web video and audio."
@@ -1763,11 +1763,11 @@ msgstr "Upozornenie"
 
 #: Nickvision.Parabolic.WinUI/Views/AddDownloadDialog.xaml.cs:83
 msgid ""
-"Parabolic will download media based off of previously configured options and "
+"BearDL will download media based off of previously configured options and "
 "sensible defaults. Options including save folder, format, and subtitle "
 "selection will not be shown."
 msgstr ""
-"Parabolic stiahne médiá na základe predtým nastavených možností a rozumných "
+"BearDL stiahne médiá na základe predtým nastavených možností a rozumných "
 "predvolených nastavení. Možnosti vrátane priečinka na uloženie, formátu a "
 "výberu titulkov sa nezobrazia."
 
@@ -1893,9 +1893,9 @@ msgid "Submit"
 msgstr "Odoslať"
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:43
-msgid "Update Parabolic and dependencies, such as yt-dlp, to beta versions"
+msgid "Update BearDL and dependencies, such as yt-dlp, to beta versions"
 msgstr ""
-"Aktualizovať Parabolic a závislosti, ako napríklad yt-dlp, na beta verzie"
+"Aktualizovať BearDL a závislosti, ako napríklad yt-dlp, na beta verzie"
 
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:44
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:48

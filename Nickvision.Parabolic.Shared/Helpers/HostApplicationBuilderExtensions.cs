@@ -16,7 +16,7 @@ public static class HostApplicationBuilderExtensions
     {
         public IHostApplicationBuilder ConfigureParabolic(string[] args)
         {
-            var appInfo = new AppInfo("org.nickvision.tubeconverter", "Nickvision Parabolic", "Parabolic")
+            var appInfo = new AppInfo("org.nickvision.tubeconverter", "Nickvision Parabolic", "BearDL")
             {
                 Version = new AppVersion(typeof(MainWindowController).Assembly.GetName().Version!.ToString(3)),
                 Changelog = """

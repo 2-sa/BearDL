@@ -16,7 +16,8 @@ public static class HostApplicationBuilderExtensions
     {
         public IHostApplicationBuilder ConfigureParabolic(string[] args)
         {
-            var appInfo = new AppInfo("org.nickvision.tubeconverter", "Nickvision Parabolic", "BearDL")
+            // EnglishShortName is also the gettext domain; keep the installed catalog name.
+            var appInfo = new AppInfo("org.nickvision.tubeconverter", "Nickvision Parabolic", "Parabolic")
             {
                 Version = new AppVersion(typeof(MainWindowController).Assembly.GetName().Version!.ToString(3)),
                 Changelog = """

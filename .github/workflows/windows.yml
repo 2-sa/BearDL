@@ -69,6 +69,9 @@ jobs:
           Import-Module "$vsInstallPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
           Enter-VsDevShell -VsInstallPath $vsInstallPath -SkipAutomaticLocation
           dotnet publish ${{ env.PROJECT_NAME }} -c Release --no-restore --runtime win-${{ matrix.variant.arch }} /p:Platform=${{ matrix.variant.arch }} /p:Version=${{ env.RELEASE_VERSION }}
+      - name: "Verify published translations"
+        shell: pwsh
+        run: ./tests/windows/Verify-TranslationCatalogs.ps1 -PublishDirectory "${{ env.PROJECT_NAME }}/bin/${{ matrix.variant.arch }}/Release/net10.0-windows10.0.19041.0/win-${{ matrix.variant.arch }}/publish"
       - name: "Installer"
         working-directory: ${{github.workspace}}/inno
         env:

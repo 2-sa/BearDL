@@ -247,3 +247,7 @@ dotnet run --project tests/duplicates/DuplicateDownloadChecks.csproj --configura
 3. عند الإذن بإصلاح وتسليم الكود، تحقق من نجاح اختبارات الكاشف وتجميع Windows والماك ولينكس. لا تعِد تشغيل إصدار قديم لتوزيع كود مختلف بالرقم نفسه.
 4. اختبر الإشعارات والمنتقي وفحص التكرار، وسحب شريط العنوان وأزراره وتغيير حجم النافذة وDPI والعربية والإنجليزية. فحص `tests/windows/Verify-DownloadDialogLayout.ps1` قراءة لحدود الواجهة، وليس بديلًا عن الصور وتجربة النسخة المشغلة.
 5. حدّث حالة هذه الوثيقة دون نسخها إلى وثيقة تسليم جديدة متداخلة. اجعل دليل المشروع للتاريخ والبنية، وتقرير الموارد للقياسات، ودليل الإصدار للتوزيع.
+
+## CI storage policy — 2026-10-19
+
+The user authorized applying the artifact storage policy to all owned repositories. Release packaging is now manual; focused checks stay automatic. Artifacts retain files for one day, with scheduled completed-run cleanup and preview mode. See PROJECT_MAP.md and the Artifact storage policy Actions run for source-specific verification; no new application release was published by this maintenance change.

@@ -110,11 +110,13 @@ jobs:
           move $innoDir\deno.exe $portableDir\Release\deno.exe
       - uses: actions/upload-artifact@v4
         with:
+          retention-days: 1
           path: ${{ github.workspace }}/inno/${{ env.INSTALLER_NAME }}-${{ matrix.variant.arch }}.exe
           name: ${{ env.INSTALLER_NAME }}-${{ matrix.variant.arch }}
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
+          retention-days: 1
           path: ${{ github.workspace }}/portable
           name: BearDLPortable-${{ matrix.variant.arch }}
           if-no-files-found: error

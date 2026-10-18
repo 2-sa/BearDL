@@ -69,9 +69,16 @@ jobs:
           PY
       - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
+          upload-artifact: false
           bundle: BearDL-linux-${{ matrix.variant.arch }}.flatpak
           manifest-path: flatpak/org.nickvision.tubeconverter.json
           cache-key: flatpak-builder-${{ github.sha }}
           arch: ${{ matrix.variant.arch }}
           restore-cache: true
           verbose: true
+      - uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: BearDL-linux-${{ matrix.variant.arch }}-${{ matrix.variant.arch }}.flatpak
+          path: BearDL-linux-${{ matrix.variant.arch }}.flatpak
+          if-no-files-found: error

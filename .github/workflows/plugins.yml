@@ -1,5 +1,7 @@
 name: Download and subtitle checks
 on:
+  push:
+    branches: [main]
   workflow_call:
   pull_request:
     paths:

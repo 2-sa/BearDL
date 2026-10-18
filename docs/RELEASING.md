@@ -8,8 +8,7 @@ Keep SDKs, build tools, dependencies, and certificate setup on GitHub runners.
 Ask and wait for explicit permission before downloading or installing software
 on the user's device; a build request does not grant that permission.
 
-`.github/workflows/release.yml` builds and publishes every push to `main`.
-Run **Build and release BearDL** manually to build the selected branch as well.
+`.github/workflows/release.yml` builds and publishes only when **Build and release BearDL** is explicitly run manually. Pushes to `main` run the focused download/subtitle checks instead of packaging all platforms. Temporary uploads retain files for one day; published Releases remain the durable download channel.
 Pull request checks and standalone platform workflows produce artifacts only.
 
 ## Windows download before release publication

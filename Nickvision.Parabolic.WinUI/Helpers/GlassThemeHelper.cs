@@ -269,12 +269,70 @@ public static class GlassThemeHelper
     private static object? _origNavContentBorderBrush;
     private static bool _wasGlass;
     private static int? _transparencyPercent;
+    private static bool? _useModernLayout;
+
+    public static event EventHandler<bool>? LayoutModeChanged;
 
     private static string TransparencyConfigPath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "Nickvision",
         "Parabolic",
         "glass-transparency.txt");
+
+    private static string LayoutModeConfigPath => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "Nickvision",
+        "Parabolic",
+        "ui-layout-mode.txt");
+
+    public static bool UseModernLayout
+    {
+        get
+        {
+            if (_useModernLayout.HasValue)
+            {
+                return _useModernLayout.Value;
+            }
+            try
+            {
+                if (File.Exists(LayoutModeConfigPath))
+                {
+                    var text = File.ReadAllText(LayoutModeConfigPath).Trim();
+                    _useModernLayout = string.Equals(text, "modern", StringComparison.OrdinalIgnoreCase);
+                    return _useModernLayout.Value;
+                }
+            }
+            catch
+            {
+                // Ignore read errors and fall back to Classic (false)
+            }
+            _useModernLayout = false;
+            return false;
+        }
+    }
+
+    public static void SetUseModernLayout(bool useModern)
+    {
+        if (_useModernLayout == useModern)
+        {
+            return;
+        }
+        _useModernLayout = useModern;
+        try
+        {
+            var dir = Path.GetDirectoryName(LayoutModeConfigPath);
+            if (!string.IsNullOrEmpty(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            File.WriteAllText(LayoutModeConfigPath, useModern ? "modern" : "classic");
+        }
+        catch
+        {
+            // Ignore write errors
+        }
+        LayoutModeChanged?.Invoke(null, useModern);
+    }
 
     public static int TransparencyPercent
     {
@@ -394,14 +452,44 @@ public static class GlassThemeHelper
             }
         };
 
+        var cmbLayout = new ComboBox
+        {
+            MinWidth = 160,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        cmbLayout.Items.Add(translationService._("Classic"));
+        cmbLayout.Items.Add(translationService._("Modern"));
+        cmbLayout.SelectedIndex = UseModernLayout ? 1 : 0;
+        cmbLayout.SelectionChanged += (_, _) =>
+        {
+            if (cmbLayout.SelectedIndex >= 0)
+            {
+                SetUseModernLayout(cmbLayout.SelectedIndex == 1);
+            }
+        };
+
+        var layoutCard = new SettingsCard
+        {
+            Tag = "UiLayoutModeCard",
+            Header = translationService._("Interface Layout"),
+            Description = translationService._("Choose between the classic or modern interface layout"),
+            HeaderIcon = new FontIcon
+            {
+                Glyph = "\uECA5"
+            },
+            Content = cmbLayout
+        };
+
         var themeIndex = parentPanel.Children.IndexOf(rowTheme);
         if (themeIndex >= 0 && themeIndex + 1 < parentPanel.Children.Count)
         {
             parentPanel.Children.Insert(themeIndex + 1, card);
+            parentPanel.Children.Insert(themeIndex + 2, layoutCard);
         }
         else
         {
             parentPanel.Children.Add(card);
+            parentPanel.Children.Add(layoutCard);
         }
     }
 
@@ -543,6 +631,45 @@ public static class GlassThemeHelper
                     (Color.FromArgb(0x48, 0x0A, 0x12, 0x22), 0.0),
                     (Color.FromArgb(0x28, 0x0A, 0x12, 0x22), 1.0))
                 : null;
+        }
+
+        if (mainGrid.Children.Count > 1 && mainGrid.Children[1] is MenuFlyoutSeparator topSeparator)
+        {
+            topSeparator.Visibility = (isGlass || UseModernLayout) ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        if (navViewDownloads.Parent is Grid downloadsGrid)
+        {
+            if (downloadsGrid.Children.Count > 0 && downloadsGrid.Children[0] is Grid toolbarGrid)
+            {
+                if (isGlass)
+                {
+                    toolbarGrid.Margin = new Thickness(14, 8, 14, 6);
+                    toolbarGrid.Padding = new Thickness(8, 4, 8, 4);
+                    toolbarGrid.CornerRadius = new CornerRadius(14);
+                    toolbarGrid.BorderThickness = new Thickness(1);
+                    toolbarGrid.Background = CreateLinearGradient(
+                        new Point(0, 0),
+                        new Point(1, 1),
+                        (Color.FromArgb(0x4A, 0x0C, 0x16, 0x28), 0.0),
+                        (Color.FromArgb(0x32, 0x1E, 0x32, 0x54), 1.0));
+                    toolbarGrid.BorderBrush = CreateSpecularBorderBrush();
+                }
+                else
+                {
+                    toolbarGrid.Margin = new Thickness(12, 0, 0, 0);
+                    toolbarGrid.Padding = new Thickness(0);
+                    toolbarGrid.CornerRadius = new CornerRadius(0);
+                    toolbarGrid.BorderThickness = new Thickness(0);
+                    toolbarGrid.Background = null;
+                    toolbarGrid.BorderBrush = null;
+                }
+            }
+
+            if (downloadsGrid.Children.Count > 1 && downloadsGrid.Children[1] is MenuFlyoutSeparator downloadsSeparator)
+            {
+                downloadsSeparator.Visibility = (isGlass || UseModernLayout) ? Visibility.Collapsed : Visibility.Visible;
+            }
         }
 
         navViewDownloads.Margin = isGlass ? new Thickness(10, 2, 10, 10) : new Thickness(0);

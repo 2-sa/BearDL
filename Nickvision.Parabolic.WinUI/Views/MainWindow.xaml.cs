@@ -78,7 +78,9 @@ public sealed partial class MainWindow : Window
         {
             _isClosed = true;
             _notificationTimer.Stop();
+            GlassThemeHelper.LayoutModeChanged -= OnLayoutModeChanged;
         };
+        GlassThemeHelper.LayoutModeChanged += OnLayoutModeChanged;
         _notificationClickHandler = null;
         // Config
         ApplyTheme();
@@ -165,7 +167,12 @@ public sealed partial class MainWindow : Window
         BtnRetryAllFailed.Label = _translationService._("Retry All Failed");
         BtnClearAllQueued.Label = _translationService._("Clear All Queued");
         BtnClearAllCompleted.Label = _translationService._("Clear All Completed");
-        LblDownloadsAddDownload.Text = _translationService._("Select Batch File");
+        BtnModernStopAllRemaining.Label = _translationService._("Stop All Remaining");
+        BtnModernRetryAllFailed.Label = _translationService._("Retry All Failed");
+        BtnModernClearAllQueued.Label = _translationService._("Clear All Queued");
+        BtnModernClearAllCompleted.Label = _translationService._("Clear All Completed");
+        LblDownloadsAddDownload.Text = _translationService._("Add");
+        LblModernBatchFile.Text = _translationService._("Select Batch File");
         ToolTipService.SetToolTip(BtnAdvancedAddDownload, _translationService._("Add Download"));
         NavDownloadsAll.Content = _translationService._("All");
         NavDownloadsRunning.Content = _translationService._("Running");
@@ -178,19 +185,20 @@ public sealed partial class MainWindow : Window
         PillFilterCompleted.Content = _translationService._("Completed");
         PillFilterFailed.Content = _translationService._("Failed");
         StatusNoneDownloads.Title = _translationService._("No Downloads");
-        StatusNoneDownloads.Description = _translationService._("Add a video, audio, or playlist URL to start downloading");
-        LblNoneAddDownload.Text = _translationService._("Paste");
+        StatusNoneDownloads.Description = _translationService._("There are no downloads of this type");
+        LblNoneAddDownload.Text = _translationService._("Add Download");
         DlgCredential.Title = _translationService._("Credential Required");
         TxtCredentialUsername.PlaceholderText = _translationService._("Enter username here");
         TxtCredentialPassword.PlaceholderText = _translationService._("Enter password here");
         DlgCredential.PrimaryButtonText = _translationService._("Submit");
         DlgCredential.CloseButtonText = _translationService._("Cancel");
         _lastDownloadsNavItem = NavDownloadsAll;
+        ApplyLayoutMode(GlassThemeHelper.UseModernLayout, true);
     }
 
     private async void Window_Loaded(object? sender, RoutedEventArgs e)
     {
-        ViewStack.SelectedIndex = (int)Pages.Downloads;
+        ViewStack.SelectedIndex = GlassThemeHelper.UseModernLayout ? (int)Pages.Downloads : (int)Pages.Home;
         ViewStackDownloads.SelectedIndex = 0;
         MenuCheckForUpdates.IsEnabled = false;
         MenuPopupCheckForUpdates.IsEnabled = false;
@@ -516,11 +524,78 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private void OnLayoutModeChanged(object? sender, bool useModern)
+    {
+        DispatcherQueue.TryEnqueue(() => ApplyLayoutMode(useModern, false));
+    }
+
+    private void ApplyLayoutMode(bool useModern, bool isInitial)
+    {
+        if (useModern)
+        {
+            TopMenuBar.Width = 0;
+            TopMenuBar.Height = 0;
+            TopMenuBar.Opacity = 0;
+            TopMenuBar.IsHitTestVisible = false;
+            TopSeparator.Visibility = Visibility.Collapsed;
+            BtnHeaderAddDownload.Visibility = Visibility.Visible;
+            BtnHeaderHelp.Visibility = Visibility.Visible;
+            ClassicDownloadsToolbar.Visibility = Visibility.Collapsed;
+            ClassicDownloadsSeparator.Visibility = Visibility.Collapsed;
+            BtnSidebarAddDownload.Visibility = Visibility.Visible;
+            NavFooterSeparator.Visibility = Visibility.Visible;
+            NavHistory.Visibility = Visibility.Visible;
+            NavKeyring.Visibility = Visibility.Visible;
+            NavSettings.Visibility = Visibility.Visible;
+            NavAbout.Visibility = Visibility.Visible;
+            QuickUrlCard.Visibility = Visibility.Visible;
+            ModernDownloadsToolbar.Visibility = Visibility.Visible;
+            if (!isInitial && ViewStack.SelectedIndex == (int)Pages.Home)
+            {
+                ViewStack.SelectedIndex = (int)Pages.Downloads;
+            }
+        }
+        else
+        {
+            TopMenuBar.Width = double.NaN;
+            TopMenuBar.Height = double.NaN;
+            TopMenuBar.Opacity = 1;
+            TopMenuBar.IsHitTestVisible = true;
+            TopSeparator.Visibility = _controller.Theme == Theme.Glass ? Visibility.Collapsed : Visibility.Visible;
+            BtnHeaderAddDownload.Visibility = Visibility.Collapsed;
+            BtnHeaderHelp.Visibility = Visibility.Collapsed;
+            ClassicDownloadsToolbar.Visibility = Visibility.Visible;
+            ClassicDownloadsSeparator.Visibility = _controller.Theme == Theme.Glass ? Visibility.Collapsed : Visibility.Visible;
+            BtnSidebarAddDownload.Visibility = Visibility.Collapsed;
+            NavFooterSeparator.Visibility = Visibility.Collapsed;
+            NavHistory.Visibility = Visibility.Collapsed;
+            NavKeyring.Visibility = Visibility.Collapsed;
+            NavSettings.Visibility = Visibility.Collapsed;
+            NavAbout.Visibility = Visibility.Collapsed;
+            QuickUrlCard.Visibility = Visibility.Collapsed;
+            ModernDownloadsToolbar.Visibility = Visibility.Collapsed;
+            if (!isInitial && ViewStack.SelectedIndex == (int)Pages.Downloads && _downloadRows.Count == 0)
+            {
+                ViewStack.SelectedIndex = (int)Pages.Home;
+            }
+        }
+        UpdateDownloadsList();
+        QueueTitleBarInputRegionUpdate();
+    }
+
     private void TitleBar_BackRequested(TitleBar sender, object args)
     {
         TitleBar.IsBackButtonVisible = false;
-        ViewStack.SelectedIndex = (int)Pages.Downloads;
-        NavViewDownloads.SelectedItem = _lastDownloadsNavItem ?? NavDownloadsAll;
+        FrameCustom.Content = null;
+        if (GlassThemeHelper.UseModernLayout)
+        {
+            ViewStack.SelectedIndex = (int)Pages.Downloads;
+            NavViewDownloads.SelectedItem = _lastDownloadsNavItem ?? NavDownloadsAll;
+        }
+        else
+        {
+            ViewStack.SelectedIndex = _downloadRows.Count > 0 ? (int)Pages.Downloads : (int)Pages.Home;
+        }
     }
 
     private async void Controller_DownloadAdded(object? sender, DownloadAddedEventArgs e)
@@ -609,16 +684,14 @@ public sealed partial class MainWindow : Window
         if (args.SelectedItemContainer is NavigationViewItem selectedItem)
         {
             var tag = selectedItem.Tag as string;
-            if (tag == "Settings")
-            {
-                OpenSettingsView();
-                return;
-            }
             if (tag is "0" or "1" or "2" or "3" or "4")
             {
                 _lastDownloadsNavItem = selectedItem;
                 TitleBar.IsBackButtonVisible = false;
-                ViewStack.SelectedIndex = (int)Pages.Downloads;
+                if (GlassThemeHelper.UseModernLayout)
+                {
+                    ViewStack.SelectedIndex = (int)Pages.Downloads;
+                }
                 SyncFilterPills(tag);
             }
         }
@@ -635,6 +708,10 @@ public sealed partial class MainWindow : Window
         else if (tag == "Keyring")
         {
             Keyring(sender, new RoutedEventArgs());
+        }
+        else if (tag == "Settings")
+        {
+            OpenSettingsView();
         }
         else if (tag == "About")
         {
@@ -710,21 +787,6 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private async void QuickPasteOrAdd_Click(object sender, RoutedEventArgs e)
-    {
-        if (Clipboard.GetContent().Contains(StandardDataFormats.Text))
-        {
-            var text = (await Clipboard.GetContent().GetTextAsync())?.Trim();
-            if (!string.IsNullOrEmpty(text) && Uri.TryCreate(text, UriKind.Absolute, out _))
-            {
-                TxtQuickUrl.Text = text;
-                TxtQuickUrl.Focus(FocusState.Programmatic);
-                return;
-            }
-        }
-        await AddDownloadAsync(null);
-    }
-
     private async void QuickDownload_Click(object sender, RoutedEventArgs e) => await TriggerQuickDownloadAsync();
 
     private async Task TriggerQuickDownloadAsync()
@@ -797,7 +859,7 @@ public sealed partial class MainWindow : Window
 
     private async void AddDownload(object? sender, RoutedEventArgs e) => await AddDownloadAsync(null);
 
-    private void Exit(object sender, RoutedEventArgs args) => Window_Closing(AppWindow, null);
+    private void Exit(object sender, RoutedEventArgs args) => Window_Closing(AppWindow, null!);
 
     private async void Keyring(object sender, RoutedEventArgs args)
     {
@@ -807,17 +869,7 @@ public sealed partial class MainWindow : Window
         await keyringDialog.ShowAsync();
     }
 
-    private void Settings(object sender, RoutedEventArgs args)
-    {
-        if (!ReferenceEquals(NavViewDownloads.SelectedItem, NavSettings))
-        {
-            NavViewDownloads.SelectedItem = NavSettings;
-        }
-        else
-        {
-            OpenSettingsView();
-        }
-    }
+    private void Settings(object sender, RoutedEventArgs args) => OpenSettingsView();
 
     private void OpenSettingsView()
     {
@@ -951,7 +1003,7 @@ public sealed partial class MainWindow : Window
         rows.Reverse();
         ListDownloads.ItemsSource = rows;
         ViewStackDownloads.SelectedIndex = rows.Count > 0 ? 1 : 0;
-        StatusNoneDownloads.Description = _downloadRows.Count == 0
+        StatusNoneDownloads.Description = GlassThemeHelper.UseModernLayout && _downloadRows.Count == 0
             ? _translationService._("Add a video, audio, or playlist URL to start downloading")
             : _translationService._("There are no downloads of this type");
         InfoBadgeDownloadsAll.Value = _controller.RemainingDownloadsCount;

@@ -1989,6 +1989,22 @@ msgstr "تنزيل فوري"
 msgid "Customize"
 msgstr "تخصيص"
 
+#: Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs:400
+msgid "Classic"
+msgstr "القديم (الكلاسيكي)"
+
+#: Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs:401
+msgid "Modern"
+msgstr "الجديد (الحديث)"
+
+#: Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs:414
+msgid "Interface Layout"
+msgstr "تصميم الواجهة"
+
+#: Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs:415
+msgid "Choose between the classic or modern interface layout"
+msgstr "التبديل بين التصميم القديم (الكلاسيكي) أو التصميم الجديد للواجهة"
+
 #, csharp-format
 #~ msgid "A credential is required to continue the download of \"{0}\"."
 #~ msgstr "بيانات الاعتماد مطلوبة لإكمال تنزيل \"{0}\"."

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Nickvision.Desktop.Application;
 using Nickvision.Desktop.Globalization;
@@ -7,6 +7,7 @@ using Nickvision.Desktop.GNOME.Helpers;
 using Nickvision.Desktop.Network;
 using Nickvision.Desktop.Notifications;
 using Nickvision.Parabolic.GNOME.Controls;
+using Nickvision.Parabolic.GNOME.Helpers;
 using Nickvision.Parabolic.Shared.Controllers;
 using Nickvision.Parabolic.Shared.Events;
 using Nickvision.Parabolic.Shared.Models;
@@ -66,12 +67,7 @@ public class MainWindow : Adw.ApplicationWindow
         _shown = false;
         _builder.Connect(this);
         // Window
-        Adw.StyleManager.GetDefault().ColorScheme = _controller.Theme switch
-        {
-            Theme.Light => Adw.ColorScheme.ForceLight,
-            Theme.Dark => Adw.ColorScheme.ForceDark,
-            _ => Adw.ColorScheme.Default
-        };
+        GlassThemeHelper.Apply(this, _controller.Theme);
         Title = _appInfo.ShortName;
         IconName = _appInfo.Id;
         if (_appInfo.Version!.IsPreview)

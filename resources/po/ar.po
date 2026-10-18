@@ -1573,6 +1573,11 @@ msgctxt "Theme"
 msgid "System"
 msgstr "النظام"
 
+#: Nickvision.Parabolic.Shared/Controllers/PreferencesViewController.cs:129
+msgctxt "Theme"
+msgid "Glass"
+msgstr "زجاجي"
+
 #: Nickvision.Parabolic.Shared/Controllers/PreferencesViewController.cs:135
 msgid "H.264 (AVC)"
 msgstr "H.264 (AVC)"

@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 using Nickvision.Desktop.Application;
 using Nickvision.Desktop.Globalization;
 using Nickvision.Parabolic.Shared.Helpers;
@@ -126,6 +126,7 @@ public class PreferencesViewController
             new SelectionItem<Theme>(Models.Theme.Light, _translationService._p("Theme", "Light"), _configurationService.Theme == Models.Theme.Light),
             new SelectionItem<Theme>(Models.Theme.Dark, _translationService._p("Theme", "Dark"), _configurationService.Theme == Models.Theme.Dark),
             new SelectionItem<Theme>(Models.Theme.System, _translationService._p("Theme", "System"), _configurationService.Theme == Models.Theme.System),
+            new SelectionItem<Theme>(Models.Theme.Glass, _translationService._p("Theme", "Glass"), _configurationService.Theme == Models.Theme.Glass),
         };
         VideoCodecs = new List<SelectionItem<VideoCodec>>()
         {

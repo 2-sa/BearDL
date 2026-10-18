@@ -1,4 +1,4 @@
-﻿using Nickvision.Desktop.Globalization;
+using Nickvision.Desktop.Globalization;
 using Nickvision.Desktop.GNOME.Helpers;
 using Nickvision.Parabolic.GNOME.Helpers;
 using Nickvision.Parabolic.Shared.Controllers;
@@ -261,12 +261,7 @@ public class PreferencesDialog : Adw.PreferencesDialog
         if (args.Pspec.GetName() == "selected-item")
         {
             _controller.Theme = _controller.Themes[(int)_themeRow!.Selected];
-            Adw.StyleManager.GetDefault().ColorScheme = _controller.Themes[(int)_themeRow!.Selected].Value switch
-            {
-                Theme.Light => Adw.ColorScheme.ForceLight,
-                Theme.Dark => Adw.ColorScheme.ForceDark,
-                _ => Adw.ColorScheme.Default
-            };
+            GlassThemeHelper.Apply(_parent, _controller.Themes[(int)_themeRow!.Selected].Value);
         }
     }
 

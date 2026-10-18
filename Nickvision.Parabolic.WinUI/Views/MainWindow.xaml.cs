@@ -78,18 +78,7 @@ public sealed partial class MainWindow : Window
         };
         _notificationClickHandler = null;
         // Config
-        AppWindow.TitleBar.PreferredTheme = _controller.Theme switch
-        {
-            Theme.Light => TitleBarTheme.Light,
-            Theme.Dark => TitleBarTheme.Dark,
-            _ => TitleBarTheme.UseDefaultAppMode
-        };
-        MainGrid.RequestedTheme = _controller.Theme switch
-        {
-            Theme.Light => ElementTheme.Light,
-            Theme.Dark => ElementTheme.Dark,
-            _ => ElementTheme.Default
-        };
+        ApplyTheme();
         this.Geometry = _controller.WindowGeometry;
         // TitleBar
         AppWindow.SetIcon(_appInfo.Version!.IsPreview ? "./Assets/org.nickvision.tubeconverter-devel.ico" : "./Assets/org.nickvision.tubeconverter.ico");
@@ -342,19 +331,36 @@ public sealed partial class MainWindow : Window
     {
         if (args.ChangedPropertyName == "Theme")
         {
-            AppWindow.TitleBar.PreferredTheme = _controller.Theme switch
-            {
-                Theme.Light => TitleBarTheme.Light,
-                Theme.Dark => TitleBarTheme.Dark,
-                _ => TitleBarTheme.UseDefaultAppMode
-            };
-            MainGrid.RequestedTheme = _controller.Theme switch
-            {
-                Theme.Light => ElementTheme.Light,
-                Theme.Dark => ElementTheme.Dark,
-                _ => ElementTheme.Default
-            };
+            ApplyTheme();
         }
+    }
+
+    private void ApplyTheme()
+    {
+        AppWindow.TitleBar.PreferredTheme = _controller.Theme switch
+        {
+            Theme.Light => TitleBarTheme.Light,
+            Theme.Dark or Theme.Glass => TitleBarTheme.Dark,
+            _ => TitleBarTheme.UseDefaultAppMode
+        };
+        var requestedTheme = _controller.Theme switch
+        {
+            Theme.Light => ElementTheme.Light,
+            Theme.Dark or Theme.Glass => ElementTheme.Dark,
+            _ => ElementTheme.Default
+        };
+        GlassThemeHelper.Apply(this, WindowRoot, MainGrid, NavViewDownloads, _controller.Theme == Theme.Glass);
+        // Force WinUI to re-evaluate {ThemeResource} brushes when switching between Dark and Glass
+        if (WindowRoot.RequestedTheme == requestedTheme)
+        {
+            var flipTheme = requestedTheme == ElementTheme.Light ? ElementTheme.Dark : ElementTheme.Light;
+            WindowRoot.RequestedTheme = flipTheme;
+            MainGrid.RequestedTheme = flipTheme;
+        }
+        // Window.SystemBackdrop (MicaBackdrop) and PopupRoot observe the root
+        // Window.Content element rather than child grids.
+        WindowRoot.RequestedTheme = requestedTheme;
+        MainGrid.RequestedTheme = requestedTheme;
     }
 
     private void QueueTitleBarInputRegionUpdate()

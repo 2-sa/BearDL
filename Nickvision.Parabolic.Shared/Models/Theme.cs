@@ -1,8 +1,9 @@
-﻿namespace Nickvision.Parabolic.Shared.Models;
+namespace Nickvision.Parabolic.Shared.Models;
 
 public enum Theme
 {
     Light,
     Dark,
-    System
+    System,
+    Glass
 }

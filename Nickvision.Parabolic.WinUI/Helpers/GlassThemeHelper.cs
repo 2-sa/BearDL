@@ -1,10 +1,233 @@
+using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Windows.Foundation;
 using Windows.UI;
 
 namespace Nickvision.Parabolic.WinUI.Helpers;
+
+/// <summary>
+/// True see-through transparent window backdrop for WinUI 3 using DWM composition and a transparent CompositionColorBrush.
+/// </summary>
+public sealed partial class ClearGlassBackdrop : SystemBackdrop
+{
+    private const uint WM_ERASEBKGND = 0x0014;
+    private const uint WM_DWMCOMPOSITIONCHANGED = 0x031E;
+    private const nuint SubclassId = 0xBEA4D101;
+
+    private static nint _dispatcherQueueController;
+    private static Windows.UI.Composition.Compositor? _compositor;
+    private static nint _blackBrush;
+
+    private Windows.UI.Composition.CompositionColorBrush? _brush;
+    private nint _hwnd;
+
+    protected override unsafe void OnTargetConnected(ICompositionSupportsSystemBackdrop connectedTarget, XamlRoot xamlRoot)
+    {
+        _hwnd = (nint)xamlRoot.ContentIslandEnvironment.AppWindowId.Value;
+        if (_hwnd != 0)
+        {
+            SetWindowSubclass(_hwnd, &SubclassProc, SubclassId, 0);
+            ConfigureDwm(_hwnd, true);
+        }
+
+        EnsureCompositor();
+        _brush = _compositor!.CreateColorBrush(Color.FromArgb(0x22, 0x08, 0x10, 0x1E));
+        connectedTarget.SystemBackdrop = _brush;
+
+        base.OnTargetConnected(connectedTarget, xamlRoot);
+
+        if (_hwnd != 0)
+        {
+            var hdc = GetDC(_hwnd);
+            if (hdc != 0)
+            {
+                ClearBackground(_hwnd, hdc);
+                ReleaseDC(_hwnd, hdc);
+            }
+        }
+    }
+
+    protected override unsafe void OnTargetDisconnected(ICompositionSupportsSystemBackdrop disconnectedTarget)
+    {
+        if (_hwnd != 0)
+        {
+            RemoveWindowSubclass(_hwnd, &SubclassProc, SubclassId);
+            ConfigureDwm(_hwnd, false);
+            _hwnd = 0;
+        }
+
+        var backdrop = disconnectedTarget.SystemBackdrop;
+        disconnectedTarget.SystemBackdrop = null;
+        backdrop?.Dispose();
+        _brush?.Dispose();
+        _brush = null;
+
+        base.OnTargetDisconnected(disconnectedTarget);
+    }
+
+    private static void EnsureCompositor()
+    {
+        if (_compositor is not null)
+        {
+            return;
+        }
+        if (Windows.System.DispatcherQueue.GetForCurrentThread() is null && _dispatcherQueueController == 0)
+        {
+            var options = new DispatcherQueueOptions
+            {
+                dwSize = Marshal.SizeOf<DispatcherQueueOptions>(),
+                threadType = 2,    // DQTYPE_THREAD_CURRENT
+                apartmentType = 2  // DQTAT_COM_STA
+            };
+            CreateDispatcherQueueController(options, out _dispatcherQueueController);
+        }
+        _compositor = new Windows.UI.Composition.Compositor();
+    }
+
+    private static void ConfigureDwm(nint hwnd, bool enable)
+    {
+        if (enable)
+        {
+            var margins = new MARGINS();
+            DwmExtendFrameIntoClientArea(hwnd, ref margins);
+            var rgn = CreateRectRgn(-2, -2, -1, -1);
+            var blur = new DWM_BLURBEHIND
+            {
+                dwFlags = 3, // DWM_BB_ENABLE | DWM_BB_BLURREGION
+                fEnable = 1,
+                hRgnBlur = rgn,
+                fTransitionOnMaximized = 0
+            };
+            DwmEnableBlurBehindWindow(hwnd, ref blur);
+            if (rgn != 0)
+            {
+                DeleteObject(rgn);
+            }
+        }
+        else
+        {
+            var blur = new DWM_BLURBEHIND
+            {
+                dwFlags = 1, // DWM_BB_ENABLE
+                fEnable = 0,
+                hRgnBlur = 0,
+                fTransitionOnMaximized = 0
+            };
+            DwmEnableBlurBehindWindow(hwnd, ref blur);
+        }
+    }
+
+    private static bool ClearBackground(nint hwnd, nint hdc)
+    {
+        if (GetClientRect(hwnd, out var rect) != 0)
+        {
+            if (_blackBrush == 0)
+            {
+                _blackBrush = CreateSolidBrush(0);
+            }
+            FillRect(hdc, ref rect, _blackBrush);
+            return true;
+        }
+        return false;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+    private static nint SubclassProc(nint hWnd, uint uMsg, nuint wParam, nint lParam, nuint uIdSubclass, nuint dwRefData)
+    {
+        if (uMsg == WM_ERASEBKGND)
+        {
+            if (ClearBackground(hWnd, (nint)wParam))
+            {
+                return 1;
+            }
+        }
+        else if (uMsg == WM_DWMCOMPOSITIONCHANGED)
+        {
+            ConfigureDwm(hWnd, true);
+            return 0;
+        }
+        return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MARGINS
+    {
+        public int cxLeftWidth;
+        public int cxRightWidth;
+        public int cyTopHeight;
+        public int cyBottomHeight;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct DWM_BLURBEHIND
+    {
+        public uint dwFlags;
+        public int fEnable;
+        public nint hRgnBlur;
+        public int fTransitionOnMaximized;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct RECT
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct DispatcherQueueOptions
+    {
+        public int dwSize;
+        public int threadType;
+        public int apartmentType;
+    }
+
+    [DllImport("ComCtl32.dll", ExactSpelling = true)]
+    private static extern unsafe int SetWindowSubclass(nint hWnd, delegate* unmanaged[Stdcall]<nint, uint, nuint, nint, nuint, nuint, nint> pfnSubclass, nuint uIdSubclass, nuint dwRefData);
+
+    [DllImport("ComCtl32.dll", ExactSpelling = true)]
+    private static extern unsafe int RemoveWindowSubclass(nint hWnd, delegate* unmanaged[Stdcall]<nint, uint, nuint, nint, nuint, nuint, nint> pfnSubclass, nuint uIdSubclass);
+
+    [DllImport("ComCtl32.dll", ExactSpelling = true)]
+    private static extern nint DefSubclassProc(nint hWnd, uint uMsg, nuint wParam, nint lParam);
+
+    [DllImport("dwmapi.dll", ExactSpelling = true)]
+    private static extern int DwmExtendFrameIntoClientArea(nint hWnd, ref MARGINS pMarInset);
+
+    [DllImport("dwmapi.dll", ExactSpelling = true)]
+    private static extern int DwmEnableBlurBehindWindow(nint hWnd, ref DWM_BLURBEHIND pBlurBehind);
+
+    [DllImport("User32.dll", ExactSpelling = true)]
+    private static extern nint GetDC(nint hWnd);
+
+    [DllImport("User32.dll", ExactSpelling = true)]
+    private static extern int ReleaseDC(nint hWnd, nint hDC);
+
+    [DllImport("User32.dll", ExactSpelling = true)]
+    private static extern int GetClientRect(nint hWnd, out RECT lpRect);
+
+    [DllImport("User32.dll", ExactSpelling = true)]
+    private static extern int FillRect(nint hDC, ref RECT lprc, nint hbr);
+
+    [DllImport("Gdi32.dll", ExactSpelling = true)]
+    private static extern nint CreateRectRgn(int x1, int y1, int x2, int y2);
+
+    [DllImport("Gdi32.dll", ExactSpelling = true)]
+    private static extern nint CreateSolidBrush(uint color);
+
+    [DllImport("Gdi32.dll", ExactSpelling = true)]
+    private static extern int DeleteObject(nint hObject);
+
+    [DllImport("CoreMessaging.dll", ExactSpelling = true)]
+    private static extern int CreateDispatcherQueueController(DispatcherQueueOptions options, out nint dispatcherQueueController);
+}
 
 /// <summary>
 /// Isolated Apple-inspired (visionOS / macOS Liquid Glass) theme helper for WinUI 3.
@@ -22,9 +245,9 @@ public static class GlassThemeHelper
     {
         if (isGlass)
         {
-            if (window.SystemBackdrop is not DesktopAcrylicBackdrop)
+            if (window.SystemBackdrop is not ClearGlassBackdrop)
             {
-                window.SystemBackdrop = new DesktopAcrylicBackdrop();
+                window.SystemBackdrop = new ClearGlassBackdrop();
             }
             EnsureAtmosphereLayer(windowRoot);
             EnsureGlassResources(windowRoot, navViewDownloads);
@@ -48,30 +271,25 @@ public static class GlassThemeHelper
     {
         if (_atmosphereLayer is null)
         {
+            // Pure transparent canvas so the desktop/windows behind shine through clearly
             _atmosphereLayer = new Grid
             {
-                IsHitTestVisible = false,
-                Background = CreateLinearGradient(
-                    new Point(0, 0),
-                    new Point(1, 1),
-                    (Color.FromArgb(0x42, 0x06, 0x0C, 0x1A), 0.0),
-                    (Color.FromArgb(0x28, 0x0D, 0x1E, 0x3A), 0.5),
-                    (Color.FromArgb(0x3C, 0x07, 0x0B, 0x16), 1.0))
+                IsHitTestVisible = false
             };
 
-            // Top spatial aurora glow inspired by Apple visionOS / macOS dark glass
+            // Subtle top specular reflection
             var topGlow = new Border
             {
                 IsHitTestVisible = false,
                 Background = CreateLinearGradient(
                     new Point(0.5, 0),
-                    new Point(0.5, 0.45),
-                    (Color.FromArgb(0x30, 0x0A, 0x84, 0xFF), 0.0),
-                    (Color.FromArgb(0x14, 0x38, 0xBD, 0xF8), 0.45),
+                    new Point(0.5, 0.35),
+                    (Color.FromArgb(0x22, 0x38, 0xBD, 0xF8), 0.0),
+                    (Color.FromArgb(0x0C, 0xFF, 0xFF, 0xFF), 0.4),
                     (Color.FromArgb(0x00, 0x00, 0x00, 0x00), 1.0))
             };
 
-            // Luminous 1px inner specular window rim
+            // Luminous 1px inner crystal window rim
             var innerRim = new Border
             {
                 IsHitTestVisible = false,
@@ -81,9 +299,9 @@ public static class GlassThemeHelper
                 BorderBrush = CreateLinearGradient(
                     new Point(0, 0),
                     new Point(1, 1),
-                    (Color.FromArgb(0x48, 0xFF, 0xFF, 0xFF), 0.0),
-                    (Color.FromArgb(0x18, 0x38, 0xBD, 0xF8), 0.5),
-                    (Color.FromArgb(0x22, 0xFF, 0xFF, 0xFF), 1.0))
+                    (Color.FromArgb(0x58, 0xFF, 0xFF, 0xFF), 0.0),
+                    (Color.FromArgb(0x22, 0x38, 0xBD, 0xF8), 0.5),
+                    (Color.FromArgb(0x32, 0xFF, 0xFF, 0xFF), 1.0))
             };
 
             _atmosphereLayer.Children.Add(topGlow);
@@ -124,8 +342,8 @@ public static class GlassThemeHelper
         navViewDownloads.Resources["NavigationViewContentBackground"] = CreateLinearGradient(
             new Point(0, 0),
             new Point(1, 1),
-            (Color.FromArgb(0x24, 0xFF, 0xFF, 0xFF), 0.0),
-            (Color.FromArgb(0x10, 0xC8, 0xDC, 0xFF), 1.0));
+            (Color.FromArgb(0x38, 0x0C, 0x16, 0x28), 0.0),
+            (Color.FromArgb(0x24, 0x18, 0x28, 0x44), 1.0));
         navViewDownloads.Resources["NavigationViewContentGridBorderBrush"] = CreateSpecularBorderBrush();
     }
 
@@ -148,6 +366,17 @@ public static class GlassThemeHelper
 
     private static void ApplyFloatingGlassStructure(Grid mainGrid, NavigationView navViewDownloads, bool isGlass)
     {
+        if (mainGrid.Children.Count > 0 && mainGrid.Children[0] is Grid headerGrid)
+        {
+            headerGrid.Background = isGlass
+                ? CreateLinearGradient(
+                    new Point(0, 0),
+                    new Point(0, 1),
+                    (Color.FromArgb(0x48, 0x0A, 0x12, 0x22), 0.0),
+                    (Color.FromArgb(0x28, 0x0A, 0x12, 0x22), 1.0))
+                : null;
+        }
+
         if (mainGrid.Children.Count > 1 && mainGrid.Children[1] is MenuFlyoutSeparator topSeparator)
         {
             topSeparator.Visibility = isGlass ? Visibility.Collapsed : Visibility.Visible;
@@ -166,8 +395,8 @@ public static class GlassThemeHelper
                     toolbarGrid.Background = CreateLinearGradient(
                         new Point(0, 0),
                         new Point(1, 1),
-                        (Color.FromArgb(0x2E, 0xFF, 0xFF, 0xFF), 0.0),
-                        (Color.FromArgb(0x16, 0xD8, 0xE8, 0xFF), 1.0));
+                        (Color.FromArgb(0x4A, 0x0C, 0x16, 0x28), 0.0),
+                        (Color.FromArgb(0x32, 0x1E, 0x32, 0x54), 1.0));
                     toolbarGrid.BorderBrush = CreateSpecularBorderBrush();
                 }
                 else
@@ -209,36 +438,36 @@ public static class GlassThemeHelper
     {
         var transparentBrush = new SolidColorBrush(Color.FromArgb(0x00, 0x00, 0x00, 0x00));
 
-        // Frosted spatial card surface with subtle diagonal luminance
+        // Smoked crystal card surface so white text stays readable over any bright wallpaper while remaining translucent
         var cardSurfaceBrush = CreateLinearGradient(
             new Point(0, 0),
             new Point(1, 1),
-            (Color.FromArgb(0x32, 0xFF, 0xFF, 0xFF), 0.0),
-            (Color.FromArgb(0x1A, 0xE2, 0xEE, 0xFF), 0.55),
-            (Color.FromArgb(0x12, 0x94, 0xB8, 0xFF), 1.0));
+            (Color.FromArgb(0x52, 0x0C, 0x16, 0x28), 0.0),
+            (Color.FromArgb(0x3E, 0x16, 0x26, 0x42), 0.6),
+            (Color.FromArgb(0x34, 0x24, 0x3C, 0x64), 1.0));
 
         var cardSecondaryBrush = CreateLinearGradient(
             new Point(0, 0),
             new Point(1, 1),
-            (Color.FromArgb(0x24, 0xFF, 0xFF, 0xFF), 0.0),
-            (Color.FromArgb(0x10, 0xC8, 0xDC, 0xFF), 1.0));
+            (Color.FromArgb(0x3C, 0x0C, 0x16, 0x28), 0.0),
+            (Color.FromArgb(0x28, 0x16, 0x26, 0x42), 1.0));
 
         var specularBorderBrush = CreateSpecularBorderBrush();
 
-        // Frosted interactive pill controls
+        // Translucent pill controls with smoked crystal backing for crisp contrast
         var controlFillBrush = CreateLinearGradient(
             new Point(0, 0),
             new Point(0, 1),
-            (Color.FromArgb(0x34, 0xFF, 0xFF, 0xFF), 0.0),
-            (Color.FromArgb(0x1C, 0xE2, 0xEE, 0xFF), 1.0));
+            (Color.FromArgb(0x54, 0x0E, 0x1A, 0x30), 0.0),
+            (Color.FromArgb(0x3C, 0x1C, 0x2E, 0x4E), 1.0));
 
         var controlHoverBrush = CreateLinearGradient(
             new Point(0, 0),
             new Point(0, 1),
-            (Color.FromArgb(0x4A, 0xFF, 0xFF, 0xFF), 0.0),
-            (Color.FromArgb(0x28, 0xE2, 0xEE, 0xFF), 1.0));
+            (Color.FromArgb(0x68, 0x16, 0x28, 0x48), 0.0),
+            (Color.FromArgb(0x4E, 0x28, 0x42, 0x6E), 1.0));
 
-        var controlPressedBrush = new SolidColorBrush(Color.FromArgb(0x20, 0xFF, 0xFF, 0xFF));
+        var controlPressedBrush = new SolidColorBrush(Color.FromArgb(0x44, 0x0A, 0x14, 0x26));
 
         // Apple Liquid Blue accent (#38BDF8 -> #0A84FF)
         var accentGlassBrush = CreateLinearGradient(
@@ -258,25 +487,24 @@ public static class GlassThemeHelper
         var dialogSurfaceBrush = CreateLinearGradient(
             new Point(0, 0),
             new Point(1, 1),
-            (Color.FromArgb(0xE8, 0x10, 0x1A, 0x2E), 0.0),
-            (Color.FromArgb(0xE0, 0x0A, 0x10, 0x20), 1.0));
+            (Color.FromArgb(0xD8, 0x0E, 0x18, 0x2C), 0.0),
+            (Color.FromArgb(0xCC, 0x08, 0x10, 0x20), 1.0));
 
-        // Page & Layer backgrounds (transparent so DesktopAcrylic + spatial glow shine through)
+        // Page & Layer backgrounds (100% transparent so see-through glass backdrop shines through)
         target["ApplicationPageBackgroundThemeBrush"] = transparentBrush;
-        target["LayerFillColorDefaultBrush"] = cardSecondaryBrush;
+        target["LayerFillColorDefaultBrush"] = transparentBrush;
         target["LayerFillColorAltBrush"] = transparentBrush;
         target["LayerOnMicaBaseAltFillColorDefaultBrush"] = transparentBrush;
-        target["LayerOnAcrylicFillColorDefaultBrush"] = cardSecondaryBrush;
+        target["LayerOnAcrylicFillColorDefaultBrush"] = transparentBrush;
         target["SolidBackgroundFillColorBaseBrush"] = transparentBrush;
         target["SolidBackgroundFillColorSecondaryBrush"] = transparentBrush;
         target["SolidBackgroundFillColorTertiaryBrush"] = cardSecondaryBrush;
-        target["SolidBackgroundFillColorQuarternaryBrush"] = cardSurfaceBrush;
 
         // Cards & Expanders (Settings rows, DownloadRow cards, Quick Actions)
         target["CardBackgroundFillColorDefaultBrush"] = cardSurfaceBrush;
         target["CardBackgroundFillColorSecondaryBrush"] = cardSecondaryBrush;
         target["CardStrokeColorDefaultBrush"] = specularBorderBrush;
-        target["CardStrokeColorDefaultSolidBrush"] = new SolidColorBrush(Color.FromArgb(0x45, 0xFF, 0xFF, 0xFF));
+        target["CardStrokeColorDefaultSolidBrush"] = new SolidColorBrush(Color.FromArgb(0x55, 0xFF, 0xFF, 0xFF));
         target["ExpanderHeaderBackground"] = cardSurfaceBrush;
         target["ExpanderContentBackground"] = cardSecondaryBrush;
         target["ExpanderHeaderBorderBrush"] = specularBorderBrush;
@@ -323,7 +551,7 @@ public static class GlassThemeHelper
         target["FlyoutBorderThemeBrush"] = specularBorderBrush;
         target["SurfaceStrokeColorFlyoutBrush"] = specularBorderBrush;
         target["SurfaceStrokeColorDefaultBrush"] = specularBorderBrush;
-        target["DividerStrokeColorDefaultBrush"] = new SolidColorBrush(Color.FromArgb(0x26, 0xFF, 0xFF, 0xFF));
+        target["DividerStrokeColorDefaultBrush"] = new SolidColorBrush(Color.FromArgb(0x28, 0xFF, 0xFF, 0xFF));
 
         // Rounded Apple geometry
         target["ControlCornerRadius"] = new CornerRadius(12);
@@ -335,9 +563,9 @@ public static class GlassThemeHelper
         return CreateLinearGradient(
             new Point(0, 0),
             new Point(1, 1),
-            (Color.FromArgb(0x68, 0xFF, 0xFF, 0xFF), 0.0),
-            (Color.FromArgb(0x24, 0xFF, 0xFF, 0xFF), 0.5),
-            (Color.FromArgb(0x38, 0x38, 0xBD, 0xF8), 1.0));
+            (Color.FromArgb(0x70, 0xFF, 0xFF, 0xFF), 0.0),
+            (Color.FromArgb(0x2A, 0xFF, 0xFF, 0xFF), 0.5),
+            (Color.FromArgb(0x42, 0x38, 0xBD, 0xF8), 1.0));
     }
 
     private static LinearGradientBrush CreateLinearGradient(Point start, Point end, params (Color Color, double Offset)[] stops)

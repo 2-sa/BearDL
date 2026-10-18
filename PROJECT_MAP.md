@@ -19,7 +19,7 @@
   و`MainGrid` معًا → تحدّث `MicaBackdrop` و`PopupRoot` خلفية النافذة والقوائم المنبثقة
   وفق السمة المختارة بدل البقاء على سمة نظام Windows.
 - `THEME-02`: اختيار سمة `Glass` («زجاجي») في الإعدادات → استدعاء `GlassThemeHelper.Apply`
-  في WinUI (`DesktopAcrylicBackdrop` + طبقة إضاءة وحواف زجاجية عاكسة + بطاقات عائمة)
+  في WinUI (`ClearGlassBackdrop` بشفافية DWM حقيقية + حواف زجاجية عاكسة + بطاقات عائمة)
   وفي GTK (`glass-mode` CSS مع `glass-theme.css`).
 
 ## [ARCHITECTURE]

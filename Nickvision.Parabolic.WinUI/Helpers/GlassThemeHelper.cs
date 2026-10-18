@@ -370,6 +370,8 @@ public static class GlassThemeHelper
         contentPanel.Children.Add(valueLabel);
         contentPanel.Children.Add(slider);
 
+        var isInitiallyGlass = (cmbTheme.SelectedItem as BindableSelectionItem)?.ToSelectionItem<Theme>()?.Value == Theme.Glass;
+
         var card = new SettingsCard
         {
             Tag = "GlassTransparencyCard",
@@ -380,7 +382,7 @@ public static class GlassThemeHelper
                 Glyph = "\uE793"
             },
             Content = contentPanel,
-            Visibility = controller.Theme.Value == Theme.Glass ? Visibility.Visible : Visibility.Collapsed
+            Visibility = isInitiallyGlass ? Visibility.Visible : Visibility.Collapsed
         };
 
         cmbTheme.SelectionChanged += (_, _) =>

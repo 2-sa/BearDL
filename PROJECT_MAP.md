@@ -19,8 +19,12 @@
   و`MainGrid` معًا → تحدّث `MicaBackdrop` و`PopupRoot` خلفية النافذة والقوائم المنبثقة
   وفق السمة المختارة بدل البقاء على سمة نظام Windows.
 - `THEME-02`: اختيار سمة `Glass` («زجاجي») في الإعدادات → استدعاء `GlassThemeHelper.Apply`
-  في WinUI (`ClearGlassBackdrop` بشفافية DWM حقيقية + حواف زجاجية عاكسة + بطاقات عائمة)
-  وفي GTK (`glass-mode` CSS مع `glass-theme.css`).
+  في WinUI (`ClearGlassBackdrop` بشفافية DWM افتراضية `50%` مع شريط تحكم حي `AttachSettingsCard`
+  في الإعدادات + حواف زجاجية عاكسة + بطاقات عائمة) وفي GTK (`glass-mode` CSS مع `glass-theme.css`).
+- `UI-01`: فتح النافذة الرئيسية على Windows → عرض مساحة العمل الموحدة (`Pages.Downloads`)
+  مباشرةً مع شريط جانبي عائم موحد (فلاتر التنزيلات + السجل + حلقة المفاتيح + الإعدادات + حول)
+  وبطاقة اللصق والتنزيل السريع (`QuickUrlCard`) في الأعلى (زر «لصق»، حقل الرابط، زر «تنزيل فوري»
+  `QuickDownloadAsync`، وزر «تخصيص» `ShowCustomDiscoverAsync`) وشريط الفلاتر الأفقية المتزامنة.
 
 ## [ARCHITECTURE]
 
@@ -33,7 +37,7 @@
   `WindowRoot` يحتفظ باتجاه LTR لمناطق النقر في شريط العنوان ويتلقى `RequestedTheme`
   مباشرةً لأن `MicaBackdrop` و`PopupRoot` يراقبان جذر `Window.Content` لا الشبكة الداخلية `MainGrid`.
 - عزل الوضع الزجاجي (`Theme.Glass`):
-  - `Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs`: يحوي كامل منطق وألوان وطبقات الوضع الزجاجي لـWinUI 3.
+  - `Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs`: يحوي كامل منطق وألوان وطبقات الوضع الزجاجي لـWinUI 3 وشريط التحكم بنسبة الشفافية.
   - `Nickvision.Parabolic.GNOME/Helpers/GlassThemeHelper.cs` و`Resources/glass-theme.css`: يحويان منطق وتنسيقات الوضع الزجاجي لـGTK4/libadwaita.
 - مجلدات البيانات ومعرفات التطبيق والبروتوكول منفصلة عن نصوص العرض.
 
@@ -42,5 +46,6 @@
 - `L10N-01`: نُفّذ فحص الحزمة `Verify-TranslationCatalogs.ps1` ونجح على Actions في البناء
   `38990949083` (`2026.5.124` من الكوميت `c17c224d`). أكدت لقطة المستخدم في 2026-10-18
   عودة الواجهة العربية واتجاه RTL وظهور الاسم `BearDL`.
-- `THEME-01` و`THEME-02`: أُصلح الوضع الفاتح وأُضيف الوضع الزجاجي (`Theme.Glass`) محليًا
-  في ملفات معزولة للواجهتين. التجميع والتحقق البصري على Windows وmacOS/Linux معلّقان لحين الإذن بالكوميت والبناء على GitHub Actions.
+- `THEME-02` و`UI-01`: ضُبطت الشفافية الافتراضية للوضع الزجاجي على `50%` مع شريط تحكم في الإعدادات،
+  وأُعيد تصميم واجهة Windows الرئيسية (`MainWindow.xaml` و`MainWindow.xaml.cs` و`AddDownloadDialog.xaml.cs`)
+  محليًا. التجميع والتحقق البصري على GitHub Actions معلّقان لحين إذن المستخدم بالكوميت والرفع.

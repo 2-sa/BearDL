@@ -1,8 +1,14 @@
+using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Nickvision.Desktop.Globalization;
+using Nickvision.Desktop.WinUI.Helpers;
+using Nickvision.Parabolic.Shared.Controllers;
+using Nickvision.Parabolic.Shared.Models;
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Foundation;
@@ -22,12 +28,29 @@ public sealed partial class ClearGlassBackdrop : SystemBackdrop
     private static nint _dispatcherQueueController;
     private static Windows.UI.Composition.Compositor? _compositor;
     private static nint _blackBrush;
+    private static ClearGlassBackdrop? _activeInstance;
 
     private Windows.UI.Composition.CompositionColorBrush? _brush;
     private nint _hwnd;
 
+    internal static void UpdateLiveOpacity(int transparencyPercent)
+    {
+        if (_activeInstance?._brush is not null)
+        {
+            _activeInstance._brush.Color = GetBackdropColor(transparencyPercent);
+        }
+    }
+
+    internal static Color GetBackdropColor(int transparencyPercent)
+    {
+        var clamped = Math.Clamp(transparencyPercent, 5, 95);
+        var alpha = (byte)Math.Clamp((int)Math.Round((100 - clamped) * 255.0 / 100.0), 10, 245);
+        return Color.FromArgb(alpha, 0x0A, 0x12, 0x22);
+    }
+
     protected override unsafe void OnTargetConnected(ICompositionSupportsSystemBackdrop connectedTarget, XamlRoot xamlRoot)
     {
+        _activeInstance = this;
         _hwnd = (nint)xamlRoot.ContentIslandEnvironment.AppWindowId.Value;
         if (_hwnd != 0)
         {
@@ -36,7 +59,7 @@ public sealed partial class ClearGlassBackdrop : SystemBackdrop
         }
 
         EnsureCompositor();
-        _brush = _compositor!.CreateColorBrush(Color.FromArgb(0x22, 0x08, 0x10, 0x1E));
+        _brush = _compositor!.CreateColorBrush(GetBackdropColor(GlassThemeHelper.TransparencyPercent));
         connectedTarget.SystemBackdrop = _brush;
 
         base.OnTargetConnected(connectedTarget, xamlRoot);
@@ -54,6 +77,11 @@ public sealed partial class ClearGlassBackdrop : SystemBackdrop
 
     protected override unsafe void OnTargetDisconnected(ICompositionSupportsSystemBackdrop disconnectedTarget)
     {
+        if (ReferenceEquals(_activeInstance, this))
+        {
+            _activeInstance = null;
+        }
+
         if (_hwnd != 0)
         {
             RemoveWindowSubclass(_hwnd, &SubclassProc, SubclassId);
@@ -231,7 +259,7 @@ public sealed partial class ClearGlassBackdrop : SystemBackdrop
 
 /// <summary>
 /// Isolated Apple-inspired (visionOS / macOS Liquid Glass) theme helper for WinUI 3.
-/// To remove Glass Mode later, delete this file and remove the single GlassThemeHelper.Apply(...) call in MainWindow.xaml.cs.
+/// To remove Glass Mode later, delete this file and remove the single calls in MainWindow.xaml.cs and SettingsPage.xaml.cs.
 /// </summary>
 public static class GlassThemeHelper
 {
@@ -240,6 +268,140 @@ public static class GlassThemeHelper
     private static object? _origNavContentBackground;
     private static object? _origNavContentBorderBrush;
     private static bool _wasGlass;
+    private static int? _transparencyPercent;
+
+    private static string TransparencyConfigPath => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "Nickvision",
+        "Parabolic",
+        "glass-transparency.txt");
+
+    public static int TransparencyPercent
+    {
+        get
+        {
+            if (_transparencyPercent.HasValue)
+            {
+                return _transparencyPercent.Value;
+            }
+            try
+            {
+                if (File.Exists(TransparencyConfigPath) &&
+                    int.TryParse(File.ReadAllText(TransparencyConfigPath).Trim(), out var saved))
+                {
+                    _transparencyPercent = Math.Clamp(saved, 5, 95);
+                    return _transparencyPercent.Value;
+                }
+            }
+            catch
+            {
+                // Ignore read errors and fall back to 50%
+            }
+            _transparencyPercent = 50;
+            return 50;
+        }
+    }
+
+    public static void SetTransparencyPercent(int percent)
+    {
+        var clamped = Math.Clamp(percent, 5, 95);
+        _transparencyPercent = clamped;
+        ClearGlassBackdrop.UpdateLiveOpacity(clamped);
+        try
+        {
+            var dir = Path.GetDirectoryName(TransparencyConfigPath);
+            if (!string.IsNullOrEmpty(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            File.WriteAllText(TransparencyConfigPath, clamped.ToString());
+        }
+        catch
+        {
+            // Ignore write errors
+        }
+    }
+
+    public static void AttachSettingsCard(SettingsCard rowTheme, ComboBox cmbTheme, PreferencesViewController controller, ITranslationService translationService)
+    {
+        if (rowTheme.Parent is not Panel parentPanel)
+        {
+            return;
+        }
+
+        foreach (var child in parentPanel.Children)
+        {
+            if (child is FrameworkElement fe && fe.Tag as string == "GlassTransparencyCard")
+            {
+                return;
+            }
+        }
+
+        var valueLabel = new TextBlock
+        {
+            Text = $"{TransparencyPercent}%",
+            MinWidth = 44,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+
+        var slider = new Slider
+        {
+            Minimum = 5,
+            Maximum = 95,
+            StepFrequency = 5,
+            Width = 180,
+            Value = TransparencyPercent,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+
+        slider.ValueChanged += (_, args) =>
+        {
+            var percent = (int)Math.Round(args.NewValue);
+            valueLabel.Text = $"{percent}%";
+            SetTransparencyPercent(percent);
+        };
+
+        var contentPanel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 12,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        contentPanel.Children.Add(valueLabel);
+        contentPanel.Children.Add(slider);
+
+        var card = new SettingsCard
+        {
+            Tag = "GlassTransparencyCard",
+            Header = translationService._("Glass Transparency"),
+            Description = translationService._("Adjust the window transparency level in Glass mode"),
+            HeaderIcon = new FontIcon
+            {
+                Glyph = "\uE793"
+            },
+            Content = contentPanel,
+            Visibility = controller.Theme.Value == Theme.Glass ? Visibility.Visible : Visibility.Collapsed
+        };
+
+        cmbTheme.SelectionChanged += (_, _) =>
+        {
+            if (cmbTheme.SelectedItem is BindableSelectionItem selectedItem)
+            {
+                var item = selectedItem.ToSelectionItem<Theme>();
+                card.Visibility = item?.Value == Theme.Glass ? Visibility.Visible : Visibility.Collapsed;
+            }
+        };
+
+        var themeIndex = parentPanel.Children.IndexOf(rowTheme);
+        if (themeIndex >= 0 && themeIndex + 1 < parentPanel.Children.Count)
+        {
+            parentPanel.Children.Insert(themeIndex + 1, card);
+        }
+        else
+        {
+            parentPanel.Children.Add(card);
+        }
+    }
 
     public static void Apply(Window window, Grid windowRoot, Grid mainGrid, NavigationView navViewDownloads, bool isGlass)
     {
@@ -248,6 +410,10 @@ public static class GlassThemeHelper
             if (window.SystemBackdrop is not ClearGlassBackdrop)
             {
                 window.SystemBackdrop = new ClearGlassBackdrop();
+            }
+            else
+            {
+                ClearGlassBackdrop.UpdateLiveOpacity(TransparencyPercent);
             }
             EnsureAtmosphereLayer(windowRoot);
             EnsureGlassResources(windowRoot, navViewDownloads);
@@ -377,46 +543,7 @@ public static class GlassThemeHelper
                 : null;
         }
 
-        if (mainGrid.Children.Count > 1 && mainGrid.Children[1] is MenuFlyoutSeparator topSeparator)
-        {
-            topSeparator.Visibility = isGlass ? Visibility.Collapsed : Visibility.Visible;
-        }
-
-        if (navViewDownloads.Parent is Grid downloadsGrid)
-        {
-            if (downloadsGrid.Children.Count > 0 && downloadsGrid.Children[0] is Grid toolbarGrid)
-            {
-                if (isGlass)
-                {
-                    toolbarGrid.Margin = new Thickness(14, 8, 14, 6);
-                    toolbarGrid.Padding = new Thickness(8, 4, 8, 4);
-                    toolbarGrid.CornerRadius = new CornerRadius(14);
-                    toolbarGrid.BorderThickness = new Thickness(1);
-                    toolbarGrid.Background = CreateLinearGradient(
-                        new Point(0, 0),
-                        new Point(1, 1),
-                        (Color.FromArgb(0x4A, 0x0C, 0x16, 0x28), 0.0),
-                        (Color.FromArgb(0x32, 0x1E, 0x32, 0x54), 1.0));
-                    toolbarGrid.BorderBrush = CreateSpecularBorderBrush();
-                }
-                else
-                {
-                    toolbarGrid.Margin = new Thickness(0);
-                    toolbarGrid.Padding = new Thickness(0);
-                    toolbarGrid.CornerRadius = new CornerRadius(0);
-                    toolbarGrid.BorderThickness = new Thickness(0);
-                    toolbarGrid.Background = null;
-                    toolbarGrid.BorderBrush = null;
-                }
-            }
-
-            if (downloadsGrid.Children.Count > 1 && downloadsGrid.Children[1] is MenuFlyoutSeparator downloadsSeparator)
-            {
-                downloadsSeparator.Visibility = isGlass ? Visibility.Collapsed : Visibility.Visible;
-            }
-        }
-
-        navViewDownloads.Margin = isGlass ? new Thickness(12, 2, 12, 12) : new Thickness(0);
+        navViewDownloads.Margin = isGlass ? new Thickness(10, 2, 10, 10) : new Thickness(0);
     }
 
     private static ResourceDictionary BuildGlassResourceDictionary()

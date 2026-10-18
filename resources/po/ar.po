@@ -1578,6 +1578,14 @@ msgctxt "Theme"
 msgid "Glass"
 msgstr "زجاجي"
 
+#: Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs:1
+msgid "Glass Transparency"
+msgstr "نسبة الشفافية"
+
+#: Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs:2
+msgid "Adjust the window transparency level in Glass mode"
+msgstr "التحكم بدرجة شفافية النافذة في الوضع الزجاجي"
+
 #: Nickvision.Parabolic.Shared/Controllers/PreferencesViewController.cs:135
 msgid "H.264 (AVC)"
 msgstr "H.264 (AVC)"
@@ -1968,6 +1976,18 @@ msgstr "وسيطات المعالجة اللاحقة"
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:153
 msgid "Post-Processor"
 msgstr "المعالج اللاحق"
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:149
+msgid "Paste"
+msgstr "لصق"
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:152
+msgid "Quick Download"
+msgstr "تنزيل فوري"
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs:154
+msgid "Customize"
+msgstr "تخصيص"
 
 #, csharp-format
 #~ msgid "A credential is required to continue the download of \"{0}\"."

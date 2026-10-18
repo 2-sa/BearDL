@@ -242,6 +242,48 @@ public sealed partial class AddDownloadDialog : ContentDialog
         return await ShowAsync();
     }
 
+    public Task QuickDownloadAsync(Uri url)
+    {
+        return _controller.AddFastDownloadsAsync(url, null, _controller.PreviousSaveFolder);
+    }
+
+    public async Task<ContentDialogResult> ShowCustomDiscoverAsync(Uri url)
+    {
+        TxtUrl.Text = url.ToString();
+        IsPrimaryButtonEnabled = true;
+        CmbCredential.ItemsSource = (await _controller.GetAvailableCredentialsAsync()).ToBindableSelectonItems();
+        CmbCredential.SelectSelectionItem();
+        TglUseAuthentication.IsOn = false;
+        TglDownloadImmediatelyAsVideo.IsOn = false;
+        TglDownloadImmediatelyAsAudio.IsOn = false;
+        var cancellationToken = new CancellationTokenSource();
+        Title = _translationService._("Discovering Media");
+        PrimaryButtonText = null;
+        CloseButtonText = _translationService._("Cancel");
+        DefaultButton = ContentDialogButton.None;
+        ViewStack.SelectedIndex = (int)Pages.Loading;
+        SetViewport(320);
+        DispatcherQueue.TryEnqueue(async () => await DiscoverMediaAsync(cancellationToken.Token));
+        var result = await base.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+        {
+            if (_discoveryContext is not null && _discoveryContext.Items.Count > 1)
+            {
+                await DownloadPlaylistAsync();
+            }
+            else
+            {
+                await DownloadSingleAsync();
+            }
+        }
+        else
+        {
+            cancellationToken.Cancel();
+        }
+        cancellationToken.Dispose();
+        return result;
+    }
+
     private void SetViewport(double width, double height = double.NaN)
     {
         DownloadScrollViewer.Width = width;

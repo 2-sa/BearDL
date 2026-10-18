@@ -107,7 +107,7 @@
                     "only-arches": [
                         "aarch64"
                     ]
-                }   
+                }
             ]
         },
         {
@@ -119,16 +119,16 @@
             "sources": [
                 {
                     "type": "archive",
-                    "url": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-10-03-18-14/ffmpeg-n8.1.3-14-g330caae0c1-linux64-gpl-8.1.tar.xz",
-                    "sha256": "010375affede402ccd1632835c9349a18c8658c3b08cb95a725a74cca1701738",
+                    "url": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-10-17-20-51/ffmpeg-n8.1.3-18-g46d899d7a0-linux64-gpl-8.1.tar.xz",
+                    "sha256": "44a434bd1b3f98ab92f8e6545b17fc64c2e8af508688c912eb4e8447c115680c",
                     "only-arches": [
                         "x86_64"
                     ]
                 },
                 {
                     "type": "archive",
-                    "url": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-10-03-18-14/ffmpeg-n8.1.3-14-g330caae0c1-linuxarm64-gpl-8.1.tar.xz",
-                    "sha256": "17af3bb2771374ff8b62fbc9b59d8eab7859f2ece8df2975c7783602b6d44bff",
+                    "url": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-10-17-20-51/ffmpeg-n8.1.3-18-g46d899d7a0-linuxarm64-gpl-8.1.tar.xz",
+                    "sha256": "a3de0970c7785bd53950053307883cb289e285d6e44cc1e2b7c3d22f960241a6",
                     "only-arches": [
                         "aarch64"
                     ]
@@ -138,8 +138,8 @@
         {
             "name": "webp-pixbuf-loader",
             "buildsystem": "meson",
-            "config-opts": [ 
-                "-Dgdk_pixbuf_moduledir=/app/lib/org.nickvision.tubeconverter/gdk-pixbuf-2.0/2.10.0/loaders" 
+            "config-opts": [
+                "-Dgdk_pixbuf_moduledir=/app/lib/org.nickvision.tubeconverter/gdk-pixbuf-2.0/2.10.0/loaders"
             ],
             "sources": [
                 {

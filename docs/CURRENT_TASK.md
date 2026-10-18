@@ -18,7 +18,7 @@
   - `Nickvision.Parabolic.Shared/Models/Theme.cs` و`Controllers/PreferencesViewController.cs` و`resources/po/ar.po`: إضافة قيمة `Glass` وترجمتها العربية `زجاجي` في سياق `Theme`.
   - `Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs`: استدعاء `GlassThemeHelper.Apply(...)` في `ApplyTheme()`.
   - `Nickvision.Parabolic.GNOME/Views/MainWindow.cs` و`PreferencesDialog.cs` و`Resources/org.nickvision.tubeconverter.gresource.xml` و`org.nickvision.tubeconverter.css`: استدعاء `GlassThemeHelper.Apply(...)` واستيراد `glass-theme.css`.
-- أذن المستخدم صراحةً بعمل كوميت ورفعه لبناء تحديث جديد («ارفع كوميت وسوي تحديث»). يبدأ الرفع بناء GitHub Actions تلقائيًا على `main`؛ يلزم بعد اكتمال البناء التحقق بصريًا من الوضع الفاتح والداكن والزجاجي وافتراضي النظام على المنصتين.
+- أذن المستخدم صراحةً بعمل كوميت ورفعه لبناء تحديث جديد («ارفع كوميت وسوي تحديث»). في البناء الأول [`39125805920`](https://github.com/2-sa/BearDL/actions/runs/39125805920) للكوميت `6b826bed` نجح تجميع Windows (x64 وARM64) وmacOS (ARM64 وx64) واختبارات الإضافات والكتالوجات، بينما فشل Flatpak لأن مستودع `BtbN/FFmpeg-Builds` حذف وسم `autobuild-2026-10-03-18-14` القديم بعد 14 يومًا (`404 Not Found`)، وفشل `codespell` على كلمة `trough` في `glass-theme.css`. حُدّث `flatpak/org.nickvision.tubeconverter.json` و`.github/workflows/flatpak.yml` لجلب رابط وهاش `ffmpeg-n8.1-latest` تلقائيًا من `checksums.sha256`، وصُحّح محدد `progressbar progress` في `glass-theme.css`.
 
 ## المتابعة السابقة: اختفاء اللغات بعد تغيير اسم العرض
 

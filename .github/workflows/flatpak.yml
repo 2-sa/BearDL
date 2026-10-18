@@ -35,11 +35,35 @@ jobs:
           RELEASE_VERSION: ${{ inputs.release_version || '2026.5.0' }}
         run: |
           python3 - <<'PY'
-          import json, os
+          import json, os, urllib.request
           path = 'flatpak/org.nickvision.tubeconverter.json'
           with open(path) as file:
               manifest = json.load(file)
           manifest['build-options'].setdefault('env', {})['RELEASE_VERSION'] = os.environ['RELEASE_VERSION']
+          try:
+              checksums_url = 'https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/checksums.sha256'
+              with urllib.request.urlopen(checksums_url, timeout=30) as resp:
+                  lines = resp.read().decode('utf-8').splitlines()
+              sums = {}
+              for line in lines:
+                  parts = line.strip().split()
+                  if len(parts) == 2:
+                      sums[parts[1].lstrip('*')] = parts[0]
+              x64_file = 'ffmpeg-n8.1-latest-linux64-gpl-8.1.tar.xz'
+              arm64_file = 'ffmpeg-n8.1-latest-linuxarm64-gpl-8.1.tar.xz'
+              if x64_file in sums and arm64_file in sums:
+                  for mod in manifest.get('modules', []):
+                      if isinstance(mod, dict) and mod.get('name') == 'ffmpeg':
+                          for src in mod.get('sources', []):
+                              arches = src.get('only-arches', [])
+                              if 'x86_64' in arches:
+                                  src['url'] = f'https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/{x64_file}'
+                                  src['sha256'] = sums[x64_file]
+                              elif 'aarch64' in arches:
+                                  src['url'] = f'https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/{arm64_file}'
+                                  src['sha256'] = sums[arm64_file]
+          except Exception as exc:
+              print(f'Warning: using fallback FFmpeg sources from manifest ({exc})')
           with open(path, 'w') as file:
               json.dump(manifest, file, indent=2)
           PY

@@ -46,7 +46,8 @@ public sealed partial class MainWindow : Window
     private readonly List<RectInt32> _titleBarInputRegions = new(8);
     private bool _titleBarUpdateQueued;
     private bool _isClosed;
-    private bool _isSyncingFilter;
+    private string? _clipboardSuggestedUrl;
+    private string? _clipboardDismissedUrl;
     private NavigationViewItem? _lastDownloadsNavItem;
     private RoutedEventHandler? _notificationClickHandler;
 
@@ -140,8 +141,6 @@ public sealed partial class MainWindow : Window
         MenuPopupReportABug.Text = _translationService._("Report a Bug");
         MenuPopupDiscussions.Text = _translationService._("Discussions");
         MenuPopupAbout.Text = _translationService._("About {0}", _appInfo.ShortName!);
-        ToolTipService.SetToolTip(BtnHeaderAddDownload, _translationService._("Add Download"));
-        ToolTipService.SetToolTip(BtnHeaderHelp, _translationService._("Help"));
         ToolTipService.SetToolTip(BtnPreview, _translationService._("You are running a preview version of {0}", _appInfo.ShortName!));
         LblPreview.Text = _translationService._("Thank you for testing the upcoming features and changes! ❤️");
         LblHomeTitle.Text = _translationService._("Download Media");
@@ -149,41 +148,37 @@ public sealed partial class MainWindow : Window
         LblAddDownload.Text = _translationService._("Add Download");
         LblKeyring.Text = _translationService._("Keyring");
         LblSettings.Text = _translationService._("Settings");
-        LblSidebarAddDownload.Text = _translationService._("Add Download");
         NavHistory.Content = _translationService._("History");
         NavKeyring.Content = _translationService._("Keyring");
         NavSettings.Content = _translationService._("Settings");
-        NavAbout.Content = _translationService._("About {0}", _appInfo.ShortName!);
-        LblQuickBarTitle.Text = _translationService._("Download Media");
-        LblQuickBarSubtitle.Text = _translationService._("Add a video, audio, or playlist URL to start downloading");
-        LblQuickPaste.Text = _translationService._("Paste");
-        ToolTipService.SetToolTip(BtnQuickPaste, _translationService._("Paste"));
-        TxtQuickUrl.PlaceholderText = _translationService._("Enter media url here");
-        LblQuickDownload.Text = _translationService._("Quick Download");
+        NavAbout.Content = _translationService._("Help");
+        TxtQuickUrl.PlaceholderText = _translationService._("Paste a video, audio, or playlist URL");
+        LblQuickDownload.Text = _translationService._("Download");
         ToolTipService.SetToolTip(BtnQuickDownload, _translationService._("Quick Download"));
         LblQuickCustomize.Text = _translationService._("Customize");
         ToolTipService.SetToolTip(BtnQuickCustomize, _translationService._("Customize"));
+        LblClipboardPrompt.Text = _translationService._("Link in clipboard:");
+        LblClipboardUse.Text = _translationService._("Download");
+        ToolTipService.SetToolTip(BtnClipboardDismiss, _translationService._("Dismiss"));
+        LblEmptyTitle.Text = _translationService._("Start by pasting a link");
+        LblEmptySubtitle.Text = _translationService._("Supports videos, audio, and entire playlists");
+        LblHintPaste.Text = _translationService._("Paste anywhere");
+        LblHintDrag.Text = _translationService._("Drag a link onto the window");
+        LblHintEnter.Text = _translationService._("Quick download at best quality");
         BtnStopAllRemaining.Label = _translationService._("Stop All Remaining");
         BtnRetryAllFailed.Label = _translationService._("Retry All Failed");
         BtnClearAllQueued.Label = _translationService._("Clear All Queued");
         BtnClearAllCompleted.Label = _translationService._("Clear All Completed");
-        BtnModernStopAllRemaining.Label = _translationService._("Stop All Remaining");
-        BtnModernRetryAllFailed.Label = _translationService._("Retry All Failed");
-        BtnModernClearAllQueued.Label = _translationService._("Clear All Queued");
-        BtnModernClearAllCompleted.Label = _translationService._("Clear All Completed");
+        LblModernStopAllRemaining.Text = _translationService._("Stop All Remaining");
+        LblModernRetryAllFailed.Text = _translationService._("Retry All Failed");
+        LblModernClearAllQueued.Text = _translationService._("Clear All Queued");
+        LblModernClearAllCompleted.Text = _translationService._("Clear All Completed");
         LblDownloadsAddDownload.Text = _translationService._("Add");
-        LblModernBatchFile.Text = _translationService._("Select Batch File");
-        ToolTipService.SetToolTip(BtnAdvancedAddDownload, _translationService._("Add Download"));
         NavDownloadsAll.Content = _translationService._("All");
         NavDownloadsRunning.Content = _translationService._("Running");
         NavDownloadsQueued.Content = _translationService._("Queued");
         NavDownloadsCompleted.Content = _translationService._("Completed");
         NavDownloadsFailed.Content = _translationService._("Failed");
-        PillFilterAll.Content = _translationService._("All");
-        PillFilterRunning.Content = _translationService._("Running");
-        PillFilterQueued.Content = _translationService._("Queued");
-        PillFilterCompleted.Content = _translationService._("Completed");
-        PillFilterFailed.Content = _translationService._("Failed");
         StatusNoneDownloads.Title = _translationService._("No Downloads");
         StatusNoneDownloads.Description = _translationService._("There are no downloads of this type");
         LblNoneAddDownload.Text = _translationService._("Add Download");
@@ -192,6 +187,23 @@ public sealed partial class MainWindow : Window
         TxtCredentialPassword.PlaceholderText = _translationService._("Enter password here");
         DlgCredential.PrimaryButtonText = _translationService._("Submit");
         DlgCredential.CloseButtonText = _translationService._("Cancel");
+        // Modern layout shortcuts: Ctrl+L focuses the link bar, Ctrl+V pastes a link from anywhere.
+        var focusUrlAccelerator = new KeyboardAccelerator { Key = VirtualKey.L, Modifiers = VirtualKeyModifiers.Control };
+        focusUrlAccelerator.Invoked += FocusUrlAccelerator_Invoked;
+        MainGrid.KeyboardAccelerators.Add(focusUrlAccelerator);
+        var pasteAccelerator = new KeyboardAccelerator { Key = VirtualKey.V, Modifiers = VirtualKeyModifiers.Control };
+        pasteAccelerator.Invoked += PasteAccelerator_Invoked;
+        MainGrid.KeyboardAccelerators.Add(pasteAccelerator);
+        // Offer a copied link when the user comes back to BearDL or copies while it is focused.
+        Activated += (_, args) =>
+        {
+            if (args.WindowActivationState != WindowActivationState.Deactivated)
+            {
+                _ = RefreshClipboardSuggestionAsync();
+            }
+        };
+        Clipboard.ContentChanged += Clipboard_ContentChanged;
+        Closed += (_, _) => Clipboard.ContentChanged -= Clipboard_ContentChanged;
         _lastDownloadsNavItem = NavDownloadsAll;
         ApplyLayoutMode(GlassThemeHelper.UseModernLayout, true);
     }
@@ -538,11 +550,8 @@ public sealed partial class MainWindow : Window
             TopMenuBar.Opacity = 0;
             TopMenuBar.IsHitTestVisible = false;
             TopSeparator.Visibility = Visibility.Collapsed;
-            BtnHeaderAddDownload.Visibility = Visibility.Visible;
-            BtnHeaderHelp.Visibility = Visibility.Visible;
             ClassicDownloadsToolbar.Visibility = Visibility.Collapsed;
             ClassicDownloadsSeparator.Visibility = Visibility.Collapsed;
-            BtnSidebarAddDownload.Visibility = Visibility.Visible;
             NavFooterSeparator.Visibility = Visibility.Visible;
             NavHistory.Visibility = Visibility.Visible;
             NavKeyring.Visibility = Visibility.Visible;
@@ -554,6 +563,7 @@ public sealed partial class MainWindow : Window
             {
                 ViewStack.SelectedIndex = (int)Pages.Downloads;
             }
+            _ = RefreshClipboardSuggestionAsync();
         }
         else
         {
@@ -562,11 +572,8 @@ public sealed partial class MainWindow : Window
             TopMenuBar.Opacity = 1;
             TopMenuBar.IsHitTestVisible = true;
             TopSeparator.Visibility = _controller.Theme == Theme.Glass ? Visibility.Collapsed : Visibility.Visible;
-            BtnHeaderAddDownload.Visibility = Visibility.Collapsed;
-            BtnHeaderHelp.Visibility = Visibility.Collapsed;
             ClassicDownloadsToolbar.Visibility = Visibility.Visible;
             ClassicDownloadsSeparator.Visibility = _controller.Theme == Theme.Glass ? Visibility.Collapsed : Visibility.Visible;
-            BtnSidebarAddDownload.Visibility = Visibility.Collapsed;
             NavFooterSeparator.Visibility = Visibility.Collapsed;
             NavHistory.Visibility = Visibility.Collapsed;
             NavKeyring.Visibility = Visibility.Collapsed;
@@ -574,6 +581,7 @@ public sealed partial class MainWindow : Window
             NavAbout.Visibility = Visibility.Collapsed;
             QuickUrlCard.Visibility = Visibility.Collapsed;
             ModernDownloadsToolbar.Visibility = Visibility.Collapsed;
+            ClipboardSuggestion.Visibility = Visibility.Collapsed;
             if (!isInitial && ViewStack.SelectedIndex == (int)Pages.Downloads && _downloadRows.Count == 0)
             {
                 ViewStack.SelectedIndex = (int)Pages.Home;
@@ -688,14 +696,23 @@ public sealed partial class MainWindow : Window
             {
                 _lastDownloadsNavItem = selectedItem;
                 TitleBar.IsBackButtonVisible = false;
-                if (GlassThemeHelper.UseModernLayout)
-                {
-                    ViewStack.SelectedIndex = (int)Pages.Downloads;
-                }
-                SyncFilterPills(tag);
             }
         }
-        UpdateDownloadsList();
+        // NavigationView can raise SelectionChanged during its own measure pass (initial
+        // IsSelected item). Changing ViewStack content synchronously there throws
+        // "Child collection must not be modified during measure or arrange", so defer.
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (_isClosed)
+            {
+                return;
+            }
+            if (GlassThemeHelper.UseModernLayout && ViewStack.SelectedIndex != (int)Pages.Downloads && ViewStack.SelectedIndex != (int)Pages.Custom)
+            {
+                ViewStack.SelectedIndex = (int)Pages.Downloads;
+            }
+            UpdateDownloadsList();
+        });
     }
 
     private void NavViewDownloads_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
@@ -713,48 +730,14 @@ public sealed partial class MainWindow : Window
         {
             OpenSettingsView();
         }
+        else if (tag == "Help")
+        {
+            Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase.ShowAttachedFlyout(NavAbout);
+        }
         else if (tag == "About")
         {
             About(sender, new RoutedEventArgs());
         }
-    }
-
-    private void FilterPill_Click(object sender, RoutedEventArgs e)
-    {
-        if (_isSyncingFilter || sender is not Microsoft.UI.Xaml.Controls.Primitives.ToggleButton clickedPill)
-        {
-            return;
-        }
-        var tag = clickedPill.Tag as string ?? "0";
-        SyncFilterPills(tag);
-        var targetNavItem = tag switch
-        {
-            "1" => NavDownloadsRunning,
-            "2" => NavDownloadsQueued,
-            "3" => NavDownloadsCompleted,
-            "4" => NavDownloadsFailed,
-            _ => NavDownloadsAll
-        };
-        _lastDownloadsNavItem = targetNavItem;
-        if (!ReferenceEquals(NavViewDownloads.SelectedItem, targetNavItem))
-        {
-            NavViewDownloads.SelectedItem = targetNavItem;
-        }
-        else
-        {
-            UpdateDownloadsList();
-        }
-    }
-
-    private void SyncFilterPills(string activeTag)
-    {
-        _isSyncingFilter = true;
-        PillFilterAll.IsChecked = activeTag == "0";
-        PillFilterRunning.IsChecked = activeTag == "1";
-        PillFilterQueued.IsChecked = activeTag == "2";
-        PillFilterCompleted.IsChecked = activeTag == "3";
-        PillFilterFailed.IsChecked = activeTag == "4";
-        _isSyncingFilter = false;
     }
 
     private void TxtQuickUrl_TextChanged(object sender, TextChangedEventArgs e)
@@ -815,6 +798,150 @@ public sealed partial class MainWindow : Window
         addDownloadDialog.RequestedTheme = MainGrid.ActualTheme;
         addDownloadDialog.XamlRoot = MainGrid.XamlRoot;
         await addDownloadDialog.ShowCustomDiscoverAsync(uri);
+    }
+
+    private void FocusUrlAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        if (GlassThemeHelper.UseModernLayout && QuickUrlCard.Visibility == Visibility.Visible)
+        {
+            TxtQuickUrl.Focus(FocusState.Keyboard);
+            TxtQuickUrl.SelectAll();
+            args.Handled = true;
+        }
+    }
+
+    private async void PasteAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        var focused = FocusManager.GetFocusedElement(MainGrid.XamlRoot);
+        if (focused is TextBox || focused is PasswordBox)
+        {
+            return;
+        }
+        if (!GlassThemeHelper.UseModernLayout)
+        {
+            return;
+        }
+        try
+        {
+            var content = Clipboard.GetContent();
+            if (content.Contains(StandardDataFormats.Text))
+            {
+                var text = (await content.GetTextAsync())?.Trim();
+                if (!string.IsNullOrEmpty(text)
+                    && Uri.TryCreate(text, UriKind.Absolute, out var uri)
+                    && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+                {
+                    TxtQuickUrl.Text = text;
+                    TxtQuickUrl.Focus(FocusState.Keyboard);
+                    TxtQuickUrl.SelectAll();
+                    args.Handled = true;
+                }
+            }
+        }
+        catch
+        {
+        }
+    }
+
+    private void Clipboard_ContentChanged(object? sender, object e)
+    {
+        DispatcherQueue.TryEnqueue(async () => await RefreshClipboardSuggestionAsync());
+    }
+
+    private async Task RefreshClipboardSuggestionAsync()
+    {
+        if (!GlassThemeHelper.UseModernLayout || _isClosed)
+        {
+            ClipboardSuggestion.Visibility = Visibility.Collapsed;
+            return;
+        }
+        try
+        {
+            var content = Clipboard.GetContent();
+            if (content.Contains(StandardDataFormats.Text))
+            {
+                var text = (await content.GetTextAsync())?.Trim();
+                if (!string.IsNullOrEmpty(text)
+                    && Uri.TryCreate(text, UriKind.Absolute, out var uri)
+                    && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+                    && text != _clipboardDismissedUrl)
+                {
+                    _clipboardSuggestedUrl = text;
+                    LblClipboardUrl.Text = text;
+                    ClipboardSuggestion.Visibility = Visibility.Visible;
+                    return;
+                }
+            }
+        }
+        catch
+        {
+        }
+        _clipboardSuggestedUrl = null;
+        ClipboardSuggestion.Visibility = Visibility.Collapsed;
+    }
+
+    private void ClipboardUse_Click(object sender, RoutedEventArgs e)
+    {
+        if (!string.IsNullOrEmpty(_clipboardSuggestedUrl))
+        {
+            TxtQuickUrl.Text = _clipboardSuggestedUrl;
+            ClipboardSuggestion.Visibility = Visibility.Collapsed;
+            TxtQuickUrl.Focus(FocusState.Keyboard);
+            TxtQuickUrl.SelectAll();
+        }
+    }
+
+    private void ClipboardDismiss_Click(object sender, RoutedEventArgs e)
+    {
+        _clipboardDismissedUrl = _clipboardSuggestedUrl;
+        ClipboardSuggestion.Visibility = Visibility.Collapsed;
+    }
+
+    private void Workspace_DragOver(object sender, DragEventArgs e)
+    {
+        if (!GlassThemeHelper.UseModernLayout)
+        {
+            return;
+        }
+        if (e.DataView.Contains(StandardDataFormats.Text) || e.DataView.Contains(StandardDataFormats.Uri))
+        {
+            e.AcceptedOperation = DataPackageOperation.Copy;
+            e.DragUIOverride.Caption = _translationService._("Add Download");
+            e.DragUIOverride.IsCaptionVisible = true;
+            e.DragUIOverride.IsContentVisible = true;
+        }
+    }
+
+    private async void Workspace_Drop(object sender, DragEventArgs e)
+    {
+        if (!GlassThemeHelper.UseModernLayout)
+        {
+            return;
+        }
+        string? url = null;
+        try
+        {
+            if (e.DataView.Contains(StandardDataFormats.Uri))
+            {
+                var uri = await e.DataView.GetUriAsync();
+                url = uri?.ToString();
+            }
+            else if (e.DataView.Contains(StandardDataFormats.Text))
+            {
+                url = (await e.DataView.GetTextAsync())?.Trim();
+            }
+        }
+        catch
+        {
+        }
+        if (!string.IsNullOrEmpty(url)
+            && Uri.TryCreate(url, UriKind.Absolute, out var dropUri)
+            && (dropUri.Scheme == Uri.UriSchemeHttp || dropUri.Scheme == Uri.UriSchemeHttps))
+        {
+            TxtQuickUrl.Text = url;
+            TxtQuickUrl.Focus(FocusState.Keyboard);
+            TxtQuickUrl.SelectAll();
+        }
     }
 
     private void UpdateProgress_Changed(object? sender, DownloadProgress e)
@@ -1002,10 +1129,46 @@ public sealed partial class MainWindow : Window
         }
         rows.Reverse();
         ListDownloads.ItemsSource = rows;
-        ViewStackDownloads.SelectedIndex = rows.Count > 0 ? 1 : 0;
-        StatusNoneDownloads.Description = GlassThemeHelper.UseModernLayout && _downloadRows.Count == 0
-            ? _translationService._("Add a video, audio, or playlist URL to start downloading")
-            : _translationService._("There are no downloads of this type");
+        var downloadsPage = rows.Count > 0 ? 1 : 0;
+        if (ViewStackDownloads.SelectedIndex != downloadsPage)
+        {
+            ViewStackDownloads.SelectedIndex = downloadsPage;
+        }
+        if (GlassThemeHelper.UseModernLayout)
+        {
+            LblModernSectionTitle.Text = activeFilterItem?.Content as string ?? _translationService._("All");
+            LblModernSectionCount.Text = rows.Count > 0 ? $"· {rows.Count}" : string.Empty;
+            BtnClassicNoneAdd.Visibility = Visibility.Collapsed;
+
+            if (_downloadRows.Count == 0)
+            {
+                ModernEmptyState.Visibility = Visibility.Visible;
+                ScrollDownloads.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                ModernEmptyState.Visibility = Visibility.Collapsed;
+                ScrollDownloads.Visibility = Visibility.Visible;
+                StatusNoneDownloads.Description = _translationService._("There are no downloads of this type");
+            }
+
+            BtnModernStopAllRemaining.Visibility = _controller.RemainingDownloadsCount > 0 ? Visibility.Visible : Visibility.Collapsed;
+            BtnModernRetryAllFailed.Visibility = _controller.FailedDownloadsCount > 0 ? Visibility.Visible : Visibility.Collapsed;
+            BtnModernClearAllQueued.Visibility = _controller.QueuedDownloadsCount > 0 ? Visibility.Visible : Visibility.Collapsed;
+            BtnModernClearAllCompleted.Visibility = _controller.CompletedDownloadsCount > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+            BtnModernStopAllRemaining.IsEnabled = _controller.RunningDownloadsCount > 0;
+            BtnModernRetryAllFailed.IsEnabled = _controller.FailedDownloadsCount > 0;
+            BtnModernClearAllQueued.IsEnabled = _controller.QueuedDownloadsCount > 0;
+            BtnModernClearAllCompleted.IsEnabled = _controller.CompletedDownloadsCount > 0;
+        }
+        else
+        {
+            ModernEmptyState.Visibility = Visibility.Collapsed;
+            ScrollDownloads.Visibility = Visibility.Visible;
+            BtnClassicNoneAdd.Visibility = Visibility.Visible;
+            StatusNoneDownloads.Description = _translationService._("There are no downloads of this type");
+        }
         InfoBadgeDownloadsAll.Value = _controller.RemainingDownloadsCount;
         InfoBadgeDownloadsAll.Visibility = _controller.RemainingDownloadsCount > 0 ? Visibility.Visible : Visibility.Collapsed;
         InfoBadgeDownloadsRunning.Value = _controller.RunningDownloadsCount;

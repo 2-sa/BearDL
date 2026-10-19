@@ -10,6 +10,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.System;
@@ -54,6 +55,8 @@ public sealed partial class DownloadRow : UserControl
         LblStop.Text = _translator._("Stop");
         LblPlay.Text = _translator._("Play");
         LblOpenFolder.Text = _translator._("Open");
+        LblCopyFile.Text = _translator._("Copy");
+        ToolTipService.SetToolTip(BtnCopyFile, _translator._("Copy the file to paste it into another app"));
         LblRetry.Text = _translator._("Retry");
     }
 
@@ -187,6 +190,47 @@ public sealed partial class DownloadRow : UserControl
         ProgBar.Value = 1.0;
         ProgBar.IsIndeterminate = false;
         ViewStackButtons.SelectedIndex = (int)ButtonsPage.Error;
+    }
+
+    private async void CopyFile(object sender, RoutedEventArgs e)
+    {
+        string resultText;
+        string resultGlyph;
+        try
+        {
+            if (!File.Exists(_path))
+            {
+                throw new FileNotFoundException(null, _path);
+            }
+            var file = await StorageFile.GetFileFromPathAsync(_path);
+            var package = new DataPackage
+            {
+                RequestedOperation = DataPackageOperation.Copy
+            };
+            package.SetStorageItems([file]);
+            Clipboard.SetContent(package);
+            // Keep the file on the clipboard after BearDL closes.
+            Clipboard.Flush();
+            resultText = _translator._("Copied");
+            resultGlyph = "\uE73E";
+        }
+        catch (FileNotFoundException)
+        {
+            resultText = _translator._("File not found");
+            resultGlyph = "\uE783";
+        }
+        catch
+        {
+            resultText = _translator._("Error");
+            resultGlyph = "\uE783";
+        }
+        BtnCopyFile.IsEnabled = false;
+        LblCopyFile.Text = resultText;
+        FntCopyFile.Glyph = resultGlyph;
+        await Task.Delay(TimeSpan.FromSeconds(2));
+        LblCopyFile.Text = _translator._("Copy");
+        FntCopyFile.Glyph = "\uE8C8";
+        BtnCopyFile.IsEnabled = true;
     }
 
     private async void OpenFolder(object sender, RoutedEventArgs e)

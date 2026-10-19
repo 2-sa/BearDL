@@ -3227,3 +3227,48 @@ msgstr "إعداد التنزيلات في الخلفية"
 
 msgid "An error occurred while preparing fast downloads"
 msgstr "تعذّر إعداد التنزيلات السريعة"
+
+msgid "Copy"
+msgstr "نسخ"
+
+msgid "Copied"
+msgstr "تم النسخ"
+
+msgid "File not found"
+msgstr "الملف غير موجود"
+
+msgid "Copy the file to paste it into another app"
+msgstr "نسخ الملف للصقه في تطبيق آخر"
+
+msgid "Paste a video, audio, or playlist URL"
+msgstr "الصق رابط فيديو أو صوت أو قائمة تشغيل"
+
+msgid "Download"
+msgstr "تنزيل"
+
+msgid "Customize"
+msgstr "تخصيص"
+
+msgid "Link in clipboard:"
+msgstr "رابط في الحافظة:"
+
+msgid "Dismiss"
+msgstr "تجاهل"
+
+msgid "Start by pasting a link"
+msgstr "ابدأ بلصق رابط"
+
+msgid "Supports videos, audio, and entire playlists"
+msgstr "يدعم مقاطع الفيديو والصوتيات وقوائم التشغيل بالكامل"
+
+msgid "Paste anywhere"
+msgstr "الصق في أي مكان"
+
+msgid "Drag a link onto the window"
+msgstr "اسحب الرابط إلى النافذة"
+
+msgid "Quick download at best quality"
+msgstr "تنزيل سريع بأعلى جودة"
+
+msgid "Add a video, audio, or playlist URL to start downloading"
+msgstr "أضف رابط فيديو أو صوت أو قائمة تشغيل لبدء التنزيل"

@@ -45,7 +45,7 @@
 - `L10N-01`: نُفّذ فحص الحزمة `Verify-TranslationCatalogs.ps1` ونجح على Actions في البناء
   `38990949083` (`2026.5.124` من الكوميت `c17c224d`). أكدت لقطة المستخدم في 2026-10-18
   عودة الواجهة العربية واتجاه RTL وظهور الاسم `BearDL`.
-- `UI-01`: أُعيد التصميم القديم كوضع افتراضي وأُضيف خيار «تصميم الواجهة» في الإعدادات للتبديل الفوري بين التصميم القديم والجديد محليًا؛ بانتظار إذن المستخدم بالكوميت والرفع.
+- `UI-01`: أُعيد التصميم القديم كوضع افتراضي وأُضيف خيار «تصميم الواجهة» في الإعدادات، وحُل انهيار التبديل بتأجيل تغيير الصفحات عبر DispatcherQueue، مع إعادة تصميم الواجهة الحديثة بشكل موحد وإضافة زر نسخ الملف المكتمل للحافظة محليًا؛ جاهز للرفع.
 
 ## Artifact storage policy — 2026-10-19
 
@@ -55,4 +55,3 @@
 - Distribution builds run on explicit manual/release triggers where separated from verification. Existing tests remain automatic; site/container deployment and platform-managed delivery retain their existing purpose. Publishing requires its existing release trigger or an explicit manual publishing choice.
 - Verification: policy behavior and workflow checks run on GitHub-hosted Ubuntu for this source commit; see the **Artifact storage policy** Actions run attached to the commit for its actual result. No application tests, builds, downloads, or installations were run on the user's device. Application packaging/updater behavior was not exercised by a policy-only check.
 - Pending: GitHub may take 6–12 hours to recalculate storage after deletions. Existing artifacts do not receive shorter expiry retroactively; scheduled maintenance applies the same policy to them. Quota recovery and a future authorized release/upload must be observed separately. Scheduled workflows can be delayed or disabled by GitHub after inactivity; one-day upload retention remains the primary limit.
-

@@ -81,6 +81,16 @@
                             </Button.Content>
                         </Button>
 						
+                        <Button x:Name="BtnCopyFile" Click="CopyFile">
+                            <Button.Content>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon x:Name="FntCopyFile" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8C8;"/>
+
+                                    <TextBlock x:Name="LblCopyFile"/>
+                                </StackPanel>
+                            </Button.Content>
+                        </Button>
+
                         <Button x:Name="BtnOpenFolder" Click="OpenFolder">
                             <Button.Content>
                                 <StackPanel Orientation="Horizontal" Spacing="6">

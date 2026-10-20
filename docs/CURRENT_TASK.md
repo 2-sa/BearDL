@@ -2,6 +2,56 @@
 
 آخر تحديث: 2026-10-18، بتوقيت الرياض. هذه الوثيقة هي المرجع الموحد للحالة والتسليم؛ دُمجت فيها تفاصيل وثيقة التسليم المؤرخة لتجنب تكرار المعلومات وتناقض حالتها.
 
+## Current request: GitHub Actions failure review — 2026-10-20
+
+After the investigation and local fixes, the user explicitly requested
+"commit & push" for these changes. This authorizes committing and pushing the
+reviewed fixes to `origin/main`, not manual release dispatch or installation on
+the user's device. Historical delivery permissions below are not reusable
+permission. The working tree was clean at `0eafa070` on `main` before this review.
+
+- Inspected live Actions jobs and failed-step logs for release run
+  [39280854704](https://github.com/2-sa/BearDL/actions/runs/39280854704), built from
+  `0eafa070`. All six platform jobs failed; publication was skipped. The two
+  subtitle jobs, duplicate-download job, and version job succeeded. The latest
+  push checks and scheduled artifact-maintenance runs also succeeded.
+- Windows x64 and ARM64: `CS0246` for `KeyboardAccelerator` and
+  `KeyboardAcceleratorInvokedEventArgs` in the new Modern UI handlers. Added the
+  missing `Microsoft.UI.Xaml.Input` import in
+  `Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs`. This also covers
+  `FocusManager` used by the paste handler. The XAML compiler's `MSB3073` is the
+  downstream failure, not evidence of a separate tool-installation problem.
+- macOS and Linux, both architectures: `msgmerge` rejected four duplicate message
+  identities in `resources/po/ar.po`: `Copy`, `Download`, `Customize`, and
+  `Add a video, audio, or playlist URL to start downloading`. Removed the obsolete
+  `Copy` entry and the three appended active duplicates, retaining one active
+  translation per identity. Do not ignore obsolete entries when checking catalogs:
+  `msgmerge` rejects their collision with an active entry too.
+- Added a `translations` job to `.github/workflows/plugins.yml` using GNU
+  `msgmerge` and `msgfmt` on all PO files without modifying them. Added PO files to
+  its PR path filter. The release workflow already waits for this reusable
+  workflow before all platform builds, so catalog errors now stop packaging early.
+  Gettext installation is confined to the GitHub runner. Corrected `AGENTS.md` to
+  describe the existing manual-only release trigger.
+- Local validation: reproduced exactly the four catalog collisions from HEAD,
+  then checked all 47 catalogs with a temporary context-aware identity scanner,
+  including obsolete entries; no collisions remain. Verified retained Arabic
+  translations, empty Arabic `translation-credits`, and the distinct `System`
+  contexts. All seven workflow YAML files parsed with the existing YAML library;
+  the new shell steps passed `bash -n`, and release dependency/path checks passed.
+  All seven artifact-policy tests passed. `git diff --check` passed.
+- Limits: GNU gettext tools and a .NET SDK are not available locally; no software
+  was installed, no application build was run, and no new Actions run was started.
+  Source checks address the observed failures but do not prove a complete build
+  or runtime/visual correctness. After explicit delivery/build authorization,
+  run the new checks and all six platform jobs on the changed commit, then verify
+  artifacts and runtime behavior. The macOS startup report remains separate and
+  unresolved. Older failures (including the write-only theme property and FFmpeg
+  404) were superseded by successful later builds; they are not new failures in
+  the reviewed run.
+
+## Previous requests and historical evidence
+
 ## الطلب الحالي: إصلاح الوضع الفاتح (Light Mode) وإضافة الوضع الزجاجي (Glass Mode)
 
 ### 1. إصلاح خلفية الوضع الفاتح في Windows

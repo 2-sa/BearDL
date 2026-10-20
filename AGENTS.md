@@ -19,7 +19,7 @@ Keep changes local until the user explicitly authorizes a commit or delivery. Do
 
 Ask and wait before downloading or installing software, SDKs, runtimes, build tools, or development certificates on the user's device. A build request does not grant installation permission. Prefer existing tools for lightweight checks and GitHub Actions for dependency setup, application builds, and packaging. Do not run local application builds unless requested.
 
-A push to `main` starts `.github/workflows/release.yml`. Confirm the built commit and artifacts before sharing download links. New distributable code needs a new increasing version, assigned by the release workflow as `2026.5.(100 + github.run_number)`. Reruns retry the same code and version; do not reuse an old version for changed code. Standalone platform workflows with fallback `2026.5.0` are validation builds.
+`.github/workflows/release.yml` starts only by explicit manual dispatch; a push to `main` runs focused checks, not release packaging. Confirm the built commit and artifacts before sharing download links. New distributable code needs a new increasing version, assigned by the release workflow as `2026.5.(100 + github.run_number)`. Reruns retry the same code and version; do not reuse an old version for changed code. Standalone platform workflows with fallback `2026.5.0` are validation builds.
 
 ## Repository identity and architecture
 

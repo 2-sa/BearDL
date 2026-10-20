@@ -6,6 +6,7 @@ on:
   pull_request:
     paths:
       - 'resources/yt-dlp-plugins/**'
+      - 'resources/po/**'
       - 'tests/plugins/**'
       - 'tests/duplicates/**'
       - 'Nickvision.Parabolic.Shared/Models/DuplicateDownload.cs'
@@ -18,6 +19,26 @@ permissions:
   contents: read
 
 jobs:
+  translations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install gettext on the runner
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes gettext
+      - name: Validate translation catalogs before platform builds
+        shell: bash
+        run: |
+          set -euo pipefail
+          for catalog in resources/po/*.po; do
+            echo "Checking $catalog"
+            # msgmerge also rejects active/obsolete duplicate identities.
+            # Write nowhere: validation must not update tracked catalogs.
+            msgmerge --quiet "$catalog" resources/po/parabolic.pot --output-file=/dev/null
+            msgfmt "$catalog" --output-file=/dev/null
+          done
+
   duplicate-downloads:
     runs-on: ubuntu-latest
     steps:

@@ -2526,9 +2526,6 @@ msgstr "التبديل بين التصميم القديم (الكلاسيكي) �
 #~ msgid "No Download Log"
 #~ msgstr "لا يوجد سجل تحميل"
 
-#~ msgid "Copy"
-#~ msgstr "نسخ"
-
 #~ msgid "No save folder selected"
 #~ msgstr "لم يتم تحديد مجلد للتنزيل"
 
@@ -3243,12 +3240,6 @@ msgstr "نسخ الملف للصقه في تطبيق آخر"
 msgid "Paste a video, audio, or playlist URL"
 msgstr "الصق رابط فيديو أو صوت أو قائمة تشغيل"
 
-msgid "Download"
-msgstr "تنزيل"
-
-msgid "Customize"
-msgstr "تخصيص"
-
 msgid "Link in clipboard:"
 msgstr "رابط في الحافظة:"
 
@@ -3269,6 +3260,3 @@ msgstr "اسحب الرابط إلى النافذة"
 
 msgid "Quick download at best quality"
 msgstr "تنزيل سريع بأعلى جودة"
-
-msgid "Add a video, audio, or playlist URL to start downloading"
-msgstr "أضف رابط فيديو أو صوت أو قائمة تشغيل لبدء التنزيل"

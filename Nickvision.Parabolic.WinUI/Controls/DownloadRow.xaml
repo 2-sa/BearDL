@@ -2,18 +2,22 @@
     x:Class="Nickvision.Parabolic.WinUI.Controls.DownloadRow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Nickvision.Parabolic.WinUI.Controls"
     xmlns:nickvision="using:Nickvision.Desktop.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Unloaded="OnUnloaded">
+    <UserControl.Resources>
+        <Style x:Key="DownloadActionButtonStyle" TargetType="Button" BasedOn="{StaticResource IconActionStyle}"/>
+    </UserControl.Resources>
+
     <Grid HorizontalAlignment="Stretch" RowSpacing="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-          CornerRadius="{ThemeResource ControlCornerRadius}" BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" Padding="16">
+          CornerRadius="{ThemeResource ControlCornerRadius}" BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" Padding="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-		
+
         <Grid Grid.Row="0" HorizontalAlignment="Stretch" ColumnSpacing="6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -24,107 +28,73 @@
 
             <Image FlowDirection="LeftToRight" x:Name="ImgThumbnail" Grid.Column="0" Width="75" Height="50" Stretch="Uniform"/>
 
-            <StackPanel Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="12,0,0,0" Orientation="Vertical" Spacing="6">
-                <TextBlock x:Name="LblTitle" TextWrapping="WrapWholeWords"/>
+            <StackPanel Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="12,0" Orientation="Vertical" Spacing="6">
+                <TextBlock x:Name="LblTitle" TextWrapping="WrapWholeWords" TextTrimming="CharacterEllipsis" MaxLines="2"/>
 
-                <StackPanel Orientation="Horizontal" Spacing="6">
+                <Grid ColumnSpacing="6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
                     <FontIcon x:Name="IcnStatus" VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16"/>
-                    
-                    <TextBlock x:Name="LblStatus" VerticalAlignment="Center" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                </StackPanel>
-				
+                    <TextBlock x:Name="LblStatus" Grid.Column="1" VerticalAlignment="Center" FontSize="12" TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </Grid>
+
                 <ProgressBar x:Name="ProgBar" HorizontalAlignment="Stretch" Minimum="0" Maximum="1"/>
             </StackPanel>
-			
-            <ToggleButton x:Name="BtnShowLog" Grid.Column="2" Margin="20,0,0,0" VerticalAlignment="Center" Click="ShowLog">
-                <ToggleButton.Content>
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE756;"/>
-						
-                        <TextBlock x:Name="LblShowLog"/>
-                    </StackPanel>
-                </ToggleButton.Content>
-            </ToggleButton>
-			
-            <nickvision:ViewStack x:Name="ViewStackButtons" Grid.Column="3" VerticalAlignment="Center">
+
+            <nickvision:ViewStack x:Name="ViewStackButtons" Grid.Column="2" VerticalAlignment="Center">
                 <nickvision:ViewStack.Pages>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <Button Click="PauseResume">
-                            <Button.Content>
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <FontIcon x:Name="FntPauseResume" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE769;"/>
-									
-                                    <TextBlock x:Name="LblPauseResume"/>
-                                </StackPanel>
-                            </Button.Content>
+                        <Button x:Name="BtnPauseResume" Style="{StaticResource DownloadActionButtonStyle}" Click="PauseResume">
+                            <FontIcon x:Name="FntPauseResume" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE769;"/>
                         </Button>
-						
-                        <Button Click="Stop">
-                            <Button.Content>
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE71A;"/>
-									
-                                    <TextBlock x:Name="LblStop"/>
-                                </StackPanel>
-                            </Button.Content>
+                        <Button x:Name="BtnStop" Style="{StaticResource DownloadActionButtonStyle}" Click="Stop">
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE71A;"/>
                         </Button>
                     </StackPanel>
-					
+
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <Button Click="Play">
-                            <Button.Content>
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE768;"/>
-									
-                                    <TextBlock x:Name="LblPlay"/>
-                                </StackPanel>
-                            </Button.Content>
+                        <Button x:Name="BtnPlay" Style="{StaticResource DownloadActionButtonStyle}" Click="Play">
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE768;"/>
                         </Button>
-						
-                        <Button x:Name="BtnCopyFile" Click="CopyFile">
-                            <Button.Content>
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <FontIcon x:Name="FntCopyFile" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8C8;"/>
-
-                                    <TextBlock x:Name="LblCopyFile"/>
-                                </StackPanel>
-                            </Button.Content>
+                        <Button x:Name="BtnCopyFile" Style="{StaticResource DownloadActionButtonStyle}" Click="CopyFile">
+                            <ToolTipService.ToolTip>
+                                <ToolTip x:Name="CopyFileToolTip"/>
+                            </ToolTipService.ToolTip>
+                            <FontIcon x:Name="FntCopyFile" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE8C8;"/>
                         </Button>
-
-                        <Button x:Name="BtnOpenFolder" Click="OpenFolder">
-                            <Button.Content>
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE838;"/>
-									
-                                    <TextBlock x:Name="LblOpenFolder"/>
-                                </StackPanel>
-                            </Button.Content>
+                        <Button x:Name="BtnOpenFolder" Style="{StaticResource DownloadActionButtonStyle}" Click="OpenFolder">
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE838;"/>
                         </Button>
                     </StackPanel>
-					
+
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <Button Click="Retry">
-                            <Button.Content>
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72C;"/>
-									
-                                    <TextBlock x:Name="LblRetry"/>
-                                </StackPanel>
-                            </Button.Content>
+                        <Button x:Name="BtnRetry" Style="{StaticResource DownloadActionButtonStyle}" Click="Retry">
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE72C;"/>
                         </Button>
                     </StackPanel>
                 </nickvision:ViewStack.Pages>
             </nickvision:ViewStack>
+
+            <Button x:Name="BtnMore" Grid.Column="3" Style="{StaticResource DownloadActionButtonStyle}">
+                <Button.Flyout>
+                    <MenuFlyout x:Name="ActionsFlyout">
+                        <ToggleMenuFlyoutItem x:Name="BtnShowLog" Click="ShowLog"/>
+                    </MenuFlyout>
+                </Button.Flyout>
+                <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE712;"/>
+            </Button>
         </Grid>
-		
+
         <Grid x:Name="GridLog" Grid.Row="1" RowSpacing="12" Visibility="Collapsed">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="320"/>
             </Grid.RowDefinitions>
-			
+
             <MenuFlyoutSeparator Grid.Row="0" HorizontalAlignment="Stretch"/>
-			
+
             <ScrollViewer x:Name="ScrollLog" Grid.Row="1" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                 <TextBlock x:Name="LblLog" FlowDirection="LeftToRight" Margin="0,0,12,0" IsTextSelectionEnabled="True"/>
             </ScrollViewer>

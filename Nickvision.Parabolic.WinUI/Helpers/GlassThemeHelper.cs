@@ -432,6 +432,7 @@ public static class GlassThemeHelper
 
         var card = new SettingsCard
         {
+            Style = (Style)Application.Current.Resources["PreferenceCardStyle"],
             Tag = "GlassTransparencyCard",
             Header = translationService._("Glass Transparency"),
             Description = translationService._("Adjust the window transparency level in Glass mode"),
@@ -454,6 +455,7 @@ public static class GlassThemeHelper
 
         var cmbLayout = new ComboBox
         {
+            Style = (Style)Application.Current.Resources["PageComboBoxStyle"],
             MinWidth = 160,
             VerticalAlignment = VerticalAlignment.Center
         };
@@ -470,6 +472,7 @@ public static class GlassThemeHelper
 
         var layoutCard = new SettingsCard
         {
+            Style = (Style)Application.Current.Resources["PreferenceCardStyle"],
             Tag = "UiLayoutModeCard",
             Header = translationService._("Interface Layout"),
             Description = translationService._("Choose between the classic or modern interface layout"),

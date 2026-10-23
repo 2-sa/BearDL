@@ -683,16 +683,18 @@
                 </InfoBar>
             </Grid>
 
-            <ContentDialog x:Name="DlgCredential" DefaultButton="Primary">
-                <StackPanel Orientation="Vertical" Spacing="12">
-                    <TextBlock x:Name="LblCredentialRequired"/>
+            <ContentDialog x:Name="DlgCredential" TitleTemplate="{StaticResource DialogHeadingTemplate}" DefaultButton="Primary">
+                <Border Style="{StaticResource PageSurfaceStyle}">
+                    <StackPanel Orientation="Vertical" Spacing="16">
+                        <TextBlock x:Name="LblCredentialRequired"/>
 
-                    <TextBox x:Name="TxtCredentialUrl" IsReadOnly="True"/>
+                        <TextBox x:Name="TxtCredentialUrl" Style="{StaticResource PageTextBoxStyle}" IsReadOnly="True"/>
 
-                    <TextBox x:Name="TxtCredentialUsername"/>
+                        <TextBox x:Name="TxtCredentialUsername" Style="{StaticResource PageTextBoxStyle}"/>
 
-                    <PasswordBox x:Name="TxtCredentialPassword"/>
-                </StackPanel>
+                        <PasswordBox x:Name="TxtCredentialPassword" Style="{StaticResource PagePasswordBoxStyle}"/>
+                    </StackPanel>
+                </Border>
             </ContentDialog>
         </Grid>
     </Grid>

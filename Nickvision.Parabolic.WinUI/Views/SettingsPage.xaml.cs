@@ -52,6 +52,8 @@ public sealed partial class SettingsPage : Page
         _constructing = true;
         // Translations
         NavigationView.PaneTitle = _translationService._("Settings");
+        LblSettingsTitle.Text = _translationService._("Settings");
+        LblSettingsSection.Text = _translationService._("User Interface");
         NavUserInterface.Content = _translationService._("User Interface");
         NavDownloads.Content = _translationService._("Downloads");
         NavDownloader.Content = _translationService._("Downloader");
@@ -212,7 +214,19 @@ public sealed partial class SettingsPage : Page
         _constructing = false;
     }
 
-    private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) => ViewStack.SelectedIndex = int.Parse(((NavigationView.SelectedItem as NavigationViewItem)!.Tag as string)!);
+    private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+    {
+        if (args.SelectedItem is not NavigationViewItem item || item.Tag is not string tag || !int.TryParse(tag, out var index))
+        {
+            return;
+        }
+        // NavigationView can change selection while measuring its top menu.
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            ViewStack.SelectedIndex = index;
+            LblSettingsSection.Text = item.Content as string ?? string.Empty;
+        });
+    }
 
     private async void AddPostprocessingArgument(object? sender, RoutedEventArgs e)
     {

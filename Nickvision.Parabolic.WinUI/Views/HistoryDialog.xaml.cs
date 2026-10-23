@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Nickvision.Desktop.Globalization;
 using Nickvision.Parabolic.Shared.Controllers;
@@ -88,6 +89,19 @@ public sealed partial class HistoryDialog : ContentDialog
             TglSortOldest.IsChecked = true;
         }
         await LoadDownloadsAsync();
+    }
+
+    private void ActionButton_Loaded(object sender, RoutedEventArgs e)
+    {
+        var button = (Button)sender;
+        var label = button.Name switch
+        {
+            "DownloadAgainAction" => _translationService._("Download Again"),
+            "PlayAction" => _translationService._("Play"),
+            _ => _translationService._("Delete")
+        };
+        ToolTipService.SetToolTip(button, label);
+        AutomationProperties.SetName(button, label);
     }
 
     private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)

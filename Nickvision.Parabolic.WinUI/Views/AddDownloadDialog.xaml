@@ -11,7 +11,7 @@
     xmlns:parabolic="using:Nickvision.Parabolic.WinUI.Helpers"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" Style="{StaticResource DefaultContentDialogStyle}">
+    mc:Ignorable="d" Style="{StaticResource DefaultContentDialogStyle}" TitleTemplate="{StaticResource DialogHeadingTemplate}">
 
     <ContentDialog.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -23,97 +23,101 @@
     <ScrollViewer x:Name="DownloadScrollViewer" Width="420" MaxWidth="500" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
         <nickvision:ViewStack x:Name="ViewStack" Width="400" MaxWidth="400" FlowDirection="{Binding FlowDirection, ElementName=DialogRoot}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <nickvision:ViewStack.Pages>
-                <StackPanel Orientation="Vertical" Spacing="12" MinWidth="400">
-                    <StackPanel Spacing="6">
-                        <TextBlock x:Name="LblUrl"/>
-                        <TextBox x:Name="TxtUrl" FlowDirection="LeftToRight" AutomationProperties.LabeledBy="{Binding ElementName=LblUrl}" TextChanged="TxtUrl_TextChanged"/>
-                    </StackPanel>
+                <Border Style="{StaticResource PageSurfaceStyle}">
+                    <StackPanel Orientation="Vertical" Spacing="16">
+                        <StackPanel Spacing="6">
+                            <TextBlock x:Name="LblUrl"/>
+                            <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtUrl" FlowDirection="LeftToRight" AutomationProperties.LabeledBy="{Binding ElementName=LblUrl}" TextChanged="TxtUrl_TextChanged"/>
+                        </StackPanel>
 
-                    <Button x:Name="BtnSelectBatchFile" HorizontalAlignment="Stretch" Click="BtnSelectBatchFile_Click">
-                        <Button.Content>
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8A5;" FontSize="18"/>
+                        <Button Style="{StaticResource PageActionStyle}" x:Name="BtnSelectBatchFile" HorizontalAlignment="Stretch" Click="BtnSelectBatchFile_Click">
+                            <Button.Content>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8A5;" FontSize="18"/>
 
-                                <TextBlock x:Name="LblSelectBatchFile"/>
-                            </StackPanel>
-                        </Button.Content>
-                    </Button>
+                                    <TextBlock x:Name="LblSelectBatchFile"/>
+                                </StackPanel>
+                            </Button.Content>
+                        </Button>
 
-                    <StackPanel x:Name="RowFastSaveFolder" Spacing="6" Visibility="Collapsed">
-                        <TextBlock x:Name="LblFastSaveFolder"/>
-                        <Grid ColumnSpacing="6">
+                        <StackPanel x:Name="RowFastSaveFolder" Spacing="6" Visibility="Collapsed">
+                            <TextBlock x:Name="LblFastSaveFolder"/>
+                            <Grid ColumnSpacing="6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtFastSaveFolder" Grid.Column="0" FlowDirection="LeftToRight" IsReadOnly="True" AutomationProperties.LabeledBy="{Binding ElementName=LblFastSaveFolder}"/>
+                                <Button Style="{StaticResource IconActionStyle}" x:Name="BtnFastSelectSaveFolder" Grid.Column="1" Click="BtnFastSelectSaveFolder_Click">
+                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B7;" FontSize="18"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+
+                        <Grid Style="{StaticResource FormSectionStyle}" ColumnSpacing="16" MinHeight="48">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="TxtFastSaveFolder" Grid.Column="0" FlowDirection="LeftToRight" IsReadOnly="True" AutomationProperties.LabeledBy="{Binding ElementName=LblFastSaveFolder}"/>
-                            <Button x:Name="BtnFastSelectSaveFolder" Grid.Column="1" Click="BtnFastSelectSaveFolder_Click">
-                                <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B7;" FontSize="18"/>
-                            </Button>
+                            <TextBlock x:Name="LblUseAuthentication" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                            <ToggleSwitch x:Name="TglUseAuthentication" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                         </Grid>
-                    </StackPanel>
 
-                    <Grid ColumnSpacing="16" MinHeight="32">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="LblUseAuthentication" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                        <ToggleSwitch x:Name="TglUseAuthentication" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
-                    </Grid>
+                        <StackPanel Orientation="Vertical" Spacing="6" Visibility="{x:Bind TglUseAuthentication.IsOn, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbCredential" HorizontalAlignment="Stretch" SelectionChanged="CmbCredential_SelectionChanged">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="helpers:BindableSelectionItem">
+                                        <TextBlock Text="{x:Bind Label}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
 
-                    <StackPanel Orientation="Vertical" Spacing="6" Visibility="{x:Bind TglUseAuthentication.IsOn, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <ComboBox x:Name="CmbCredential" HorizontalAlignment="Stretch" SelectionChanged="CmbCredential_SelectionChanged">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate x:DataType="helpers:BindableSelectionItem">
-                                    <TextBlock Text="{x:Bind Label}"/>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
+                            <StackPanel Spacing="6" Visibility="{Binding Visibility, ElementName=TxtUsername}">
+                                <TextBlock x:Name="LblUsername"/>
+                                <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtUsername" FlowDirection="LeftToRight" Visibility="Collapsed" AutomationProperties.LabeledBy="{Binding ElementName=LblUsername}"/>
+                            </StackPanel>
 
-                        <StackPanel Spacing="6" Visibility="{Binding Visibility, ElementName=TxtUsername}">
-                            <TextBlock x:Name="LblUsername"/>
-                            <TextBox x:Name="TxtUsername" FlowDirection="LeftToRight" Visibility="Collapsed" AutomationProperties.LabeledBy="{Binding ElementName=LblUsername}"/>
+                            <StackPanel Spacing="6" Visibility="{Binding Visibility, ElementName=TxtPassword}">
+                                <TextBlock x:Name="LblPassword"/>
+                                <PasswordBox Style="{StaticResource PagePasswordBoxStyle}" x:Name="TxtPassword" FlowDirection="LeftToRight" Visibility="Collapsed" AutomationProperties.LabeledBy="{Binding ElementName=LblPassword}"/>
+                            </StackPanel>
                         </StackPanel>
 
-                        <StackPanel Spacing="6" Visibility="{Binding Visibility, ElementName=TxtPassword}">
-                            <TextBlock x:Name="LblPassword"/>
-                            <PasswordBox x:Name="TxtPassword" FlowDirection="LeftToRight" Visibility="Collapsed" AutomationProperties.LabeledBy="{Binding ElementName=LblPassword}"/>
-                        </StackPanel>
+                        <Grid x:Name="RowDownloadImmediatelyAsVideo" Style="{StaticResource FormSectionStyle}" ColumnSpacing="16" MinHeight="48">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="LblDownloadImmediatelyAsVideo" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                            <ToggleSwitch x:Name="TglDownloadImmediatelyAsVideo" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent="" Toggled="TglDownloadImmediatelyAsVideo_Toggled"/>
+                        </Grid>
+
+                        <Grid x:Name="RowDownloadImmediatelyAsAudio" Style="{StaticResource FormSectionStyle}" ColumnSpacing="16" MinHeight="48">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="LblDownloadImmediatelyAsAudio" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                            <ToggleSwitch x:Name="TglDownloadImmediatelyAsAudio" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent="" Toggled="TglDownloadImmediatelyAsAudio_Toggled"/>
+                        </Grid>
+
+                        <TeachingTip x:Name="TeachDownloadImmediately" PreferredPlacement="Bottom"/>
                     </StackPanel>
-
-                    <Grid x:Name="RowDownloadImmediatelyAsVideo" ColumnSpacing="16" MinHeight="32">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="LblDownloadImmediatelyAsVideo" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                        <ToggleSwitch x:Name="TglDownloadImmediatelyAsVideo" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent="" Toggled="TglDownloadImmediatelyAsVideo_Toggled"/>
-                    </Grid>
-
-                    <Grid x:Name="RowDownloadImmediatelyAsAudio" ColumnSpacing="16" MinHeight="32">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="LblDownloadImmediatelyAsAudio" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                        <ToggleSwitch x:Name="TglDownloadImmediatelyAsAudio" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent="" Toggled="TglDownloadImmediatelyAsAudio_Toggled"/>
-                    </Grid>
-
-                    <TeachingTip x:Name="TeachDownloadImmediately" PreferredPlacement="Bottom"/>
-                </StackPanel>
+                </Border>
 
                 <StackPanel Orientation="Vertical" Spacing="24" Margin="0,24,0,0">
                     <ProgressRing IsActive="True"/>
 
-                    <TextBlock x:Name="LblLoading" HorizontalAlignment="Center" Foreground="Gray"/>
+                    <TextBlock x:Name="LblLoading" HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
 
-                <Grid RowSpacing="6">
+                <Grid RowSpacing="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Style="{StaticResource InsetSurfaceStyle}" Padding="4">
 
                     <SelectorBar x:Name="NavViewSingle" Grid.Row="0" SelectionChanged="NavViewSingle_SelectionChanged">
                         <SelectorBarItem x:Name="NavViewItemSingleGeneral" IsSelected="True" Tag="General">
@@ -134,10 +138,11 @@
                             </SelectorBarItem.Icon>
                         </SelectorBarItem>
                     </SelectorBar>
+                    </Border>
 
                     <nickvision:ViewStack x:Name="ViewStackSingle" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                         <nickvision:ViewStack.Pages>
-                            <Grid RowSpacing="12" ColumnSpacing="6" MinWidth="400">
+                            <Grid Style="{StaticResource FormSectionStyle}" RowSpacing="12" ColumnSpacing="8" MinWidth="0">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
@@ -158,18 +163,18 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     
-                                    <Image FlowDirection="LeftToRight" x:Name="ImgSingleThumbnail" Grid.Column="0" Width="150" Height="100" Stretch="UniformToFill"/>
+                                    <Image FlowDirection="LeftToRight" x:Name="ImgSingleThumbnail" Grid.Column="0" Width="96" Height="64" Stretch="UniformToFill"/>
 
                                     <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="6">
-                                        <TextBlock x:Name="LblSingleTitle" TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="LblSingleTitle" FontWeight="SemiBold" TextWrapping="Wrap" MaxLines="3" TextTrimming="CharacterEllipsis"/>
 
-                                        <TextBlock x:Name="LblSingleUrl" FlowDirection="LeftToRight" TextWrapping="Wrap" Foreground="Gray"/>
+                                        <TextBlock x:Name="LblSingleUrl" FlowDirection="LeftToRight" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
                                 </Grid>
                                 
-                                <TextBox x:Name="TxtSingleSaveFilename" Grid.Row="1" Grid.Column="0"/>
+                                <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtSingleSaveFilename" Grid.Row="1" Grid.Column="0"/>
 
-                                <Button x:Name="BtnSingleRevertFilename" Grid.Row="1" Grid.Column="1" Margin="0,28,0,0" Click="BtnSingleRevertFilename_Click">
+                                <Button Style="{StaticResource IconActionStyle}" x:Name="BtnSingleRevertFilename" Grid.Row="1" Grid.Column="1" Margin="0,28,0,0" Click="BtnSingleRevertFilename_Click">
                                     <Button.Content>
                                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE7A7;" FontSize="18"/>
                                     </Button.Content>
@@ -177,16 +182,16 @@
 
                                 <StackPanel Grid.Row="2" Grid.Column="0" Spacing="6">
                                     <TextBlock x:Name="LblSingleSaveFolder"/>
-                                    <TextBox x:Name="TxtSingleSaveFolder" FlowDirection="LeftToRight" IsReadOnly="True" AutomationProperties.LabeledBy="{Binding ElementName=LblSingleSaveFolder}"/>
+                                    <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtSingleSaveFolder" FlowDirection="LeftToRight" IsReadOnly="True" AutomationProperties.LabeledBy="{Binding ElementName=LblSingleSaveFolder}"/>
                                 </StackPanel>
 
-                                <Button x:Name="BtnSingleSelectSaveFolder" Grid.Row="2" Grid.Column="1" Margin="0,28,0,0" Click="BtnSingleSelectSaveFolder_Click">
+                                <Button Style="{StaticResource IconActionStyle}" x:Name="BtnSingleSelectSaveFolder" Grid.Row="2" Grid.Column="1" Margin="0,28,0,0" Click="BtnSingleSelectSaveFolder_Click">
                                     <Button.Content>
                                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B7;" FontSize="18"/>
                                     </Button.Content>
                                 </Button>
 
-                                <ComboBox x:Name="CmbSingleFileType" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" SelectionChanged="CmbSingleFileType_SelectionChanged">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbSingleFileType" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" SelectionChanged="CmbSingleFileType_SelectionChanged">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}"/>
@@ -196,7 +201,7 @@
 
                                 <TeachingTip x:Name="TeachSingleFileType" PreferredPlacement="Bottom" Target="{x:Bind CmbSingleFileType}"/>
 
-                                <ComboBox x:Name="CmbSingleVideoFormat" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbSingleVideoFormat" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}"/>
@@ -204,7 +209,7 @@
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
 
-                                <ComboBox x:Name="CmbSingleAudioFormat" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbSingleAudioFormat" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}"/>
@@ -217,7 +222,7 @@
                                 <nickvision:ViewStack.Pages>
                                     <nickvision:StatusPage x:Name="StatusSingleSubtitles" Margin="0,24,0,0" Glyph="&#xE721;" IsCompact="True"/>
 
-                                    <Grid RowSpacing="12" ColumnSpacing="6" MinWidth="400">
+                                    <Grid Style="{StaticResource FormSectionStyle}" RowSpacing="12" ColumnSpacing="8" MinWidth="0">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
@@ -229,7 +234,7 @@
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <Button x:Name="BtnSingleSelectAllSubtitles" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" Click="BtnSingleSelectAllSubtitles_Click">
+                                        <Button Style="{StaticResource PageActionStyle}" x:Name="BtnSingleSelectAllSubtitles" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" Click="BtnSingleSelectAllSubtitles_Click">
                                             <Button.Content>
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B3;" FontSize="18"/>
@@ -239,7 +244,7 @@
                                             </Button.Content>
                                         </Button>
 
-                                        <Button x:Name="BtnSingleDeselectAllSubtitles" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Click="BtnSingleDeselectAllSubtitles_Click">
+                                        <Button Style="{StaticResource PageActionStyle}" x:Name="BtnSingleDeselectAllSubtitles" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Click="BtnSingleDeselectAllSubtitles_Click">
                                             <Button.Content>
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8E6;" FontSize="18"/>
@@ -249,7 +254,7 @@
                                             </Button.Content>
                                         </Button>
 
-                                        <AutoSuggestBox x:Name="TxtSingleSubtitlesSearch" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" QueryIcon="Find" TextChanged="TxtSingleSubtitlesSearch_TextChanged"/>
+                                        <AutoSuggestBox Style="{StaticResource PageSearchStyle}" x:Name="TxtSingleSubtitlesSearch" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" QueryIcon="Find" TextChanged="TxtSingleSubtitlesSearch_TextChanged"/>
 
                                         <ListView x:Name="ListSingleSubtitles" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" SelectionChanged="ListSubtitles_SelectionChanged" SelectionMode="Multiple">
                                             <ListView.ItemTemplate>
@@ -262,8 +267,8 @@
                                 </nickvision:ViewStack.Pages>
                             </nickvision:ViewStack>
 
-                            <StackPanel Orientation="Vertical" Spacing="12" MinWidth="400" HorizontalAlignment="Stretch">
-                                <Grid ColumnSpacing="16" MinHeight="32">
+                            <StackPanel Orientation="Vertical" Spacing="12" MinWidth="0" HorizontalAlignment="Stretch">
+                                <Grid Style="{StaticResource FormSectionStyle}" ColumnSpacing="16" MinHeight="48">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -272,7 +277,7 @@
                                     <ToggleSwitch x:Name="TglSingleSplitChapters" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                                 </Grid>
 
-                                <Grid ColumnSpacing="16" MinHeight="32">
+                                <Grid Style="{StaticResource FormSectionStyle}" ColumnSpacing="16" MinHeight="48">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -281,7 +286,7 @@
                                     <ToggleSwitch x:Name="TglSingleExportDescription" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                                 </Grid>
 
-                                <Grid ColumnSpacing="16" MinHeight="32">
+                                <Grid Style="{StaticResource FormSectionStyle}" ColumnSpacing="16" MinHeight="48">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -290,7 +295,7 @@
                                     <ToggleSwitch x:Name="TglSingleExcludeFromHistory" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                                 </Grid>
 
-                                <ComboBox x:Name="CmbSinglePostProcessorArgument" HorizontalAlignment="Stretch">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbSinglePostProcessorArgument" HorizontalAlignment="Stretch">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}"/>
@@ -298,19 +303,21 @@
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
 
-                                <TextBox x:Name="TxtSingleStartTime" FlowDirection="LeftToRight"/>
+                                <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtSingleStartTime" FlowDirection="LeftToRight"/>
 
-                                <TextBox x:Name="TxtSingleEndTime" FlowDirection="LeftToRight"/>
+                                <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtSingleEndTime" FlowDirection="LeftToRight"/>
                             </StackPanel>
                         </nickvision:ViewStack.Pages>
                     </nickvision:ViewStack>
                 </Grid>
 
-                <Grid RowSpacing="6">
+                <Grid RowSpacing="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Style="{StaticResource InsetSurfaceStyle}" Padding="4">
 
                     <SelectorBar x:Name="NavViewPlaylist" Grid.Row="0" SelectionChanged="NavViewPlaylist_SelectionChanged">
                         <SelectorBarItem x:Name="NavViewItemPlaylistGeneral" IsSelected="True" Tag="General">
@@ -337,10 +344,11 @@
                             </SelectorBarItem.Icon>
                         </SelectorBarItem>
                     </SelectorBar>
+                    </Border>
 
                     <nickvision:ViewStack x:Name="ViewStackPlaylist" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                         <nickvision:ViewStack.Pages>
-                            <Grid RowSpacing="12" ColumnSpacing="6" MinWidth="400">
+                            <Grid Style="{StaticResource FormSectionStyle}" RowSpacing="12" ColumnSpacing="8" MinWidth="0">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
@@ -360,27 +368,27 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <Image FlowDirection="LeftToRight" x:Name="ImgPlaylistThumbnail" Grid.Column="0" Width="150" Height="100" Stretch="UniformToFill"/>
+                                    <Image FlowDirection="LeftToRight" x:Name="ImgPlaylistThumbnail" Grid.Column="0" Width="96" Height="64" Stretch="UniformToFill"/>
 
                                     <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="6">
-                                        <TextBlock x:Name="LblPlaylistTitle" TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="LblPlaylistTitle" FontWeight="SemiBold" TextWrapping="Wrap" MaxLines="3" TextTrimming="CharacterEllipsis"/>
 
-                                        <TextBlock x:Name="LblPlaylistUrl" FlowDirection="LeftToRight" TextWrapping="Wrap" Foreground="Gray"/>
+                                        <TextBlock x:Name="LblPlaylistUrl" FlowDirection="LeftToRight" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
                                 </Grid>
 
                                 <StackPanel Grid.Row="1" Grid.Column="0" Spacing="6">
                                     <TextBlock x:Name="LblPlaylistSaveFolder"/>
-                                    <TextBox x:Name="TxtPlaylistSaveFolder" FlowDirection="LeftToRight" IsReadOnly="True" AutomationProperties.LabeledBy="{Binding ElementName=LblPlaylistSaveFolder}"/>
+                                    <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtPlaylistSaveFolder" FlowDirection="LeftToRight" IsReadOnly="True" AutomationProperties.LabeledBy="{Binding ElementName=LblPlaylistSaveFolder}"/>
                                 </StackPanel>
 
-                                <Button x:Name="BtnPlaylistSelectSaveFolder" Grid.Row="1" Grid.Column="1" Margin="0,28,0,0" Click="BtnPlaylistSelectSaveFolder_Click">
+                                <Button Style="{StaticResource IconActionStyle}" x:Name="BtnPlaylistSelectSaveFolder" Grid.Row="1" Grid.Column="1" Margin="0,28,0,0" Click="BtnPlaylistSelectSaveFolder_Click">
                                     <Button.Content>
                                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B7;" FontSize="18"/>
                                     </Button.Content>
                                 </Button>
 
-                                <ComboBox x:Name="CmbPlaylistFileType" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" SelectionChanged="CmbPlaylistFileType_SelectionChanged">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbPlaylistFileType" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" SelectionChanged="CmbPlaylistFileType_SelectionChanged">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}"/>
@@ -390,7 +398,7 @@
 
                                 <TeachingTip x:Name="TeachPlaylistFileType" PreferredPlacement="Bottom" Target="{x:Bind CmbPlaylistFileType}"/>
 
-                                <ComboBox x:Name="CmbPlaylistSuggestedVideoResolution" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbPlaylistSuggestedVideoResolution" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}"/>
@@ -398,7 +406,7 @@
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
 
-                                <ComboBox x:Name="CmbPlaylistSuggestedAudioBitrate" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbPlaylistSuggestedAudioBitrate" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}"/>
@@ -407,7 +415,7 @@
                                 </ComboBox>
                             </Grid>
 
-                            <Grid RowSpacing="12" ColumnSpacing="6" MinWidth="400">
+                            <Grid Style="{StaticResource FormSectionStyle}" RowSpacing="12" ColumnSpacing="8" MinWidth="0">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
@@ -421,7 +429,7 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <Button x:Name="BtnPlaylistSelectAllItems" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" Click="BtnPlaylistSelectAllItems_Click">
+                                <Button Style="{StaticResource PageActionStyle}" x:Name="BtnPlaylistSelectAllItems" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" Click="BtnPlaylistSelectAllItems_Click">
                                     <Button.Content>
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B3;" FontSize="18"/>
@@ -431,7 +439,7 @@
                                     </Button.Content>
                                 </Button>
 
-                                <Button x:Name="BtnPlaylistDeselectAllItems" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Click="BtnPlaylistDeselectAllItems_Click">
+                                <Button Style="{StaticResource PageActionStyle}" x:Name="BtnPlaylistDeselectAllItems" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Click="BtnPlaylistDeselectAllItems_Click">
                                     <Button.Content>
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8E6;" FontSize="18"/>
@@ -441,7 +449,7 @@
                                     </Button.Content>
                                 </Button>
 
-                                <TextBlock x:Name="LblPlaylistItemsTime" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Foreground="Gray" TextWrapping="Wrap"/>
+                                <TextBlock x:Name="LblPlaylistItemsTime" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
 
                                 <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" ColumnSpacing="16" MinHeight="32">
                                     <Grid.ColumnDefinitions>
@@ -473,15 +481,15 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
 
-                                                <TextBox Grid.Column="0" Text="{x:Bind Filename, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                <TextBox Style="{StaticResource PageTextBoxStyle}" Grid.Column="0" Text="{x:Bind Filename, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-                                                <Button Grid.Column="1" Click="BtnPlaylistRevertFilename_Click" Tag="{x:Bind Value}">
+                                                <Button Style="{StaticResource PageActionStyle}" Grid.Column="1" Click="BtnPlaylistRevertFilename_Click" Tag="{x:Bind Value}">
                                                     <Button.Content>
                                                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE7A7;" FontSize="18"/>
                                                     </Button.Content>
                                                 </Button>
 
-                                                <Button Grid.Column="2">
+                                                <Button Style="{StaticResource PageActionStyle}" Grid.Column="2">
                                                     <Button.Content>
                                                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE712;" FontSize="18"/>
                                                     </Button.Content>
@@ -489,9 +497,9 @@
                                                     <Button.Flyout>
                                                         <Flyout Placement="Bottom">
                                                             <StackPanel Orientation="Vertical" Spacing="12" HorizontalAlignment="Stretch">
-                                                                <TextBox Header="{x:Bind StartTimeHeader}" PlaceholderText="{x:Bind StartTime}" Text="{x:Bind StartTime, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                <TextBox Style="{StaticResource PageTextBoxStyle}" Header="{x:Bind StartTimeHeader}" PlaceholderText="{x:Bind StartTime}" Text="{x:Bind StartTime, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-                                                                <TextBox Header="{x:Bind EndTimeHeader}" PlaceholderText="{x:Bind EndTime}" Text="{x:Bind EndTime, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                <TextBox Style="{StaticResource PageTextBoxStyle}" Header="{x:Bind EndTimeHeader}" PlaceholderText="{x:Bind EndTime}" Text="{x:Bind EndTime, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                                             </StackPanel>
                                                         </Flyout>
                                                     </Button.Flyout>
@@ -506,7 +514,7 @@
                                 <nickvision:ViewStack.Pages>
                                     <nickvision:StatusPage x:Name="StatusPlaylistSubtitles" Margin="0,24,0,0" Glyph="&#xE721;" IsCompact="True"/>
 
-                                    <Grid RowSpacing="12" ColumnSpacing="6" MinWidth="400">
+                                    <Grid Style="{StaticResource FormSectionStyle}" RowSpacing="12" ColumnSpacing="8" MinWidth="0">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
@@ -519,7 +527,7 @@
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <Button x:Name="BtnPlaylistSelectAllSubtitles" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" Click="BtnPlaylistSelectAllSubtitles_Click">
+                                        <Button Style="{StaticResource PageActionStyle}" x:Name="BtnPlaylistSelectAllSubtitles" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" Click="BtnPlaylistSelectAllSubtitles_Click">
                                             <Button.Content>
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B3;" FontSize="18"/>
@@ -529,7 +537,7 @@
                                             </Button.Content>
                                         </Button>
 
-                                        <Button x:Name="BtnPlaylistDeselectAllSubtitles" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Click="BtnPlaylistDeselectAllSubtitles_Click">
+                                        <Button Style="{StaticResource PageActionStyle}" x:Name="BtnPlaylistDeselectAllSubtitles" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Click="BtnPlaylistDeselectAllSubtitles_Click">
                                             <Button.Content>
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8E6;" FontSize="18"/>
@@ -539,9 +547,9 @@
                                             </Button.Content>
                                         </Button>
 
-                                        <TextBlock x:Name="LblPlaylistSubtitleNote" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Foreground="Gray" TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="LblPlaylistSubtitleNote" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
 
-                                        <AutoSuggestBox x:Name="TxtPlaylistSubtitlesSearch" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" QueryIcon="Find" TextChanged="TxtPlaylistSubtitlesSearch_TextChanged"/>
+                                        <AutoSuggestBox Style="{StaticResource PageSearchStyle}" x:Name="TxtPlaylistSubtitlesSearch" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" QueryIcon="Find" TextChanged="TxtPlaylistSubtitlesSearch_TextChanged"/>
 
                                         <ListView x:Name="ListPlaylistSubtitles" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" SelectionChanged="ListSubtitles_SelectionChanged" SelectionMode="Multiple">
                                             <ListView.ItemTemplate>
@@ -554,8 +562,8 @@
                                 </nickvision:ViewStack.Pages>
                             </nickvision:ViewStack>
 
-                            <StackPanel Orientation="Vertical" Spacing="12" MinWidth="400" HorizontalAlignment="Stretch">
-                                <Grid ColumnSpacing="16" MinHeight="32">
+                            <StackPanel Orientation="Vertical" Spacing="12" MinWidth="0" HorizontalAlignment="Stretch">
+                                <Grid Style="{StaticResource FormSectionStyle}" ColumnSpacing="16" MinHeight="48">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -564,7 +572,7 @@
                                     <ToggleSwitch x:Name="TglPlaylistExportM3U" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                                 </Grid>
                                 
-                                <Grid ColumnSpacing="16" MinHeight="32">
+                                <Grid Style="{StaticResource FormSectionStyle}" ColumnSpacing="16" MinHeight="48">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -573,7 +581,7 @@
                                     <ToggleSwitch x:Name="TglPlaylistSplitChapters" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                                 </Grid>
 
-                                <Grid ColumnSpacing="16" MinHeight="32">
+                                <Grid Style="{StaticResource FormSectionStyle}" ColumnSpacing="16" MinHeight="48">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -582,7 +590,7 @@
                                     <ToggleSwitch x:Name="TglPlaylistExportDescription" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                                 </Grid>
 
-                                <Grid ColumnSpacing="16" MinHeight="32">
+                                <Grid Style="{StaticResource FormSectionStyle}" ColumnSpacing="16" MinHeight="48">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -591,7 +599,7 @@
                                     <ToggleSwitch x:Name="TglPlaylistExcludeFromHistory" Grid.Column="1" FlowDirection="LeftToRight" MinWidth="0" VerticalAlignment="Center" OnContent="" OffContent=""/>
                                 </Grid>
 
-                                <ComboBox x:Name="CmbPlaylistPostProcessorArgument" HorizontalAlignment="Stretch">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbPlaylistPostProcessorArgument" HorizontalAlignment="Stretch">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}"/>

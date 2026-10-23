@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Nickvision.Desktop.Globalization;
 using Nickvision.Desktop.Keyring;
@@ -56,6 +57,14 @@ public sealed partial class KeyringDialog : ContentDialog
         StatusNoneSearch.Description = _translationService._("There are no credentials found with the current filters");
     }
 
+    private void ActionButton_Loaded(object sender, RoutedEventArgs e)
+    {
+        var button = (Button)sender;
+        var label = button.Name == "EditAction" ? _translationService._("Edit") : _translationService._("Delete");
+        ToolTipService.SetToolTip(button, label);
+        AutomationProperties.SetName(button, label);
+    }
+
     public new async Task<ContentDialogResult> ShowAsync()
     {
         var result = await base.ShowAsync();
@@ -66,6 +75,7 @@ public sealed partial class KeyringDialog : ContentDialog
                 var dialog = new ContentDialog()
                 {
                     Title = _translationService._("Credential"),
+                    TitleTemplate = (DataTemplate)Application.Current.Resources["DialogHeadingTemplate"],
                     PrimaryButtonText = _credentialEditMode == CredentialEditMode.Add ? _translationService._("Add") : _translationService._("Update"),
                     CloseButtonText = _translationService._("Cancel"),
                     DefaultButton = ContentDialogButton.Primary,
@@ -75,22 +85,26 @@ public sealed partial class KeyringDialog : ContentDialog
                 };
                 var txtName = new TextBox()
                 {
+                    Style = (Style)Application.Current.Resources["PageTextBoxStyle"],
                     Header = _translationService._("Name"),
                     PlaceholderText = _translationService._("Enter name here"),
                     IsReadOnly = _credentialEditMode == CredentialEditMode.Edit
                 };
                 var txtUrl = new TextBox()
                 {
+                    Style = (Style)Application.Current.Resources["PageTextBoxStyle"],
                     FlowDirection = FlowDirection.LeftToRight,
                     PlaceholderText = _translationService._("Enter url here")
                 };
                 var txtUsername = new TextBox()
                 {
+                    Style = (Style)Application.Current.Resources["PageTextBoxStyle"],
                     FlowDirection = FlowDirection.LeftToRight,
                     PlaceholderText = _translationService._("Enter username here")
                 };
                 var txtPassword = new PasswordBox()
                 {
+                    Style = (Style)Application.Current.Resources["PagePasswordBoxStyle"],
                     FlowDirection = FlowDirection.LeftToRight,
                     PlaceholderText = _translationService._("Enter password here")
                 };
@@ -101,16 +115,20 @@ public sealed partial class KeyringDialog : ContentDialog
                     txtUsername.Text = _selectedCredential.Username;
                     txtPassword.Password = _selectedCredential.Password;
                 }
-                dialog.Content = new StackPanel()
+                dialog.Content = new Border()
                 {
-                    Orientation = Orientation.Vertical,
-                    Spacing = 12,
-                    Children =
+                    Style = (Style)Application.Current.Resources["PageSurfaceStyle"],
+                    Child = new StackPanel()
                     {
-                        txtName,
-                        LocalizationHelper.CreateLabeledInput(txtUrl, _translationService._("URL"), FlowDirection),
-                        LocalizationHelper.CreateLabeledInput(txtUsername, _translationService._("Username"), FlowDirection),
-                        LocalizationHelper.CreateLabeledInput(txtPassword, _translationService._("Password"), FlowDirection)
+                        Orientation = Orientation.Vertical,
+                        Spacing = 16,
+                        Children =
+                        {
+                            txtName,
+                            LocalizationHelper.CreateLabeledInput(txtUrl, _translationService._("URL"), FlowDirection),
+                            LocalizationHelper.CreateLabeledInput(txtUsername, _translationService._("Username"), FlowDirection),
+                            LocalizationHelper.CreateLabeledInput(txtPassword, _translationService._("Password"), FlowDirection)
+                        }
                     }
                 };
                 string? error = null;

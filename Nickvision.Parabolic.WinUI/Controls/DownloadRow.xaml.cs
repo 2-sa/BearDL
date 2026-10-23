@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Nickvision.Desktop.Globalization;
@@ -50,14 +51,26 @@ public sealed partial class DownloadRow : UserControl
         _path = string.Empty;
         _log = string.Empty;
         _isPaused = false;
-        LblShowLog.Text = _translator._("Log");
-        LblPauseResume.Text = _translator._("Pause");
-        LblStop.Text = _translator._("Stop");
-        LblPlay.Text = _translator._("Play");
-        LblOpenFolder.Text = _translator._("Open");
-        LblCopyFile.Text = _translator._("Copy");
-        ToolTipService.SetToolTip(BtnCopyFile, _translator._("Copy the file to paste it into another app"));
-        LblRetry.Text = _translator._("Retry");
+        BtnShowLog.Text = _translator._("Log");
+        ActionsFlyout.MenuFlyoutPresenterStyle = new Style(typeof(MenuFlyoutPresenter))
+        {
+            Setters = { new Setter(FlowDirectionProperty, FlowDirection) }
+        };
+        LocalizationHelper.Apply(BtnShowLog, translator);
+        SetActionLabel(BtnMore, _translator._("Options"));
+        SetActionLabel(BtnPauseResume, _translator._("Pause"));
+        SetActionLabel(BtnStop, _translator._("Stop"));
+        SetActionLabel(BtnPlay, _translator._("Play"));
+        SetActionLabel(BtnOpenFolder, _translator._("Open"));
+        AutomationProperties.SetName(BtnCopyFile, _translator._("Copy"));
+        CopyFileToolTip.Content = _translator._("Copy the file to paste it into another app");
+        SetActionLabel(BtnRetry, _translator._("Retry"));
+    }
+
+    private static void SetActionLabel(Button button, string text)
+    {
+        AutomationProperties.SetName(button, text);
+        ToolTipService.SetToolTip(button, text);
     }
 
     public async Task TriggerAddedStateAsync(DownloadAddedEventArgs args)
@@ -73,6 +86,7 @@ public sealed partial class DownloadRow : UserControl
         IcnStatus.Glyph = "\uE896";
         ImgThumbnail.Source = thumbnailSource;
         LblTitle.Text = Path.GetFileName(_path);
+        ToolTipService.SetToolTip(LblTitle, LblTitle.Text);
         ProgBar.Value = 0.0;
         if (args.Status == DownloadStatus.Queued)
         {
@@ -103,6 +117,7 @@ public sealed partial class DownloadRow : UserControl
             _log = args.Log.ToString();
         }
         LblTitle.Text = Path.GetFileName(_path);
+        ToolTipService.SetToolTip(LblTitle, LblTitle.Text);
         LblLog.Text = _log;
         ScrollLog.ChangeView(null, ScrollLog.ScrollableHeight, null);
         ProgBar.Value = 1.0;
@@ -130,7 +145,7 @@ public sealed partial class DownloadRow : UserControl
         LblStatus.Text = _translator._("Paused");
         ProgBar.IsIndeterminate = false;
         FntPauseResume.Glyph = "\uE768";
-        LblPauseResume.Text = _translator._("Resume");
+        SetActionLabel(BtnPauseResume, _translator._("Resume"));
         _isPaused = true;
     }
 
@@ -170,7 +185,7 @@ public sealed partial class DownloadRow : UserControl
     {
         Status = DownloadStatus.Running;
         FntPauseResume.Glyph = "\uE769";
-        LblPauseResume.Text = _translator._("Pause");
+        SetActionLabel(BtnPauseResume, _translator._("Pause"));
         _isPaused = false;
     }
 
@@ -194,6 +209,11 @@ public sealed partial class DownloadRow : UserControl
 
     private async void CopyFile(object sender, RoutedEventArgs e)
     {
+        if (!BtnCopyFile.IsEnabled)
+        {
+            return;
+        }
+        BtnCopyFile.IsEnabled = false;
         string resultText;
         string resultGlyph;
         try
@@ -224,14 +244,28 @@ public sealed partial class DownloadRow : UserControl
             resultText = _translator._("Error");
             resultGlyph = "\uE783";
         }
-        BtnCopyFile.IsEnabled = false;
-        LblCopyFile.Text = resultText;
-        FntCopyFile.Glyph = resultGlyph;
-        await Task.Delay(TimeSpan.FromSeconds(2));
-        LblCopyFile.Text = _translator._("Copy");
-        FntCopyFile.Glyph = "\uE8C8";
-        BtnCopyFile.IsEnabled = true;
+        try
+        {
+            if (IsLoaded)
+            {
+                AutomationProperties.SetName(BtnCopyFile, resultText);
+                CopyFileToolTip.Content = resultText;
+                CopyFileToolTip.IsOpen = true;
+                FntCopyFile.Glyph = resultGlyph;
+                await Task.Delay(TimeSpan.FromSeconds(2));
+            }
+        }
+        finally
+        {
+            CopyFileToolTip.IsOpen = false;
+            CopyFileToolTip.Content = _translator._("Copy the file to paste it into another app");
+            AutomationProperties.SetName(BtnCopyFile, _translator._("Copy"));
+            FntCopyFile.Glyph = "\uE8C8";
+            BtnCopyFile.IsEnabled = true;
+        }
     }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e) => CopyFileToolTip.IsOpen = false;
 
     private async void OpenFolder(object sender, RoutedEventArgs e)
     {
@@ -279,7 +313,7 @@ public sealed partial class DownloadRow : UserControl
 
     private void Retry(object sender, RoutedEventArgs e) => RetryRequested?.Invoke(this, _id);
 
-    private void ShowLog(object sender, RoutedEventArgs e) => GridLog.Visibility = BtnShowLog.IsChecked ?? false ? Visibility.Visible : Visibility.Collapsed;
+    private void ShowLog(object sender, RoutedEventArgs e) => GridLog.Visibility = BtnShowLog.IsChecked ? Visibility.Visible : Visibility.Collapsed;
 
     private void Stop(object sender, RoutedEventArgs e) => StopRequested?.Invoke(this, _id);
 }

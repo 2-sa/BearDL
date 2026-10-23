@@ -12,10 +12,27 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" Loaded="Page_Loaded">
 
-    <Grid>
-        <NavigationView x:Name="NavigationView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+    <Grid RowSpacing="16" Padding="20,16,20,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Border Style="{StaticResource PageSurfaceStyle}">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE713;" FontSize="28" VerticalAlignment="Center" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                <StackPanel Grid.Column="1" Spacing="4">
+                    <TextBlock x:Name="LblSettingsTitle" Style="{StaticResource PageHeadingStyle}"/>
+                    <TextBlock x:Name="LblSettingsSection" Style="{StaticResource SupportingTextStyle}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        <NavigationView x:Name="NavigationView" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                         IsPaneToggleButtonVisible="False" IsBackButtonVisible="Collapsed" IsSettingsVisible="False"
-                        PaneDisplayMode="Left" OpenPaneLength="240" SelectionChanged="NavigationView_SelectionChanged">
+                        PaneDisplayMode="Top" SelectionChanged="NavigationView_SelectionChanged">
             <NavigationView.Resources>
                 <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent"/>
                 <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent"/>
@@ -48,21 +65,21 @@
             </NavigationView.MenuItems>
 
             <ScrollViewer FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
-                <nickvision:ViewStack x:Name="ViewStack" FlowDirection="{Binding FlowDirection, ElementName=PageRoot}" Margin="12,12,12,12">
+                <nickvision:ViewStack x:Name="ViewStack" FlowDirection="{Binding FlowDirection, ElementName=PageRoot}" Margin="0,12,0,20">
                     <nickvision:ViewStack.Pages>
-                        <StackPanel Spacing="6">
+                        <StackPanel Spacing="10">
                             <StackPanel.Transitions>
                                 <TransitionCollection>
                                     <EntranceThemeTransition/>
                                 </TransitionCollection>
                             </StackPanel.Transitions>
 
-                            <community:SettingsCard x:Name="RowTheme">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowTheme">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE793;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ComboBox x:Name="CmbTheme" SelectionChanged="Cmb_SelectionChanged">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbTheme" SelectionChanged="Cmb_SelectionChanged">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}"/>
@@ -71,12 +88,12 @@
                                 </ComboBox>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowTranslationLanguage">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowTranslationLanguage">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xF2B7;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ComboBox x:Name="CmbTranslationLanguage" SelectionChanged="Cmb_SelectionChanged">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbTranslationLanguage" SelectionChanged="Cmb_SelectionChanged">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}"/>
@@ -85,7 +102,7 @@
                                 </ComboBox>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowPreviewUpdates">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowPreviewUpdates">
                                 <community:SettingsCard.Resources>
                                     <!-- Keep compact toggles beside the header at every width. -->
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
@@ -98,7 +115,7 @@
                                 <ToggleSwitch x:Name="TglPreviewUpdates" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowPreventSuspend">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowPreventSuspend">
                                 <community:SettingsCard.Resources>
                                     <!-- Keep compact toggles beside the header at every width. -->
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
@@ -111,12 +128,12 @@
                                 <ToggleSwitch x:Name="TglPreventSuspend" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowHistoryLength">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowHistoryLength">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE81C;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ComboBox x:Name="CmbHistoryLength" SelectionChanged="Cmb_SelectionChanged">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbHistoryLength" SelectionChanged="Cmb_SelectionChanged">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}"/>
@@ -126,14 +143,14 @@
                             </community:SettingsCard>
                         </StackPanel>
 
-                        <StackPanel Spacing="6">
+                        <StackPanel Spacing="10">
                             <StackPanel.Transitions>
                                 <TransitionCollection>
                                     <EntranceThemeTransition/>
                                 </TransitionCollection>
                             </StackPanel.Transitions>
 
-                            <community:SettingsCard x:Name="RowFastDownload">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowFastDownload">
                                 <community:SettingsCard.Resources>
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
                                     <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
@@ -144,7 +161,7 @@
                                 <ToggleSwitch x:Name="TglFastDownload" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowWarnBeforeDuplicateDownload">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowWarnBeforeDuplicateDownload">
                                 <community:SettingsCard.Resources>
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
                                     <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
@@ -152,15 +169,15 @@
                                 <ToggleSwitch x:Name="TglWarnBeforeDuplicateDownload" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowActiveDownloads">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowActiveDownloads">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE896;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <NumberBox x:Name="NumActiveDownloads" Minimum="1" Maximum="10" SpinButtonPlacementMode="Inline" ValueChanged="Num_ValueChanged"/>
+                                <NumberBox Style="{StaticResource PageNumberBoxStyle}" x:Name="NumActiveDownloads" Minimum="1" Maximum="10" SpinButtonPlacementMode="Inline" ValueChanged="Num_ValueChanged"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowOverwriteFiles">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowOverwriteFiles">
                                 <community:SettingsCard.Resources>
                                     <!-- Keep compact toggles beside the header at every width. -->
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
@@ -173,7 +190,7 @@
                                 <ToggleSwitch x:Name="TglOverwriteFiles" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowIncludeMediaId">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowIncludeMediaId">
                                 <community:SettingsCard.Resources>
                                     <!-- Keep compact toggles beside the header at every width. -->
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
@@ -186,7 +203,7 @@
                                 <ToggleSwitch x:Name="TglIncludeMediaId" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowIncludeAutoSubtitles">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowIncludeAutoSubtitles">
                                 <community:SettingsCard.Resources>
                                     <!-- Keep compact toggles beside the header at every width. -->
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
@@ -199,7 +216,7 @@
                                 <ToggleSwitch x:Name="TglIncludeAutoSubtitles" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowIncludeSuperResolutions">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowIncludeSuperResolutions">
                                 <community:SettingsCard.Resources>
                                     <!-- Keep compact toggles beside the header at every width. -->
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
@@ -212,12 +229,12 @@
                                 <ToggleSwitch x:Name="TglIncludeSuperResolutions" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowPreferredVideoCodec">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowPreferredVideoCodec">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE714;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ComboBox x:Name="CmbPreferredVideoCodec" SelectionChanged="Cmb_SelectionChanged">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbPreferredVideoCodec" SelectionChanged="Cmb_SelectionChanged">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}"/>
@@ -226,12 +243,12 @@
                                 </ComboBox>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowPreferredAudioCodec">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowPreferredAudioCodec">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8D6;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ComboBox x:Name="CmbPreferredAudioCodec" SelectionChanged="Cmb_SelectionChanged">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbPreferredAudioCodec" SelectionChanged="Cmb_SelectionChanged">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}"/>
@@ -240,12 +257,12 @@
                                 </ComboBox>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowPreferredSubtitleFormat">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowPreferredSubtitleFormat">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xED1F;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ComboBox x:Name="CmbPreferredSubtitleFormat" SelectionChanged="Cmb_SelectionChanged">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbPreferredSubtitleFormat" SelectionChanged="Cmb_SelectionChanged">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}"/>
@@ -254,12 +271,12 @@
                                 </ComboBox>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowPreferredFrameRate">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowPreferredFrameRate">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE722;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ComboBox x:Name="CmbPreferredFrameRate" SelectionChanged="Cmb_SelectionChanged">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbPreferredFrameRate" SelectionChanged="Cmb_SelectionChanged">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}"/>
@@ -269,14 +286,14 @@
                             </community:SettingsCard>
                         </StackPanel>
 
-                        <StackPanel Spacing="6">
+                        <StackPanel Spacing="10">
                             <StackPanel.Transitions>
                                 <TransitionCollection>
                                     <EntranceThemeTransition/>
                                 </TransitionCollection>
                             </StackPanel.Transitions>
 
-                            <community:SettingsCard x:Name="RowUsePartFiles">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowUsePartFiles">
                                 <community:SettingsCard.Resources>
                                     <!-- Keep compact toggles beside the header at every width. -->
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
@@ -289,7 +306,7 @@
                                 <ToggleSwitch x:Name="TglUsePartFiles" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowUseSponsorBlock">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowUseSponsorBlock">
                                 <community:SettingsCard.Resources>
                                     <!-- Keep compact toggles beside the header at every width. -->
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
@@ -302,7 +319,7 @@
                                 <ToggleSwitch x:Name="TglUseSponsorBlock" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowLimitSpeed">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowLimitSpeed">
                                 <community:SettingsCard.Resources>
                                     <!-- Keep compact toggles beside the header at every width. -->
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
@@ -315,24 +332,24 @@
                                 <ToggleSwitch x:Name="TglLimitSpeed" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowSpeedLimit" IsEnabled="{x:Bind TglLimitSpeed.IsOn, Mode=OneWay}">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowSpeedLimit" IsEnabled="{x:Bind TglLimitSpeed.IsOn, Mode=OneWay}">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xEC49;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <NumberBox x:Name="NumSpeedLimit" Minimum="512" Maximum="10240" SmallChange="512" LargeChange="1024"
+                                <NumberBox Style="{StaticResource PageNumberBoxStyle}" x:Name="NumSpeedLimit" Minimum="512" Maximum="10240" SmallChange="512" LargeChange="1024"
                                SpinButtonPlacementMode="Inline" ValueChanged="Num_ValueChanged"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowProxyUrl">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowProxyUrl">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE71B;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <TextBox x:Name="TxtProxyUrl" FlowDirection="LeftToRight" TextChanged="Txt_TextChanged"/>
+                                <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtProxyUrl" FlowDirection="LeftToRight" TextChanged="Txt_TextChanged"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowCookiesFile">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowCookiesFile">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8A6;"/>
                                 </community:SettingsCard.HeaderIcon>
@@ -340,13 +357,13 @@
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <TextBlock x:Name="LblCookiesFile" VerticalAlignment="Center"/>
 
-                                    <Button x:Name="BtnSelectCookiesFile" Click="SelectCookiesFile">
+                                    <Button Style="{StaticResource IconActionStyle}" x:Name="BtnSelectCookiesFile" Click="SelectCookiesFile">
                                         <Button.Content>
                                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8E5;" FontSize="18"/>
                                         </Button.Content>
                                     </Button>
 
-                                    <Button x:Name="BtnClearCookiesFile" Click="ClearCookiesFile">
+                                    <Button Style="{StaticResource IconActionStyle}" x:Name="BtnClearCookiesFile" Click="ClearCookiesFile">
                                         <Button.Content>
                                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE894;" FontSize="18"/>
                                         </Button.Content>
@@ -354,12 +371,12 @@
                                 </StackPanel>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowCookiesBrowser">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowCookiesBrowser">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE774;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ComboBox x:Name="CmbCookiesBrowser" SelectionChanged="Cmb_SelectionChanged">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbCookiesBrowser" SelectionChanged="Cmb_SelectionChanged">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}"/>
@@ -368,7 +385,7 @@
                                 </ComboBox>
                             </community:SettingsCard>
 
-                            <TextBlock x:Name="LblAria" Margin="0,12,0,0" Style="{StaticResource NavigationViewItemHeaderTextStyle}"/>
+                            <TextBlock x:Name="LblAria" Margin="0,12,0,0" Style="{StaticResource SectionHeadingStyle}"/>
 
                             <community:SettingsExpander x:Name="RowUseAria">
                                 <community:SettingsExpander.Resources>
@@ -383,51 +400,51 @@
                                 <ToggleSwitch x:Name="TglUseAria" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
 
                                 <community:SettingsExpander.Items>
-                                    <community:SettingsCard x:Name="RowMaxConnectionsPerServer" IsEnabled="{x:Bind TglUseAria.IsOn, Mode=OneWay}">
+                                    <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowMaxConnectionsPerServer" IsEnabled="{x:Bind TglUseAria.IsOn, Mode=OneWay}">
                                         <community:SettingsCard.HeaderIcon>
                                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xF0B9;"/>
                                         </community:SettingsCard.HeaderIcon>
 
-                                        <NumberBox x:Name="NumMaxConnectionsPerServer" Minimum="1" Maximum="16" SpinButtonPlacementMode="Inline" ValueChanged="Num_ValueChanged"/>
+                                        <NumberBox Style="{StaticResource PageNumberBoxStyle}" x:Name="NumMaxConnectionsPerServer" Minimum="1" Maximum="16" SpinButtonPlacementMode="Inline" ValueChanged="Num_ValueChanged"/>
                                     </community:SettingsCard>
 
-                                    <community:SettingsCard x:Name="RowMinimumSplitSize" IsEnabled="{x:Bind TglUseAria.IsOn, Mode=OneWay}">
+                                    <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowMinimumSplitSize" IsEnabled="{x:Bind TglUseAria.IsOn, Mode=OneWay}">
                                         <community:SettingsCard.HeaderIcon>
                                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8C6;"/>
                                         </community:SettingsCard.HeaderIcon>
 
-                                        <NumberBox x:Name="NumMinimumSplitSize" Minimum="1" Maximum="1024" LargeChange="128" SpinButtonPlacementMode="Inline" ValueChanged="Num_ValueChanged"/>
+                                        <NumberBox Style="{StaticResource PageNumberBoxStyle}" x:Name="NumMinimumSplitSize" Minimum="1" Maximum="1024" LargeChange="128" SpinButtonPlacementMode="Inline" ValueChanged="Num_ValueChanged"/>
                                     </community:SettingsCard>
                                 </community:SettingsExpander.Items>
                             </community:SettingsExpander>
 
-                            <TextBlock x:Name="LblAdvanced" Margin="0,12,0,0" Style="{StaticResource NavigationViewItemHeaderTextStyle}"/>
+                            <TextBlock x:Name="LblAdvanced" Margin="0,12,0,0" Style="{StaticResource SectionHeadingStyle}"/>
 
-                            <community:SettingsCard x:Name="RowYtdlpDiscoveryArgs">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowYtdlpDiscoveryArgs">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE756;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <TextBox x:Name="TxtYtdlpDiscoveryArgs" FlowDirection="LeftToRight" TextChanged="Txt_TextChanged"/>
+                                <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtYtdlpDiscoveryArgs" FlowDirection="LeftToRight" TextChanged="Txt_TextChanged"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowYtdlpDownloadArgs">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowYtdlpDownloadArgs">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE756;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <TextBox x:Name="TxtYtdlpDownloadArgs" FlowDirection="LeftToRight" TextChanged="Txt_TextChanged"/>
+                                <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtYtdlpDownloadArgs" FlowDirection="LeftToRight" TextChanged="Txt_TextChanged"/>
                             </community:SettingsCard>
                         </StackPanel>
 
-                        <StackPanel Spacing="6">
+                        <StackPanel Spacing="10">
                             <StackPanel.Transitions>
                                 <TransitionCollection>
                                     <EntranceThemeTransition/>
                                 </TransitionCollection>
                             </StackPanel.Transitions>
 
-                            <community:SettingsCard x:Name="RowTranslateMetadataAndChapters">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowTranslateMetadataAndChapters">
                                 <community:SettingsCard.Resources>
                                     <!-- Keep compact toggles beside the header at every width. -->
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
@@ -453,7 +470,7 @@
                                 <ToggleSwitch x:Name="TglEmbedMetadata" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
 
                                 <community:SettingsExpander.Items>
-                                    <community:SettingsCard x:Name="RowRemoveSourceData" IsEnabled="{x:Bind TglEmbedMetadata.IsOn, Mode=OneWay}">
+                                    <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowRemoveSourceData" IsEnabled="{x:Bind TglEmbedMetadata.IsOn, Mode=OneWay}">
                                         <community:SettingsCard.Resources>
                                             <!-- Keep compact toggles beside the header at every width. -->
                                             <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
@@ -481,7 +498,7 @@
                                 <ToggleSwitch x:Name="TglEmbedThumbnails" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
 
                                 <community:SettingsExpander.Items>
-                                    <community:SettingsCard x:Name="RowCropAudioThumbnails" IsEnabled="{x:Bind TglEmbedThumbnails.IsOn, Mode=OneWay}">
+                                    <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowCropAudioThumbnails" IsEnabled="{x:Bind TglEmbedThumbnails.IsOn, Mode=OneWay}">
                                         <community:SettingsCard.Resources>
                                             <!-- Keep compact toggles beside the header at every width. -->
                                             <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
@@ -496,7 +513,7 @@
                                 </community:SettingsExpander.Items>
                             </community:SettingsExpander>
 
-                            <community:SettingsCard x:Name="RowEmbedChapters">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowEmbedChapters">
                                 <community:SettingsCard.Resources>
                                     <!-- Keep compact toggles beside the header at every width. -->
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
@@ -509,7 +526,7 @@
                                 <ToggleSwitch x:Name="TglEmbedChapters" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowEmbedSubtitles">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowEmbedSubtitles">
                                 <community:SettingsCard.Resources>
                                     <!-- Keep compact toggles beside the header at every width. -->
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
@@ -522,12 +539,12 @@
                                 <ToggleSwitch x:Name="TglEmbedSubtitles" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
-                            <community:SettingsCard x:Name="RowFfmpegThreads">
+                            <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowFfmpegThreads">
                                 <community:SettingsCard.HeaderIcon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xEEA1;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <NumberBox x:Name="NumFfmpegThreads" Minimum="1" SpinButtonPlacementMode="Inline" ValueChanged="Num_ValueChanged"/>
+                                <NumberBox Style="{StaticResource PageNumberBoxStyle}" x:Name="NumFfmpegThreads" Minimum="1" SpinButtonPlacementMode="Inline" ValueChanged="Num_ValueChanged"/>
                             </community:SettingsCard>
 
                             <Grid Margin="0,12,0,0">
@@ -536,9 +553,9 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <TextBlock x:Name="LblPostProcessorArgments" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap" Style="{StaticResource NavigationViewItemHeaderTextStyle}"/>
+                                <TextBlock x:Name="LblPostProcessorArgments" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap" Style="{StaticResource SectionHeadingStyle}"/>
 
-                                <Button x:Name="BtnAddPostProcessorArgument" Grid.Column="1" Click="AddPostprocessingArgument">
+                                <Button Style="{StaticResource PageActionStyle}" x:Name="BtnAddPostProcessorArgument" Grid.Column="1" Click="AddPostprocessingArgument">
                                     <Button.Content>
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE710;" FontSize="18"/>
@@ -558,19 +575,19 @@
                                 </ListView.ItemContainerStyle>
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="parabolic:BindablePostProcessorArgument">
-                                        <community:SettingsCard Margin="0,6,0,0" HorizontalAlignment="Stretch" Header="{x:Bind Name, Mode=OneWay}" Description="{x:Bind Args, Mode=OneWay}">
+                                        <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" Margin="0,6,0,0" HorizontalAlignment="Stretch" Header="{x:Bind Name, Mode=OneWay}" Description="{x:Bind Args, Mode=OneWay}">
                                             <community:SettingsCard.HeaderIcon>
                                                 <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE90F;"/>
                                             </community:SettingsCard.HeaderIcon>
                                             
                                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                                <Button Tag="{x:Bind Name, Mode=OneWay}" Click="EditPostprocessingArgument">
+                                                <Button Style="{StaticResource PageActionStyle}" Tag="{x:Bind Name, Mode=OneWay}" Click="EditPostprocessingArgument">
                                                     <Button.Content>
                                                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE70F;" FontSize="18"/>
                                                     </Button.Content>
                                                 </Button>
 
-                                                <Button Tag="{x:Bind Name, Mode=OneWay}" Click="DeletePostprocessingArgument">
+                                                <Button Style="{StaticResource PageActionStyle}" Tag="{x:Bind Name, Mode=OneWay}" Click="DeletePostprocessingArgument">
                                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE74D;" FontSize="18"/>
                                                 </Button>
                                             </StackPanel>
@@ -584,31 +601,33 @@
             </ScrollViewer>
         </NavigationView>
     
-        <ContentDialog x:Name="DlgPostprocessingArgument" DefaultButton="Primary">
-            <StackPanel Orientation="Vertical" Spacing="12">
-                <TextBox x:Name="TxtPostprocessingArgumentName"/>
+        <ContentDialog x:Name="DlgPostprocessingArgument" TitleTemplate="{StaticResource DialogHeadingTemplate}" DefaultButton="Primary">
+            <Border Style="{StaticResource PageSurfaceStyle}">
+                <StackPanel Orientation="Vertical" Spacing="16">
+                    <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtPostprocessingArgumentName"/>
 
-                <ComboBox x:Name="CmbPostprocessingArgumentPostProcessor" HorizontalAlignment="Stretch">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="helpers:BindableSelectionItem">
-                            <TextBlock Text="{x:Bind Label}"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                    <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbPostprocessingArgumentPostProcessor" HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="helpers:BindableSelectionItem">
+                                <TextBlock Text="{x:Bind Label}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
-                <ComboBox x:Name="CmbPostprocessingArgumentExecutable" HorizontalAlignment="Stretch">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="helpers:BindableSelectionItem">
-                            <TextBlock Text="{x:Bind Label}"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                    <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbPostprocessingArgumentExecutable" HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="helpers:BindableSelectionItem">
+                                <TextBlock Text="{x:Bind Label}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
-                <StackPanel Spacing="6">
-                    <TextBlock x:Name="LblPostprocessingArgumentArgs"/>
-                    <TextBox x:Name="TxtPostprocessingArgumentArgs" FlowDirection="LeftToRight" AutomationProperties.LabeledBy="{Binding ElementName=LblPostprocessingArgumentArgs}"/>
+                    <StackPanel Spacing="10">
+                        <TextBlock x:Name="LblPostprocessingArgumentArgs"/>
+                        <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtPostprocessingArgumentArgs" FlowDirection="LeftToRight" AutomationProperties.LabeledBy="{Binding ElementName=LblPostprocessingArgumentArgs}"/>
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
+            </Border>
         </ContentDialog>
     </Grid>
 </Page>

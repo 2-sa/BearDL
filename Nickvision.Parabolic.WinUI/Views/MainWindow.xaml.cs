@@ -881,15 +881,21 @@ public sealed partial class MainWindow : Window
         ClipboardSuggestion.Visibility = Visibility.Collapsed;
     }
 
-    private void ClipboardUse_Click(object sender, RoutedEventArgs e)
+    private async void ClipboardUse_Click(object sender, RoutedEventArgs e)
     {
-        if (!string.IsNullOrEmpty(_clipboardSuggestedUrl))
+        if (!Uri.TryCreate(_clipboardSuggestedUrl, UriKind.Absolute, out var uri)
+            || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
-            TxtQuickUrl.Text = _clipboardSuggestedUrl;
-            ClipboardSuggestion.Visibility = Visibility.Collapsed;
-            TxtQuickUrl.Focus(FocusState.Keyboard);
-            TxtQuickUrl.SelectAll();
+            return;
         }
+        _clipboardDismissedUrl = _clipboardSuggestedUrl;
+        _clipboardSuggestedUrl = null;
+        ClipboardSuggestion.Visibility = Visibility.Collapsed;
+        var addDownloadDialog = _serviceProvider.GetRequiredService<AddDownloadDialog>();
+        addDownloadDialog.WindowId = AppWindow.Id;
+        addDownloadDialog.RequestedTheme = MainGrid.ActualTheme;
+        addDownloadDialog.XamlRoot = MainGrid.XamlRoot;
+        await addDownloadDialog.StartDownloadAsync(uri);
     }
 
     private void ClipboardDismiss_Click(object sender, RoutedEventArgs e)

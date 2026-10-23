@@ -247,6 +247,11 @@ public sealed partial class AddDownloadDialog : ContentDialog
         return _controller.AddFastDownloadsAsync(url, null, _controller.PreviousSaveFolder);
     }
 
+    public Task StartDownloadAsync(Uri url)
+    {
+        return _controller.FastDownload ? QuickDownloadAsync(url) : ShowCustomDiscoverAsync(url);
+    }
+
     public async Task<ContentDialogResult> ShowCustomDiscoverAsync(Uri url)
     {
         TxtUrl.Text = url.ToString();

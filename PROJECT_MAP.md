@@ -10,6 +10,10 @@
 
 ## [SYSTEM_FLOW]
 
+- `JAVHD-01`: video URL -> bundled JavHD extractor -> at most two mirrors plus
+  a distinct fallback -> first successful MP4/HLS source. HLS formats retain the
+  player Referer for subsequent download requests. Regression cases live in
+  `tests/plugins/test_javhd.py`; current validation status is in `docs/CURRENT_TASK.md`.
 - `L10N-01`: بدء التطبيق → تهيئة AppInfo → TranslationService يشتق المجال
   من EnglishShortName → اكتشاف مجلدات اللغات → تحميل العربية من `ar/parabolic.mo`.
 - النتيجة المطلوبة: ظهور العربية في قائمة اللغات وقراءة ترجماتها، مع بقاء
@@ -27,6 +31,8 @@
 
 ## [ARCHITECTURE]
 
+- `resources/yt-dlp-plugins/javhd/yt_dlp_plugins/extractor/javhd.py` implements
+  `JAVHD-01`; existing `Nickvision.Common.targets` packages it for all platforms.
 - `HostApplicationBuilderExtensions.cs` في Shared يهيئ الهوية الداخلية الثابتة.
 - `MainWindowController.cs` يضبط ShortName الظاهر إلى BearDL؛ لا يغيّر EnglishShortName.
 - `Nickvision.Common.targets` يولد الكتالوجات للواجهتين.
@@ -42,6 +48,10 @@
 
 ## [ORPHANS & PENDING]
 
+- `JAVHD-01`: review fixes require hosted regression checks on the changed
+  commit, followed by a real HLS download check. Delivery is now authorized;
+  see `docs/CURRENT_TASK.md` for the current scope and verification state.
+  Earlier checks on `4508e100` do not verify the new changes.
 - `L10N-01`: نُفّذ فحص الحزمة `Verify-TranslationCatalogs.ps1` ونجح على Actions في البناء
   `38990949083` (`2026.5.124` من الكوميت `c17c224d`). أكدت لقطة المستخدم في 2026-10-18
   عودة الواجهة العربية واتجاه RTL وظهور الاسم `BearDL`.

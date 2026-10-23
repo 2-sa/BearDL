@@ -84,21 +84,21 @@ class JavHDTodayIE(InfoExtractor):
                     decoded = base64.b64decode(data_embeds).decode('utf-8', errors='ignore')
                     urls = json.loads(decoded)
                     if isinstance(urls, list):
-                        embed_urls.extend(urls)
+                        embed_urls.extend(urls[:2])
                 except Exception:
                     pass
 
             if data_embed:
                 try:
                     decoded = base64.b64decode(data_embed).decode('utf-8', errors='ignore')
-                    if decoded:
+                    if decoded and decoded not in embed_urls:
                         embed_urls.append(decoded)
                 except Exception:
                     pass
 
-            # Try up to 2 embed mirror URLs for this server
+            # Try up to 2 mirrors, then the distinct fallback URL for this server.
             server_success = False
-            for embed_url in embed_urls[:2]:
+            for embed_url in embed_urls:
                 if not isinstance(embed_url, str):
                     continue
 
@@ -142,6 +142,8 @@ class JavHDTodayIE(InfoExtractor):
                                         headers={'Referer': embed_url},
                                         fatal=False)
                                     if m3u8_formats:
+                                        for video_format in m3u8_formats:
+                                            video_format.setdefault('http_headers', {})['Referer'] = embed_url
                                         formats.extend(m3u8_formats)
                                         server_success = True
                                         break

@@ -4,6 +4,25 @@
 
 ## Current request: JavHD (`javhd.today`) download support extractor plugin — 2026-10-23
 
+- Current authorization: after the local fixes, the user requested an update.
+  This authorizes committing and pushing these fixes to `origin/main` and
+  dispatching the existing release workflow. No local software installation is authorized.
+- Review fixes (based on `4508e100`, prepared for delivery):
+  - Preserve the player `Referer` in every HLS format's `http_headers`, including
+    separate audio formats, while retaining other format headers.
+  - Try at most two mirror URLs followed by the distinct `data-embed` fallback;
+    stop at the first successful source and avoid retrying a duplicate fallback.
+  - Extended `tests/plugins/test_javhd.py` to cover HLS headers, two failed mirrors
+    followed by a working fallback, early success, and a duplicate fallback.
+- Verification for these fixes: source/diff review and `git diff --check` only.
+  New regression tests and live downloads have not been run. The successful
+  [Ubuntu checks for `4508e100`](https://github.com/2-sa/BearDL/actions/runs/39981460775)
+  predate these edits and do not validate them. Next: push the changed commit,
+  verify `.github/workflows/plugins.yml`, dispatch the release workflow, and
+  verify a real HLS download separately. No local tools were installed or builds run.
+
+### Original implementation and historical validation
+
 - User requested adding download support for `https://javhd.today/`.
 - Implemented a bundled yt-dlp extractor plugin in `resources/yt-dlp-plugins/javhd/yt_dlp_plugins/extractor/javhd.py`:
   - Matches `javhd.today` and `javhdz.today` canonical, slugged, and embed URLs: `https?://(?:www\.)?javhdz?\.today/(?:[a-z]{2}/)?(?:embed/)?(?P<id>\d+)(?:/(?P<display_id>[^/?#&]+)/?)?`.
@@ -18,7 +37,8 @@
 - Local validation:
   - Tested against live URLs (`https://javhd.today/373612/...`, `https://javhd.today/373611/`, `https://javhd.today/embed/373612/`) using local yt-dlp with `--plugin-dir resources/yt-dlp-plugins`. Metadata and m3u8 playlists extracted cleanly with zero errors.
   - `git diff --check` passed with zero whitespace or line-ending errors.
-- Status: Changes are local in working tree awaiting explicit commit and push authorization from the user.
+- Original implementation was committed as `4dfaff45`; test fixture correction
+  followed in `4508e100`. The review fixes above are the scope of this update.
 
 ## Previous request: GitHub Actions failure review — 2026-10-20
 

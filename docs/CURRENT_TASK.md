@@ -13,6 +13,7 @@
   - Automatically packaged on all platforms into the `plugins/` directory via `Nickvision.Common.targets`.
 - Added unit tests in `tests/plugins/test_javhd.py`:
   - Offline tests with mocked network covering valid URLs, invalid URLs, format/metadata parsing, and `ExtractorError` fallback.
+  - Attached `FakeYDL` downloader test fixture so that `InfoExtractor` formatting methods (`_search_regex`, `_og_search_title`) resolve cleanly without `_downloader` attribute errors on both pinned and latest yt-dlp versions.
 - Updated `resources/yt-dlp-plugins/README.md` with extractor documentation.
 - Local validation:
   - Tested against live URLs (`https://javhd.today/373612/...`, `https://javhd.today/373611/`, `https://javhd.today/embed/373612/`) using local yt-dlp with `--plugin-dir resources/yt-dlp-plugins`. Metadata and m3u8 playlists extracted cleanly with zero errors.

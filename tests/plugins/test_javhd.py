@@ -1,19 +1,34 @@
 import base64
 import json
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from plugin_paths import add_plugin_paths
 
 add_plugin_paths()
 
+from yt_dlp import YoutubeDL
 from yt_dlp.utils import ExtractorError
 from yt_dlp_plugins.extractor.javhd import JavHDTodayIE
 
 
+class FakeYDL(YoutubeDL):
+    def __init__(self):
+        super().__init__({'quiet': True, 'no_warnings': True, 'skip_download': True})
+
+    def report_warning(self, *args, **kwargs):
+        pass
+
+    def to_screen(self, *args, **kwargs):
+        pass
+
+
 class JavHDTodayTests(unittest.TestCase):
+    def setUp(self):
+        self.ydl = FakeYDL()
+        self.ie = JavHDTodayIE(self.ydl)
+
     def test_valid_urls(self):
-        ie = JavHDTodayIE()
         valid_cases = [
             ('https://javhd.today/373612/mosaic-xrl-026-collar-dog/', '373612'),
             ('https://javhd.today/373612/', '373612'),
@@ -24,12 +39,11 @@ class JavHDTodayTests(unittest.TestCase):
         ]
         for url, expected_id in valid_cases:
             with self.subTest(url=url):
-                m = ie._match_valid_url(url)
+                m = self.ie._match_valid_url(url)
                 self.assertIsNotNone(m)
                 self.assertEqual(m.group('id'), expected_id)
 
     def test_invalid_urls(self):
-        ie = JavHDTodayIE()
         invalid_cases = [
             'https://javhd.today/',
             'https://javhd.today/categories/',
@@ -38,11 +52,9 @@ class JavHDTodayTests(unittest.TestCase):
         ]
         for url in invalid_cases:
             with self.subTest(url=url):
-                self.assertIsNone(ie._match_valid_url(url))
+                self.assertIsNone(self.ie._match_valid_url(url))
 
     def test_extraction_with_mocked_network(self):
-        ie = JavHDTodayIE()
-
         embed_urls = ['https://stream.javhdz.today/embed_server10.php?p=testtoken123']
         embeds_b64 = base64.b64encode(json.dumps(embed_urls).encode('utf-8')).decode('utf-8')
 
@@ -90,9 +102,9 @@ class JavHDTodayTests(unittest.TestCase):
                 return embed_page_html
             return None
 
-        with patch.object(ie, '_download_webpage', side_effect=mock_download_webpage), \
-             patch.object(ie, '_extract_m3u8_formats', return_value=dummy_formats):
-            info = ie._real_extract('https://javhd.today/373612/test-video/')
+        with patch.object(self.ie, '_download_webpage', side_effect=mock_download_webpage), \
+             patch.object(self.ie, '_extract_m3u8_formats', return_value=dummy_formats):
+            info = self.ie._real_extract('https://javhd.today/373612/test-video/')
 
         self.assertEqual(info['id'], '373612')
         self.assertEqual(info['title'], 'Test JAV Video Title')
@@ -103,12 +115,11 @@ class JavHDTodayTests(unittest.TestCase):
         self.assertEqual(info['formats'], dummy_formats)
 
     def test_no_formats_raises_extractor_error(self):
-        ie = JavHDTodayIE()
         empty_page = '<html><head><title>No Video</title></head><body></body></html>'
 
-        with patch.object(ie, '_download_webpage', return_value=empty_page):
+        with patch.object(self.ie, '_download_webpage', return_value=empty_page):
             with self.assertRaises(ExtractorError):
-                ie._real_extract('https://javhd.today/373612/')
+                self.ie._real_extract('https://javhd.today/373612/')
 
 
 if __name__ == '__main__':

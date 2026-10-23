@@ -28,5 +28,12 @@ The plugin is bundled on all platforms by `Nickvision.Common.targets`. It keeps
 the built-in video extractor and needs no separate Python installation in the
 app. Tracks unavailable on the source page cannot be downloaded by this plugin.
 
+## JavHD extractor
+
+`javhd` provides a native extractor plugin for `javhd.today` and its mirrors.
+It resolves video metadata (title, duration, thumbnail, release date, tags) and
+extracts direct HLS (`m3u8`) and MP4 video streams from internal player servers
+without requiring third-party redirect scraping.
+
 Regression checks run on GitHub Actions against bundled and latest yt-dlp:
 `python -m unittest discover -s tests/plugins -v`.

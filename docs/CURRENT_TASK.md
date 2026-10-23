@@ -1,8 +1,25 @@
 # الحالة الحالية وخطوات الاستمرار
 
-آخر تحديث: 2026-10-18، بتوقيت الرياض. هذه الوثيقة هي المرجع الموحد للحالة والتسليم؛ دُمجت فيها تفاصيل وثيقة التسليم المؤرخة لتجنب تكرار المعلومات وتناقض حالتها.
+آخر تحديث: 2026-10-23، بتوقيت الرياض. هذه الوثيقة هي المرجع الموحد للحالة والتسليم؛ دُمجت فيها تفاصيل وثيقة التسليم المؤرخة لتجنب تكرار المعلومات وتناقض حالتها.
 
-## Current request: GitHub Actions failure review — 2026-10-20
+## Current request: JavHD (`javhd.today`) download support extractor plugin — 2026-10-23
+
+- User requested adding download support for `https://javhd.today/`.
+- Implemented a bundled yt-dlp extractor plugin in `resources/yt-dlp-plugins/javhd/yt_dlp_plugins/extractor/javhd.py`:
+  - Matches `javhd.today` and `javhdz.today` canonical, slugged, and embed URLs: `https?://(?:www\.)?javhdz?\.today/(?:[a-z]{2}/)?(?:embed/)?(?P<id>\d+)(?:/(?P<display_id>[^/?#&]+)/?)?`.
+  - Extracts full metadata: title, description, thumbnail, duration, release timestamp, and tags.
+  - Parses server choice buttons (`button_choice_server`), base64-decoded `data-embeds`/`data-embed`, requests the internal player page, parses `var FIRST = {...}`, and generates direct HLS (`m3u8_native`) formats with required `Referer` headers.
+  - Optimized discovery time to under 2 seconds by limiting mirror URL attempts and stopping server traversal upon first playable stream set.
+  - Automatically packaged on all platforms into the `plugins/` directory via `Nickvision.Common.targets`.
+- Added unit tests in `tests/plugins/test_javhd.py`:
+  - Offline tests with mocked network covering valid URLs, invalid URLs, format/metadata parsing, and `ExtractorError` fallback.
+- Updated `resources/yt-dlp-plugins/README.md` with extractor documentation.
+- Local validation:
+  - Tested against live URLs (`https://javhd.today/373612/...`, `https://javhd.today/373611/`, `https://javhd.today/embed/373612/`) using local yt-dlp with `--plugin-dir resources/yt-dlp-plugins`. Metadata and m3u8 playlists extracted cleanly with zero errors.
+  - `git diff --check` passed with zero whitespace or line-ending errors.
+- Status: Changes are local in working tree awaiting explicit commit and push authorization from the user.
+
+## Previous request: GitHub Actions failure review — 2026-10-20
 
 After the investigation and local fixes, the user explicitly requested
 "commit & push" for these changes. This authorizes committing and pushing the

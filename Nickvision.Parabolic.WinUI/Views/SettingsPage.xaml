@@ -17,7 +17,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Border Style="{StaticResource PageSurfaceStyle}">
+        <Border Style="{StaticResource PageSurfaceStyle}" Margin="0,0,20,0">
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -93,10 +93,10 @@
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xF2B7;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbTranslationLanguage" SelectionChanged="Cmb_SelectionChanged">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbTranslationLanguage" MinWidth="200" MaxWidth="280" SelectionChanged="Cmb_SelectionChanged">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
-                                            <TextBlock Text="{x:Bind Label}"/>
+                                            <TextBlock Text="{x:Bind Label}" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind Label}"/>
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
@@ -359,13 +359,13 @@
 
                                     <Button Style="{StaticResource IconActionStyle}" x:Name="BtnSelectCookiesFile" Click="SelectCookiesFile">
                                         <Button.Content>
-                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8E5;" FontSize="18"/>
+                                            <FontIcon VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8E5;" FontSize="18"/>
                                         </Button.Content>
                                     </Button>
 
                                     <Button Style="{StaticResource IconActionStyle}" x:Name="BtnClearCookiesFile" Click="ClearCookiesFile">
                                         <Button.Content>
-                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE894;" FontSize="18"/>
+                                            <FontIcon VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE894;" FontSize="18"/>
                                         </Button.Content>
                                     </Button>
                                 </StackPanel>
@@ -558,9 +558,9 @@
                                 <Button Style="{StaticResource PageActionStyle}" x:Name="BtnAddPostProcessorArgument" Grid.Column="1" Click="AddPostprocessingArgument">
                                     <Button.Content>
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE710;" FontSize="18"/>
+                                            <FontIcon VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE710;" FontSize="18"/>
 
-                                            <TextBlock x:Name="LblAddPostProcessorArgument"/>
+                                            <TextBlock VerticalAlignment="Center" x:Name="LblAddPostProcessorArgument"/>
                                         </StackPanel>
                                     </Button.Content>
                                 </Button>
@@ -583,12 +583,12 @@
                                             <StackPanel Orientation="Horizontal" Spacing="6">
                                                 <Button Style="{StaticResource PageActionStyle}" Tag="{x:Bind Name, Mode=OneWay}" Click="EditPostprocessingArgument">
                                                     <Button.Content>
-                                                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE70F;" FontSize="18"/>
+                                                        <FontIcon VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE70F;" FontSize="18"/>
                                                     </Button.Content>
                                                 </Button>
 
                                                 <Button Style="{StaticResource PageActionStyle}" Tag="{x:Bind Name, Mode=OneWay}" Click="DeletePostprocessingArgument">
-                                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE74D;" FontSize="18"/>
+                                                    <FontIcon VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE74D;" FontSize="18"/>
                                                 </Button>
                                             </StackPanel>
                                         </community:SettingsCard>

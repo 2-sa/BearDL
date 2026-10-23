@@ -200,12 +200,12 @@
                         <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,8,0">
                             <Button x:Name="BtnPreview" Background="Transparent" BorderThickness="0" Visibility="Collapsed">
                                 <Button.Content>
-                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="18" Glyph="&#xE794;"/>
+                                    <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="18" Glyph="&#xE794;"/>
                                 </Button.Content>
 
                                 <Button.Flyout>
                                     <Flyout>
-                                        <TextBlock x:Name="LblPreview" TextWrapping="Wrap"/>
+                                        <TextBlock VerticalAlignment="Center" x:Name="LblPreview" TextWrapping="Wrap"/>
                                     </Flyout>
                                 </Button.Flyout>
                             </Button>
@@ -217,7 +217,7 @@
 
                                 <Button.Flyout>
                                     <Flyout x:Name="FlyoutUpdateProgress" Placement="Bottom">
-                                        <TextBlock x:Name="LblUpdateProgress" TextWrapping="WrapWholeWords"/>
+                                        <TextBlock VerticalAlignment="Center" x:Name="LblUpdateProgress" TextWrapping="WrapWholeWords"/>
                                     </Flyout>
                                 </Button.Flyout>
                             </Button>
@@ -235,13 +235,13 @@
                                 <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="White"/>
                                 <SolidColorBrush x:Key="ButtonForegroundPressed" Color="White"/>
                             </Button.Resources>
-                            <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE8BB;" FontSize="10"/>
+                            <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE8BB;" FontSize="10"/>
                         </Button>
                         <Button x:Name="BtnWindowMaximize" Style="{StaticResource CaptionButtonStyle}" Click="WindowMaximize_Click">
-                            <FontIcon x:Name="IconWindowMaximize" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE922;" FontSize="10"/>
+                            <FontIcon VerticalAlignment="Center" x:Name="IconWindowMaximize" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE922;" FontSize="10"/>
                         </Button>
                         <Button x:Name="BtnWindowMinimize" Style="{StaticResource CaptionButtonStyle}" Click="WindowMinimize_Click">
-                            <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE921;" FontSize="10"/>
+                            <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE921;" FontSize="10"/>
                         </Button>
                     </StackPanel>
                 </Grid>
@@ -263,9 +263,9 @@
                             <HyperlinkButton Margin="0,24,0,0" Click="AddDownload">
                                 <HyperlinkButton.Content>
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE710;"/>
+                                        <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE710;"/>
 
-                                        <TextBlock x:Name="LblAddDownload"/>
+                                        <TextBlock VerticalAlignment="Center" x:Name="LblAddDownload"/>
                                     </StackPanel>
                                 </HyperlinkButton.Content>
                             </HyperlinkButton>
@@ -273,9 +273,9 @@
                             <HyperlinkButton Click="Keyring">
                                 <HyperlinkButton.Content>
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE72E;"/>
+                                        <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE72E;"/>
 
-                                        <TextBlock x:Name="LblKeyring"/>
+                                        <TextBlock VerticalAlignment="Center" x:Name="LblKeyring"/>
                                     </StackPanel>
                                 </HyperlinkButton.Content>
                             </HyperlinkButton>
@@ -283,9 +283,9 @@
                             <HyperlinkButton Click="Settings">
                                 <HyperlinkButton.Content>
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE713;"/>
+                                        <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE713;"/>
 
-                                        <TextBlock x:Name="LblSettings"/>
+                                        <TextBlock VerticalAlignment="Center" x:Name="LblSettings"/>
                                     </StackPanel>
                                 </HyperlinkButton.Content>
                             </HyperlinkButton>
@@ -309,9 +309,9 @@
                                 <Button Grid.Column="1" Style="{ThemeResource AccentButtonStyle}" Click="AddDownload">
                                     <Button.Content>
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE710;"/>
+                                            <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE710;"/>
 
-                                            <TextBlock x:Name="LblDownloadsAddDownload"/>
+                                            <TextBlock VerticalAlignment="Center" x:Name="LblDownloadsAddDownload"/>
                                         </StackPanel>
                                     </Button.Content>
                                 </Button>
@@ -488,7 +488,7 @@
                                     </Grid.RowDefinitions>
 
                                     <!-- Single Modern URL Command Bar (Modern Layout Only) -->
-                                    <Border x:Name="QuickUrlCard" Grid.Row="0" Margin="16,8,16,4" Padding="6,6" CornerRadius="12" Visibility="Collapsed"
+                                    <Border x:Name="QuickUrlCard" Grid.Row="0" Margin="12,8,32,4" Padding="6,6" CornerRadius="12" Visibility="Collapsed"
                                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                                         <Grid ColumnSpacing="8">
@@ -508,8 +508,8 @@
                                                     IsEnabled="False" Click="QuickCustomize_Click">
                                                 <Button.Content>
                                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE9E9;"/>
-                                                        <TextBlock x:Name="LblQuickCustomize" FontWeight="Medium"/>
+                                                        <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE9E9;"/>
+                                                        <TextBlock VerticalAlignment="Center" x:Name="LblQuickCustomize" FontWeight="Medium"/>
                                                     </StackPanel>
                                                 </Button.Content>
                                             </Button>
@@ -518,8 +518,8 @@
                                                     Style="{ThemeResource AccentButtonStyle}" IsEnabled="False" Click="QuickDownload_Click">
                                                 <Button.Content>
                                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE896;"/>
-                                                        <TextBlock x:Name="LblQuickDownload" FontWeight="SemiBold"/>
+                                                        <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE896;"/>
+                                                        <TextBlock VerticalAlignment="Center" x:Name="LblQuickDownload" FontWeight="SemiBold"/>
                                                     </StackPanel>
                                                 </Button.Content>
                                             </Button>
@@ -527,7 +527,7 @@
                                     </Border>
 
                                     <!-- Clipboard link suggestion (Modern Layout Only, shown when the clipboard holds a URL) -->
-                                    <Border x:Name="ClipboardSuggestion" Grid.Row="1" Margin="16,2,16,4" Padding="12,6" CornerRadius="10" Visibility="Collapsed"
+                                    <Border x:Name="ClipboardSuggestion" Grid.Row="1" Margin="12,2,32,4" Padding="12,6" CornerRadius="10" Visibility="Collapsed"
                                             Background="{ThemeResource AccentFillColorTertiaryBrush}">
                                         <Grid ColumnSpacing="10">
                                             <Grid.ColumnDefinitions>
@@ -556,7 +556,7 @@
                                     </Border>
 
                                     <!-- Section header: current filter + count, batch actions only when they apply (Modern Layout Only) -->
-                                    <Grid x:Name="ModernDownloadsToolbar" Grid.Row="2" Margin="18,6,16,4" ColumnSpacing="8" Visibility="Collapsed">
+                                    <Grid x:Name="ModernDownloadsToolbar" Grid.Row="2" Margin="12,6,32,4" ColumnSpacing="8" Visibility="Collapsed">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
@@ -570,29 +570,29 @@
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
                                             <Button x:Name="BtnModernStopAllRemaining" Padding="10,5" Background="Transparent" BorderThickness="0" Visibility="Collapsed" Click="StopAllRemaining">
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE71A;"/>
-                                                    <TextBlock x:Name="LblModernStopAllRemaining"/>
+                                                    <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE71A;"/>
+                                                    <TextBlock VerticalAlignment="Center" x:Name="LblModernStopAllRemaining"/>
                                                 </StackPanel>
                                             </Button>
 
                                             <Button x:Name="BtnModernRetryAllFailed" Padding="10,5" Background="Transparent" BorderThickness="0" Visibility="Collapsed" Click="RetryAllFailed">
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE72C;"/>
-                                                    <TextBlock x:Name="LblModernRetryAllFailed"/>
+                                                    <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE72C;"/>
+                                                    <TextBlock VerticalAlignment="Center" x:Name="LblModernRetryAllFailed"/>
                                                 </StackPanel>
                                             </Button>
 
                                             <Button x:Name="BtnModernClearAllQueued" Padding="10,5" Background="Transparent" BorderThickness="0" Visibility="Collapsed" Click="ClearAllQueued">
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE894;"/>
-                                                    <TextBlock x:Name="LblModernClearAllQueued"/>
+                                                    <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE894;"/>
+                                                    <TextBlock VerticalAlignment="Center" x:Name="LblModernClearAllQueued"/>
                                                 </StackPanel>
                                             </Button>
 
                                             <Button x:Name="BtnModernClearAllCompleted" Padding="10,5" Background="Transparent" BorderThickness="0" Visibility="Collapsed" Click="ClearAllCompleted">
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE74D;"/>
-                                                    <TextBlock x:Name="LblModernClearAllCompleted"/>
+                                                    <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE74D;"/>
+                                                    <TextBlock VerticalAlignment="Center" x:Name="LblModernClearAllCompleted"/>
                                                 </StackPanel>
                                             </Button>
                                         </StackPanel>
@@ -606,9 +606,9 @@
                                                         <Button x:Name="BtnClassicNoneAdd" Click="AddDownload">
                                                             <Button.Content>
                                                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                                                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE710;"/>
+                                                                    <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE710;"/>
 
-                                                                    <TextBlock x:Name="LblNoneAddDownload"/>
+                                                                    <TextBlock VerticalAlignment="Center" x:Name="LblNoneAddDownload"/>
                                                                 </StackPanel>
                                                             </Button.Content>
                                                         </Button>
@@ -625,7 +625,7 @@
                                     </ScrollViewer>
 
                                     <!-- Empty state with start hints (Modern Layout Only, shown when there are no downloads at all) -->
-                                    <Grid x:Name="ModernEmptyState" Grid.Row="3" Margin="16,8,16,16" Visibility="Collapsed">
+                                    <Grid x:Name="ModernEmptyState" Grid.Row="3" Margin="12,8,32,16" Visibility="Collapsed">
                                         <Rectangle RadiusX="16" RadiusY="16" StrokeThickness="1.5" StrokeDashArray="5,4"
                                                    Stroke="{ThemeResource ControlStrongStrokeColorDefaultBrush}" Opacity="0.6"/>
 

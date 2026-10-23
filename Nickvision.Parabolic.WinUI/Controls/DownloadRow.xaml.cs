@@ -2,16 +2,17 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.Extensions.Logging;
 using Nickvision.Desktop.Globalization;
 using Nickvision.Parabolic.Shared.Events;
 using Nickvision.Parabolic.Shared.Models;
 using Nickvision.Parabolic.Shared.Services;
 using Nickvision.Parabolic.WinUI.Helpers;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.System;
@@ -28,6 +29,7 @@ public sealed partial class DownloadRow : UserControl
     }
 
     private readonly IThumbnailService _thumbnailService;
+    private readonly ILogger<DownloadRow> _logger;
     private readonly ITranslationService _translator;
     private int _id;
     private string _path;
@@ -41,11 +43,12 @@ public sealed partial class DownloadRow : UserControl
 
     public DownloadStatus Status { get; private set; }
 
-    public DownloadRow(IThumbnailService thumbnailService, ITranslationService translator)
+    public DownloadRow(IThumbnailService thumbnailService, ITranslationService translator, ILogger<DownloadRow> logger)
     {
         InitializeComponent();
         LocalizationHelper.Apply(this, translator);
         _thumbnailService = thumbnailService;
+        _logger = logger;
         _translator = translator;
         _id = -1;
         _path = string.Empty;
@@ -218,19 +221,8 @@ public sealed partial class DownloadRow : UserControl
         string resultGlyph;
         try
         {
-            if (!File.Exists(_path))
-            {
-                throw new FileNotFoundException(null, _path);
-            }
-            var file = await StorageFile.GetFileFromPathAsync(_path);
-            var package = new DataPackage
-            {
-                RequestedOperation = DataPackageOperation.Copy
-            };
-            package.SetStorageItems([file]);
-            Clipboard.SetContent(package);
-            // Keep the file on the clipboard after BearDL closes.
-            Clipboard.Flush();
+            var owner = Microsoft.UI.Win32Interop.GetWindowFromWindowId(XamlRoot.ContentIslandEnvironment.AppWindowId);
+            await FileClipboard.CopyFileAsync(owner, _path);
             resultText = _translator._("Copied");
             resultGlyph = "\uE73E";
         }
@@ -239,9 +231,11 @@ public sealed partial class DownloadRow : UserControl
             resultText = _translator._("File not found");
             resultGlyph = "\uE783";
         }
-        catch
+        catch (Exception ex)
         {
-            resultText = _translator._("Error");
+            _logger.LogError(ex, "Could not copy downloaded file {Path} to the clipboard", _path);
+            var errorCode = ex is Win32Exception nativeError ? nativeError.NativeErrorCode : ex.HResult;
+            resultText = _translator._("Could not copy the file ({0})", $"0x{errorCode:X8}");
             resultGlyph = "\uE783";
         }
         try

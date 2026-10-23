@@ -27,4 +27,10 @@ $arabicCatalog = [System.IO.File]::ReadAllBytes((Join-Path $PublishDirectory "ar
 if (-not [System.Text.Encoding]::UTF8.GetString($arabicCatalog).Contains('الإعدادات')) {
     throw 'The published Arabic catalog does not contain the Settings translation.'
 }
+$arabicText = [System.Text.Encoding]::UTF8.GetString($arabicCatalog)
+foreach ($requiredTranslation in @('تصميم الواجهة', 'القديم (الكلاسيكي)', 'الجديد (الحديث)', 'التبديل بين التصميم القديم (الكلاسيكي) أو التصميم الجديد للواجهة')) {
+    if (-not $arabicText.Contains($requiredTranslation)) {
+        throw "The published Arabic catalog is missing a layout translation: $requiredTranslation"
+    }
+}
 Write-Output "Verified $($languages.Count) published languages against runtime domain '$domain', including Arabic."

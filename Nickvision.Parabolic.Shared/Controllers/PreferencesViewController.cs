@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -47,13 +48,22 @@ public class PreferencesViewController
         AvailableTranslationLanguages = new List<SelectionItem<string>>()
         {
             new SelectionItem<string>(string.Empty, _translationService._("System"), string.IsNullOrEmpty(_configurationService.TranslationLanguage)),
-            new SelectionItem<string>("C", "en_US", _configurationService.TranslationLanguage == "C")
+            new SelectionItem<string>("C", "English", _configurationService.TranslationLanguage == "C")
         };
         var languages = _translationService.AvailableLanguages.ToList();
         languages.Sort();
         foreach (var language in languages)
         {
-            (AvailableTranslationLanguages as IList)!.Add(new SelectionItem<string>(language, language, _configurationService.TranslationLanguage == language));
+            string label;
+            try
+            {
+                label = CultureInfo.GetCultureInfo(language.Replace('_', '-')).NativeName;
+            }
+            catch (CultureNotFoundException)
+            {
+                label = language;
+            }
+            (AvailableTranslationLanguages as IList)!.Add(new SelectionItem<string>(language, label, _configurationService.TranslationLanguage == language));
         }
         Browsers = new List<SelectionItem<Browser>>(OperatingSystem.IsWindows() ? 2 : 9)
         {

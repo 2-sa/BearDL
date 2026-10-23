@@ -82,9 +82,9 @@
 
                         <Button Grid.Row="0" Style="{StaticResource PageActionStyle}" HorizontalAlignment="Left" Click="CopyDebugInformation">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <FontIcon x:Name="IconCopyDebugInformation" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8C8;"/>
+                                <FontIcon VerticalAlignment="Center" x:Name="IconCopyDebugInformation" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8C8;"/>
 
-                                <TextBlock x:Name="LblCopyDebugInformation"/>
+                                <TextBlock VerticalAlignment="Center" x:Name="LblCopyDebugInformation"/>
                             </StackPanel>
                         </Button>
 

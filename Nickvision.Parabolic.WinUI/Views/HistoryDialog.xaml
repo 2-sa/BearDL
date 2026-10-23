@@ -13,7 +13,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Border Style="{StaticResource InsetSurfaceStyle}">
+        <Border Style="{StaticResource InsetSurfaceStyle}" Margin="0,0,20,0">
             <Grid RowSpacing="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -27,8 +27,8 @@
                     </Grid.ColumnDefinitions>
                     <Button x:Name="BtnSort" Style="{StaticResource PageActionStyle}" HorizontalAlignment="Left">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE8CB;"/>
-                            <TextBlock x:Name="LblSort"/>
+                            <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE8CB;"/>
+                            <TextBlock VerticalAlignment="Center" x:Name="LblSort"/>
                         </StackPanel>
                         <Button.Flyout>
                             <MenuFlyout Placement="Bottom">
@@ -39,8 +39,8 @@
                     </Button>
                     <Button x:Name="BtnClearAll" Grid.Column="1" Style="{StaticResource PageActionStyle}" Click="ClearAll">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE74D;"/>
-                            <TextBlock x:Name="LblClearAll"/>
+                            <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE74D;"/>
+                            <TextBlock VerticalAlignment="Center" x:Name="LblClearAll"/>
                         </StackPanel>
                     </Button>
                 </Grid>
@@ -75,13 +75,13 @@
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                             <Button Name="DownloadAgainAction" Style="{StaticResource IconActionStyle}" Loaded="ActionButton_Loaded" Click="DownloadAgain" Tag="{x:Bind Value.Url, Mode=OneWay}">
-                                                <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE896;" FontSize="16"/>
+                                                <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE896;" FontSize="16"/>
                                             </Button>
                                             <Button Name="PlayAction" Style="{StaticResource IconActionStyle}" Loaded="ActionButton_Loaded" Click="Play" Tag="{x:Bind Value.Path, Mode=OneWay}" IsEnabled="{x:Bind Value.ExistsOnDisk, Mode=OneWay}">
-                                                <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE768;" FontSize="16"/>
+                                                <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE768;" FontSize="16"/>
                                             </Button>
                                             <Button Name="RemoveAction" Style="{StaticResource IconActionStyle}" Loaded="ActionButton_Loaded" Click="Remove" Tag="{x:Bind Value.Url, Mode=OneWay}">
-                                                <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE894;" FontSize="16"/>
+                                                <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE894;" FontSize="16"/>
                                             </Button>
                                         </StackPanel>
                                     </Grid>

@@ -9,6 +9,8 @@ on:
       - 'resources/po/**'
       - 'tests/plugins/**'
       - 'tests/duplicates/**'
+      - 'tests/windows/Clipboard*'
+      - 'Nickvision.Parabolic.WinUI/Helpers/FileClipboard.cs'
       - 'Nickvision.Parabolic.Shared/Models/DuplicateDownload.cs'
       - 'Nickvision.Parabolic.Shared/Services/DownloadService.cs'
       - 'Nickvision.Parabolic.Shared/Controllers/AddDownloadDialogController.cs'
@@ -19,6 +21,20 @@ permissions:
   contents: read
 
 jobs:
+  file-clipboard:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [windows-2025-vs2026, windows-11-arm]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+      - name: Verify native file clipboard interoperability
+        run: dotnet run --project tests/windows/ClipboardChecks.csproj --configuration Release
+
   translations:
     runs-on: ubuntu-latest
     steps:

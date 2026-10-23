@@ -13,7 +13,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Border Style="{StaticResource InsetSurfaceStyle}">
+        <Border Style="{StaticResource InsetSurfaceStyle}" Margin="0,0,20,0">
             <Grid RowSpacing="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -22,8 +22,8 @@
                 <AutoSuggestBox x:Name="SearchBox" Style="{StaticResource PageSearchStyle}" QueryIcon="Find" TextChanged="SearchBox_TextChanged"/>
                 <Button x:Name="BtnAdd" Grid.Row="1" Style="{StaticResource PageActionStyle}" HorizontalAlignment="Left" Click="Add">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE710;"/>
-                        <TextBlock x:Name="LblAdd"/>
+                        <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE710;"/>
+                        <TextBlock VerticalAlignment="Center" x:Name="LblAdd"/>
                     </StackPanel>
                 </Button>
             </Grid>
@@ -57,10 +57,10 @@
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                             <Button Name="EditAction" Style="{StaticResource IconActionStyle}" Loaded="ActionButton_Loaded" Click="Edit" Tag="{x:Bind Value, Mode=OneWay}">
-                                                <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE70F;" FontSize="16"/>
+                                                <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE70F;" FontSize="16"/>
                                             </Button>
                                             <Button Name="RemoveAction" Style="{StaticResource IconActionStyle}" Loaded="ActionButton_Loaded" Click="Remove" Tag="{x:Bind Value, Mode=OneWay}">
-                                                <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE74D;" FontSize="16"/>
+                                                <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE74D;" FontSize="16"/>
                                             </Button>
                                         </StackPanel>
                                     </Grid>

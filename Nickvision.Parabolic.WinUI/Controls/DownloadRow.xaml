@@ -47,31 +47,31 @@
                 <nickvision:ViewStack.Pages>
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <Button x:Name="BtnPauseResume" Style="{StaticResource DownloadActionButtonStyle}" Click="PauseResume">
-                            <FontIcon x:Name="FntPauseResume" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE769;"/>
+                            <FontIcon VerticalAlignment="Center" x:Name="FntPauseResume" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE769;"/>
                         </Button>
                         <Button x:Name="BtnStop" Style="{StaticResource DownloadActionButtonStyle}" Click="Stop">
-                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE71A;"/>
+                            <FontIcon VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE71A;"/>
                         </Button>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <Button x:Name="BtnPlay" Style="{StaticResource DownloadActionButtonStyle}" Click="Play">
-                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE768;"/>
+                            <FontIcon VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE768;"/>
                         </Button>
                         <Button x:Name="BtnCopyFile" Style="{StaticResource DownloadActionButtonStyle}" Click="CopyFile">
                             <ToolTipService.ToolTip>
                                 <ToolTip x:Name="CopyFileToolTip"/>
                             </ToolTipService.ToolTip>
-                            <FontIcon x:Name="FntCopyFile" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE8C8;"/>
+                            <FontIcon VerticalAlignment="Center" x:Name="FntCopyFile" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE8C8;"/>
                         </Button>
                         <Button x:Name="BtnOpenFolder" Style="{StaticResource DownloadActionButtonStyle}" Click="OpenFolder">
-                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE838;"/>
+                            <FontIcon VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE838;"/>
                         </Button>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <Button x:Name="BtnRetry" Style="{StaticResource DownloadActionButtonStyle}" Click="Retry">
-                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE72C;"/>
+                            <FontIcon VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE72C;"/>
                         </Button>
                     </StackPanel>
                 </nickvision:ViewStack.Pages>

@@ -33,9 +33,9 @@
                         <Button Style="{StaticResource PageActionStyle}" x:Name="BtnSelectBatchFile" HorizontalAlignment="Stretch" Click="BtnSelectBatchFile_Click">
                             <Button.Content>
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8A5;" FontSize="18"/>
+                                    <FontIcon VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8A5;" FontSize="18"/>
 
-                                    <TextBlock x:Name="LblSelectBatchFile"/>
+                                    <TextBlock VerticalAlignment="Center" x:Name="LblSelectBatchFile"/>
                                 </StackPanel>
                             </Button.Content>
                         </Button>
@@ -237,9 +237,9 @@
                                         <Button Style="{StaticResource PageActionStyle}" x:Name="BtnSingleSelectAllSubtitles" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" Click="BtnSingleSelectAllSubtitles_Click">
                                             <Button.Content>
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B3;" FontSize="18"/>
+                                                    <FontIcon VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B3;" FontSize="18"/>
 
-                                                    <TextBlock x:Name="LblSingleSelectAllSubtitles"/>
+                                                    <TextBlock VerticalAlignment="Center" x:Name="LblSingleSelectAllSubtitles"/>
                                                 </StackPanel>
                                             </Button.Content>
                                         </Button>
@@ -247,9 +247,9 @@
                                         <Button Style="{StaticResource PageActionStyle}" x:Name="BtnSingleDeselectAllSubtitles" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Click="BtnSingleDeselectAllSubtitles_Click">
                                             <Button.Content>
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8E6;" FontSize="18"/>
+                                                    <FontIcon VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8E6;" FontSize="18"/>
 
-                                                    <TextBlock x:Name="LblSingleDeselectAllSubtitles"/>
+                                                    <TextBlock VerticalAlignment="Center" x:Name="LblSingleDeselectAllSubtitles"/>
                                                 </StackPanel>
                                             </Button.Content>
                                         </Button>
@@ -432,9 +432,9 @@
                                 <Button Style="{StaticResource PageActionStyle}" x:Name="BtnPlaylistSelectAllItems" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" Click="BtnPlaylistSelectAllItems_Click">
                                     <Button.Content>
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B3;" FontSize="18"/>
+                                            <FontIcon VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B3;" FontSize="18"/>
 
-                                            <TextBlock x:Name="LblPlaylistSelectAllItems"/>
+                                            <TextBlock VerticalAlignment="Center" x:Name="LblPlaylistSelectAllItems"/>
                                         </StackPanel>
                                     </Button.Content>
                                 </Button>
@@ -442,9 +442,9 @@
                                 <Button Style="{StaticResource PageActionStyle}" x:Name="BtnPlaylistDeselectAllItems" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Click="BtnPlaylistDeselectAllItems_Click">
                                     <Button.Content>
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8E6;" FontSize="18"/>
+                                            <FontIcon VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8E6;" FontSize="18"/>
 
-                                            <TextBlock x:Name="LblPlaylistDeselectAllItems"/>
+                                            <TextBlock VerticalAlignment="Center" x:Name="LblPlaylistDeselectAllItems"/>
                                         </StackPanel>
                                     </Button.Content>
                                 </Button>
@@ -530,9 +530,9 @@
                                         <Button Style="{StaticResource PageActionStyle}" x:Name="BtnPlaylistSelectAllSubtitles" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" Click="BtnPlaylistSelectAllSubtitles_Click">
                                             <Button.Content>
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B3;" FontSize="18"/>
+                                                    <FontIcon VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B3;" FontSize="18"/>
 
-                                                    <TextBlock x:Name="LblPlaylistSelectAllSubtitles"/>
+                                                    <TextBlock VerticalAlignment="Center" x:Name="LblPlaylistSelectAllSubtitles"/>
                                                 </StackPanel>
                                             </Button.Content>
                                         </Button>
@@ -540,9 +540,9 @@
                                         <Button Style="{StaticResource PageActionStyle}" x:Name="BtnPlaylistDeselectAllSubtitles" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Click="BtnPlaylistDeselectAllSubtitles_Click">
                                             <Button.Content>
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8E6;" FontSize="18"/>
+                                                    <FontIcon VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8E6;" FontSize="18"/>
 
-                                                    <TextBlock x:Name="LblPlaylistDeselectAllSubtitles"/>
+                                                    <TextBlock VerticalAlignment="Center" x:Name="LblPlaylistDeselectAllSubtitles"/>
                                                 </StackPanel>
                                             </Button.Content>
                                         </Button>

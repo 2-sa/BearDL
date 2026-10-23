@@ -3229,7 +3229,11 @@ msgid "Copy"
 msgstr "نسخ"
 
 msgid "Copied"
-msgstr "تم النسخ"
+msgstr "نُسخ الملف"
+
+#, csharp-format
+msgid "Could not copy the file ({0})"
+msgstr "تعذّر نسخ الملف ({0})"
 
 msgid "File not found"
 msgstr "الملف غير موجود"

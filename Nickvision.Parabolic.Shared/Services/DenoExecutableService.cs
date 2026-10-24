@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Nickvision.Desktop.Application;
 using Nickvision.Desktop.System;
 using System;
@@ -18,11 +18,11 @@ public class DenoExecutableService : DependencyExecutableService, IDenoExecutabl
     {
         if (OperatingSystem.IsLinux())
         {
-            DenoBundledVersion = new AppVersion(Desktop.System.Environment.DeploymentMode == DeploymentMode.Local ? "0.0.0" : "2.8.0");
+            DenoBundledVersion = new AppVersion(Desktop.System.Environment.DeploymentMode == DeploymentMode.Local ? "0.0.0" : "2.9.8");
         }
         else
         {
-            DenoBundledVersion = new AppVersion("2.8.0");
+            DenoBundledVersion = new AppVersion("2.9.8");
         }
         if (OperatingSystem.IsWindows())
         {

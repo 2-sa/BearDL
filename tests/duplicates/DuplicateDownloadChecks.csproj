@@ -7,5 +7,6 @@
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="../../Nickvision.Parabolic.Shared/Models/DuplicateDownload.cs" Link="DuplicateDownload.cs" />
+        <Compile Include="../../Nickvision.Parabolic.Shared/Helpers/StringExtensions.cs" Link="StringExtensions.cs" />
     </ItemGroup>
 </Project>

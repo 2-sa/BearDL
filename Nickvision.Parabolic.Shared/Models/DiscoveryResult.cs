@@ -1,4 +1,4 @@
-﻿using Nickvision.Desktop.Application;
+using Nickvision.Desktop.Application;
 using Nickvision.Desktop.Globalization;
 using Nickvision.Desktop.Helpers;
 using System;
@@ -41,14 +41,7 @@ public class DiscoveryResult
         }
         if (ytdlp.TryGetProperty("entries", out var entriesProperty) && entriesProperty.ValueKind == JsonValueKind.Array && entriesProperty.GetArrayLength() > 0)
         {
-            foreach (var mediaObject in entriesProperty.EnumerateArray())
-            {
-                if (mediaObject.ValueKind != JsonValueKind.Object)
-                {
-                    continue;
-                }
-                Media.Add(new Media(mediaObject, configurationService, translator, suggestedSaveFolder, string.Empty));
-            }
+            AddEntries(entriesProperty, configurationService, translator, suggestedSaveFolder);
             var urlCounts = new Dictionary<string, int>(Media.Count);
             foreach (var m in Media)
             {
@@ -68,7 +61,28 @@ public class DiscoveryResult
         }
         else
         {
-            Media.Add(new Media(ytdlp, configurationService, translator, suggestedSaveFolder, suggestedSaveFilename));
+            Media.Add(new Media(ytdlp, configurationService, translator, suggestedSaveFolder, suggestedSaveFilename, Url));
+        }
+    }
+
+    private void AddEntries(JsonElement entriesProperty, IConfigurationService configurationService, ITranslationService translator, string suggestedSaveFolder)
+    {
+        foreach (var mediaObject in entriesProperty.EnumerateArray())
+        {
+            if (mediaObject.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+            if (mediaObject.TryGetProperty("entries", out var nestedEntries) && nestedEntries.ValueKind == JsonValueKind.Array && nestedEntries.GetArrayLength() > 0)
+            {
+                AddEntries(nestedEntries, configurationService, translator, suggestedSaveFolder);
+                continue;
+            }
+            var media = new Media(mediaObject, configurationService, translator, suggestedSaveFolder, string.Empty, Url);
+            if (!media.Url.IsEmpty)
+            {
+                Media.Add(media);
+            }
         }
     }
 

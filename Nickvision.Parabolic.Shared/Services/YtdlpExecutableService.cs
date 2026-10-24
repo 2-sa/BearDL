@@ -470,6 +470,19 @@ public class YtdlpExecutableService : DependencyExecutableService, IYtdlpExecuta
                     formatString += formatString.StartsWith("worst", StringComparison.Ordinal) ? "/worst" : "/best";
                 }
             }
+            else if (downloadOptions.FileType.IsAudio)
+            {
+                if (formatString == "worstaudio")
+                {
+                    formatString = "worstaudio/worst";
+                }
+                else if (formatString.Contains("bestaudio", StringComparison.Ordinal) && !formatString.EndsWith("/best", StringComparison.Ordinal))
+                {
+                    formatString = formatString.StartsWith('(') && formatString.EndsWith(')')
+                        ? $"{formatString[..^1]}/best)"
+                        : $"{formatString}/best";
+                }
+            }
             arguments.Add("--format");
             arguments.Add(formatString);
         }

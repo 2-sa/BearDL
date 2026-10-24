@@ -1,4 +1,4 @@
-﻿using Nickvision.Desktop.Globalization;
+using Nickvision.Desktop.Globalization;
 using System;
 using System.Text;
 using System.Text.Json;
@@ -74,12 +74,29 @@ public class Format : IComparable<Format>, IEquatable<Format>
         {
             Bytes = bytes;
         }
+        else if (ytdlp.TryGetProperty("filesize_approx", out var filesizeApproxProperty) && filesizeApproxProperty.ValueKind != JsonValueKind.Null)
+        {
+            if (filesizeApproxProperty.TryGetUInt64(out var approxBytes))
+            {
+                Bytes = approxBytes;
+            }
+            else if (filesizeApproxProperty.TryGetDouble(out var approxDouble) && approxDouble > 0)
+            {
+                Bytes = (ulong)approxDouble;
+            }
+        }
         if (ytdlp.TryGetProperty("tbr", out var bitrateProperty) && bitrateProperty.ValueKind != JsonValueKind.Null && bitrateProperty.TryGetDouble(out var bitrate))
         {
             Bitrate = bitrate;
         }
+        else if (ytdlp.TryGetProperty("abr", out var audioBitrateProperty) && audioBitrateProperty.ValueKind != JsonValueKind.Null && audioBitrateProperty.TryGetDouble(out var audioBitrate))
+        {
+            Bitrate = audioBitrate;
+        }
         var note = string.Empty;
         var resolution = string.Empty;
+        var rawVcodec = string.Empty;
+        var rawAcodec = string.Empty;
         if (ytdlp.TryGetProperty("format_note", out var noteProperty) && noteProperty.ValueKind != JsonValueKind.Null)
         {
             note = noteProperty.GetString() ?? string.Empty;
@@ -88,7 +105,42 @@ public class Format : IComparable<Format>, IEquatable<Format>
         {
             resolution = resolutionProprety.GetString() ?? string.Empty;
         }
-        if (resolution == "audio only")
+        if (ytdlp.TryGetProperty("vcodec", out var videoCodecProprety) && videoCodecProprety.ValueKind != JsonValueKind.Null)
+        {
+            rawVcodec = videoCodecProprety.GetString()?.ToLowerInvariant() ?? string.Empty;
+            VideoCodec = rawVcodec switch
+            {
+                var x when x.Contains("vp09") || x.Contains("vp9") => Models.VideoCodec.VP9,
+                var x when x.Contains("av01") => Models.VideoCodec.AV01,
+                var x when x.Contains("avc1") || x.Contains("h264") => Models.VideoCodec.H264,
+                var x when x.Contains("hevc") || x.Contains("h265") || x.Contains("hev1") || x.Contains("bytevc1") || x.Contains("dvh1") => Models.VideoCodec.H265,
+                "none" => null,
+                _ => null
+            };
+        }
+        if (ytdlp.TryGetProperty("acodec", out var audioCodecProperty) && audioCodecProperty.ValueKind != JsonValueKind.Null)
+        {
+            rawAcodec = audioCodecProperty.GetString()?.ToLowerInvariant() ?? string.Empty;
+            AudioCodec = rawAcodec switch
+            {
+                var x when x.Contains("flac") || x.Contains("alac") => Models.AudioCodec.FLAC,
+                var x when x.Contains("wav") || x.Contains("aiff") || x.Contains("pcm") => Models.AudioCodec.WAV,
+                var x when x.Contains("opus") || x.Contains("vorbis") => Models.AudioCodec.OPUS,
+                var x when x.Contains("aac") => Models.AudioCodec.AAC,
+                var x when x.Contains("mp4a") => Models.AudioCodec.MP4A,
+                var x when x.Contains("mp3") => Models.AudioCodec.MP3,
+                "none" => null,
+                _ => null
+            };
+        }
+        var isAudioOnlyExtension = Extension.Equals("mp3", StringComparison.OrdinalIgnoreCase)
+            || Extension.Equals("m4a", StringComparison.OrdinalIgnoreCase)
+            || Extension.Equals("aac", StringComparison.OrdinalIgnoreCase)
+            || Extension.Equals("opus", StringComparison.OrdinalIgnoreCase)
+            || Extension.Equals("ogg", StringComparison.OrdinalIgnoreCase)
+            || Extension.Equals("flac", StringComparison.OrdinalIgnoreCase)
+            || Extension.Equals("wav", StringComparison.OrdinalIgnoreCase);
+        if (resolution == "audio only" || (rawVcodec == "none" && (rawAcodec != "none" || isAudioOnlyExtension)))
         {
             Type = MediaType.Audio;
         }
@@ -96,6 +148,12 @@ public class Format : IComparable<Format>, IEquatable<Format>
         {
             Type = note == "storyboard" ? MediaType.Image : MediaType.Video;
             VideoResolution = VideoResolution.Parse(resolution, translator);
+            if (VideoResolution is null
+                && ytdlp.TryGetProperty("width", out var widthProperty) && widthProperty.ValueKind == JsonValueKind.Number && widthProperty.TryGetInt32(out var width) && width > 0
+                && ytdlp.TryGetProperty("height", out var heightProperty) && heightProperty.ValueKind == JsonValueKind.Number && heightProperty.TryGetInt32(out var height) && height > 0)
+            {
+                VideoResolution = new VideoResolution(width, height);
+            }
         }
         var language = string.Empty;
         if (ytdlp.TryGetProperty("language", out var languageProperty) && languageProperty.ValueKind != JsonValueKind.Null)
@@ -110,35 +168,9 @@ public class Format : IComparable<Format>, IEquatable<Format>
                 HasAudioDescription = true;
             }
         }
-        if (ytdlp.TryGetProperty("vcodec", out var videoCodecProprety) && videoCodecProprety.ValueKind != JsonValueKind.Null)
-        {
-            VideoCodec = (videoCodecProprety.GetString()?.ToLower() ?? string.Empty) switch
-            {
-                var x when x.Contains("vp09") || x.Contains("vp9") => Models.VideoCodec.VP9,
-                var x when x.Contains("av01") => Models.VideoCodec.AV01,
-                var x when x.Contains("avc1") || x.Contains("h264") => Models.VideoCodec.H264,
-                var x when x.Contains("hevc") || x.Contains("h265") => Models.VideoCodec.H265,
-                "none" => null,
-                _ => null
-            };
-        }
-        if (ytdlp.TryGetProperty("acodec", out var audioCodecProperty) && audioCodecProperty.ValueKind != JsonValueKind.Null)
-        {
-            AudioCodec = (audioCodecProperty.GetString()?.ToLower() ?? string.Empty) switch
-            {
-                var x when x.Contains("flac") || x.Contains("alac") => Models.AudioCodec.FLAC,
-                var x when x.Contains("wav") || x.Contains("aiff") => Models.AudioCodec.WAV,
-                var x when x.Contains("opus") => Models.AudioCodec.OPUS,
-                var x when x.Contains("aac") => Models.AudioCodec.AAC,
-                var x when x.Contains("mp4a") => Models.AudioCodec.MP4A,
-                var x when x.Contains("mp3") => Models.AudioCodec.MP3,
-                "none" => null,
-                _ => null
-            };
-        }
         if (ytdlp.TryGetProperty("fps", out var fpsProperty) && fpsProperty.ValueKind != JsonValueKind.Null && fpsProperty.TryGetDouble(out var fps))
         {
-            FrameRate = fps switch
+            FrameRate = Math.Round(fps) switch
             {
                 24.0 => Models.FrameRate.Fps24,
                 30.0 => Models.FrameRate.Fps30,

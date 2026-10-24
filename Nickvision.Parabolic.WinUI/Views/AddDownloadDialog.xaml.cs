@@ -10,6 +10,7 @@ using Nickvision.Desktop.Globalization;
 using Nickvision.Desktop.Keyring;
 using Nickvision.Desktop.WinUI.Helpers;
 using Nickvision.Parabolic.Shared.Controllers;
+using Nickvision.Parabolic.Shared.Helpers;
 using Nickvision.Parabolic.Shared.Models;
 using Nickvision.Parabolic.WinUI.Helpers;
 using System;
@@ -188,7 +189,8 @@ public sealed partial class AddDownloadDialog : ContentDialog
         {
             if (Clipboard.GetContent().Contains(StandardDataFormats.Text))
             {
-                if (Uri.TryCreate(await Clipboard.GetContent().GetTextAsync(), UriKind.Absolute, out var uri))
+                var clipboardText = await Clipboard.GetContent().GetTextAsync();
+                if (clipboardText.TryExtractHttpUri(out var uri))
                 {
                     TxtUrl.Text = uri.ToString();
                     IsPrimaryButtonEnabled = true;
@@ -204,7 +206,7 @@ public sealed partial class AddDownloadDialog : ContentDialog
         {
             // The URL dialog has closed. Prepare and queue every item in the
             // background; this task handles failures through app notifications.
-            _ = _controller.AddFastDownloadsAsync(new Uri(TxtUrl.Text), TglUseAuthentication.IsOn ? GetSelectedCredential() : null, TxtFastSaveFolder.Text);
+            _ = _controller.AddFastDownloadsAsync(ParseInputUrl(TxtUrl.Text), TglUseAuthentication.IsOn ? GetSelectedCredential() : null, TxtFastSaveFolder.Text);
             return result;
         }
         var cancellationToken = new CancellationTokenSource();
@@ -314,23 +316,39 @@ public sealed partial class AddDownloadDialog : ContentDialog
         return (CmbCredential.SelectedItem as BindableSelectionItem)?.ToSelectionItem<Credential?>()?.Value;
     }
 
+    private static Uri ParseInputUrl(string text)
+    {
+        if (text.TryExtractHttpUri(out var httpUri))
+        {
+            return httpUri;
+        }
+        return new Uri(text.Trim());
+    }
+
     private async Task DiscoverMediaAsync(CancellationToken cancellationToken)
     {
         var credential = GetSelectedCredential();
         _controller.PreviousDownloadImmediatelyAsVideo = TglDownloadImmediatelyAsVideo.IsOn;
         _controller.PreviousDownloadImmediatelyAsAudio = TglDownloadImmediatelyAsAudio.IsOn;
-        _discoveryContext = await _controller.DiscoverAsync(new Uri(TxtUrl.Text), credential, cancellationToken);
+        _discoveryContext = await _controller.DiscoverAsync(ParseInputUrl(TxtUrl.Text), credential, cancellationToken);
         if (_discoveryContext is null)
         {
             Hide();
             return;
         }
-        using var thumbnailMemoryStream = await _controller.GetThumbnailImageStreamAsync(_discoveryContext);
-        using var thumbnailStream = thumbnailMemoryStream.AsRandomAccessStream();
-        var thumbnailDecoder = await BitmapDecoder.CreateAsync(thumbnailStream);
-        var thumbnailBitmap = await thumbnailDecoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
-        var thumbnailSource = new SoftwareBitmapSource();
-        await thumbnailSource.SetBitmapAsync(thumbnailBitmap);
+        SoftwareBitmapSource? thumbnailSource = null;
+        try
+        {
+            using var thumbnailMemoryStream = await _controller.GetThumbnailImageStreamAsync(_discoveryContext);
+            using var thumbnailStream = thumbnailMemoryStream.AsRandomAccessStream();
+            var thumbnailDecoder = await BitmapDecoder.CreateAsync(thumbnailStream);
+            var thumbnailBitmap = await thumbnailDecoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+            thumbnailSource = new SoftwareBitmapSource();
+            await thumbnailSource.SetBitmapAsync(thumbnailBitmap);
+        }
+        catch
+        {
+        }
         Title = _translationService._("Configure Download");
         // Share one viewport across quality, subtitles, and advanced options.
         // Short pages keep the same size; long pages scroll within the viewport.
@@ -516,7 +534,7 @@ public sealed partial class AddDownloadDialog : ContentDialog
             (CmbPlaylistPostProcessorArgument.SelectedItem as BindableSelectionItem)!.ToSelectionItem<PostProcessorArgument?>()!);
     }
 
-    private void TxtUrl_TextChanged(object? sender, TextChangedEventArgs e) => IsPrimaryButtonEnabled = !TxtUrl.Text.StartsWith("//") && Uri.TryCreate(TxtUrl.Text, UriKind.Absolute, out var _);
+    private void TxtUrl_TextChanged(object? sender, TextChangedEventArgs e) => IsPrimaryButtonEnabled = TxtUrl.Text.TryExtractHttpUri(out _) || (!TxtUrl.Text.StartsWith("//") && Uri.TryCreate(TxtUrl.Text, UriKind.Absolute, out _));
 
     private async void BtnSelectBatchFile_Click(object? sender, RoutedEventArgs e)
     {

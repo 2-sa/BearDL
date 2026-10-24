@@ -65,13 +65,20 @@ public class DiscoveryService : IDiscoveryService
     {
         _logger.LogInformation($"Discovering media for {url}...");
         var processResult = await _ytdlpExecutableService.ExecuteAsync(_ytdlpExecutableService.GetDiscoveryProcessArguments(url, credential), cancellationToken);
-        if (processResult.ExitCode != 0 && (string.IsNullOrEmpty(processResult.Output) || processResult.Output[0] != '{'))
+        var jsonStartIndex = processResult.Output?.IndexOf('{') ?? -1;
+        if (processResult.ExitCode != 0 && jsonStartIndex == -1)
         {
             _logger.LogError($"Failed to discover media for {url}: {processResult.Error.TrimEnd()}");
             throw new YtdlpException(processResult.Error);
         }
+        if (jsonStartIndex == -1)
+        {
+            _logger.LogError($"Empty or non-JSON output from yt-dlp for {url}: {processResult.Error.TrimEnd()}");
+            throw new YtdlpException(!string.IsNullOrWhiteSpace(processResult.Error) ? processResult.Error : processResult.Output ?? string.Empty);
+        }
         cancellationToken.ThrowIfCancellationRequested();
-        using var json = JsonDocument.Parse(processResult.Output);
+        var jsonPayload = jsonStartIndex > 0 ? processResult.Output![jsonStartIndex..] : processResult.Output!;
+        using var json = JsonDocument.Parse(jsonPayload);
         if (json.RootElement.ValueKind != JsonValueKind.Object)
         {
             _logger.LogError($"Unexpected output format from yt-dlp for {url}: {processResult.Output.TrimEnd()}");
@@ -132,8 +139,8 @@ public class DiscoveryService : IDiscoveryService
             {
                 continue;
             }
-            var urlField = firstDelimiterIndex == -1 ? line : line[..firstDelimiterIndex];
-            if (!Uri.TryCreate(urlField.Clean(), UriKind.Absolute, out var url))
+            var urlField = (firstDelimiterIndex == -1 ? line : line[..firstDelimiterIndex]).Clean();
+            if (!urlField.TryExtractHttpUri(out var url) && !Uri.TryCreate(urlField, UriKind.Absolute, out url!))
             {
                 continue;
             }

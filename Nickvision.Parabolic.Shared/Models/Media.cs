@@ -35,18 +35,48 @@ public class Media
         SuggestedSaveFolder = suggestedSaveFolder;
     }
 
-    public Media(JsonElement ytdlp, IConfigurationService configurationService, ITranslationService translator, string suggestedSaveFolder, string suggestedSaveFilename) : this(suggestedSaveFolder, suggestedSaveFilename)
+    private static bool IsDirectMediaStreamUrl(string rawUrl)
     {
-        if (ytdlp.TryGetProperty("playlist_index", out var playlistIndexProperty) && playlistIndexProperty.ValueKind != JsonValueKind.Null)
+        if (!Uri.TryCreate(rawUrl, UriKind.Absolute, out var uri))
         {
-            PlaylistPosition = playlistIndexProperty.GetInt32();
+            return false;
+        }
+        var path = uri.AbsolutePath;
+        return path.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".mpd", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".f4m", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".ism", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".m4v", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".webm", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".mov", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".ts", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".m4a", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".aac", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".opus", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".flac", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".wav", StringComparison.OrdinalIgnoreCase)
+            || rawUrl.Contains(".m3u8", StringComparison.OrdinalIgnoreCase)
+            || rawUrl.Contains(".mpd", StringComparison.OrdinalIgnoreCase)
+            || rawUrl.Contains(".f4m", StringComparison.OrdinalIgnoreCase)
+            || rawUrl.Contains(".ism", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public Media(JsonElement ytdlp, IConfigurationService configurationService, ITranslationService translator, string suggestedSaveFolder, string suggestedSaveFilename, Uri? fallbackUrl = null) : this(suggestedSaveFolder, suggestedSaveFilename)
+    {
+        if (ytdlp.TryGetProperty("playlist_index", out var playlistIndexProperty) && playlistIndexProperty.ValueKind == JsonValueKind.Number && playlistIndexProperty.TryGetInt32(out var playlistIndex))
+        {
+            PlaylistPosition = playlistIndex;
         }
         if (PlaylistPosition != -1)
         {
             if (ytdlp.TryGetProperty("url", out var urlProperty) && urlProperty.ValueKind != JsonValueKind.Null)
             {
                 var rawUrl = urlProperty.GetString() ?? string.Empty;
-                if (Uri.TryCreate(rawUrl, UriKind.Absolute, out var uri) && !rawUrl.Contains(".m3u8") && !rawUrl.Contains(".mpd") && !rawUrl.Contains(".f4m") && !rawUrl.Contains(".ism"))
+                if (Uri.TryCreate(rawUrl, UriKind.Absolute, out var uri) && !IsDirectMediaStreamUrl(rawUrl))
                 {
                     Url = uri;
                 }
@@ -54,6 +84,24 @@ public class Media
             if (Url.IsEmpty && ytdlp.TryGetProperty("webpage_url", out var webpageUrlProperty) && webpageUrlProperty.ValueKind != JsonValueKind.Null)
             {
                 if (Uri.TryCreate(webpageUrlProperty.GetString() ?? string.Empty, UriKind.Absolute, out var uri))
+                {
+                    Url = uri;
+                }
+            }
+            if (Url.IsEmpty && ytdlp.TryGetProperty("original_url", out var originalUrlProperty) && originalUrlProperty.ValueKind != JsonValueKind.Null)
+            {
+                if (Uri.TryCreate(originalUrlProperty.GetString() ?? string.Empty, UriKind.Absolute, out var uri))
+                {
+                    Url = uri;
+                }
+            }
+            if (Url.IsEmpty && fallbackUrl is not null && !fallbackUrl.IsEmpty)
+            {
+                Url = fallbackUrl;
+            }
+            if (Url.IsEmpty && ytdlp.TryGetProperty("url", out var fallbackUrlProperty) && fallbackUrlProperty.ValueKind != JsonValueKind.Null)
+            {
+                if (Uri.TryCreate(fallbackUrlProperty.GetString() ?? string.Empty, UriKind.Absolute, out var uri))
                 {
                     Url = uri;
                 }
@@ -68,6 +116,17 @@ public class Media
                     Url = uri;
                 }
             }
+            if (Url.IsEmpty && ytdlp.TryGetProperty("original_url", out var originalUrlProperty) && originalUrlProperty.ValueKind != JsonValueKind.Null)
+            {
+                if (Uri.TryCreate(originalUrlProperty.GetString() ?? string.Empty, UriKind.Absolute, out var uri))
+                {
+                    Url = uri;
+                }
+            }
+            if (Url.IsEmpty && fallbackUrl is not null && !fallbackUrl.IsEmpty)
+            {
+                Url = fallbackUrl;
+            }
             if (Url.IsEmpty && ytdlp.TryGetProperty("url", out var urlProperty) && urlProperty.ValueKind != JsonValueKind.Null)
             {
                 if (Uri.TryCreate(urlProperty.GetString() ?? string.Empty, UriKind.Absolute, out var uri))
@@ -78,7 +137,22 @@ public class Media
         }
         if (string.IsNullOrEmpty(Title) && ytdlp.TryGetProperty("title", out var titleProperty) && titleProperty.ValueKind != JsonValueKind.Null)
         {
-            Title = titleProperty.GetString() ?? "Media";
+            Title = titleProperty.GetString() ?? string.Empty;
+        }
+        if (string.IsNullOrEmpty(Title) && ytdlp.TryGetProperty("fulltitle", out var fullTitleProperty) && fullTitleProperty.ValueKind != JsonValueKind.Null)
+        {
+            Title = fullTitleProperty.GetString() ?? string.Empty;
+        }
+        if (string.IsNullOrEmpty(Title))
+        {
+            if (ytdlp.TryGetProperty("id", out var idProperty) && idProperty.ValueKind != JsonValueKind.Null && !string.IsNullOrWhiteSpace(idProperty.GetString()))
+            {
+                Title = idProperty.GetString()!;
+            }
+            else
+            {
+                Title = "Media";
+            }
         }
         if (configurationService.IncludeMediaIdInTitle && ytdlp.TryGetProperty("display_id", out var displayIdProperty) && displayIdProperty.ValueKind != JsonValueKind.Null)
         {
@@ -259,7 +333,31 @@ public class Media
                 ThumbnailUrl = uri;
             }
         }
-        if (hasVideoFormats && hasAudioFormats)
+        if (ThumbnailUrl.IsEmpty && ytdlp.TryGetProperty("thumbnails", out var thumbnailsProperty) && thumbnailsProperty.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var thumbObject in thumbnailsProperty.EnumerateArray())
+            {
+                if (thumbObject.ValueKind == JsonValueKind.Object
+                    && thumbObject.TryGetProperty("url", out var thumbUrlProperty)
+                    && thumbUrlProperty.ValueKind != JsonValueKind.Null
+                    && Uri.TryCreate(thumbUrlProperty.GetString() ?? string.Empty, UriKind.Absolute, out var thumbUri))
+                {
+                    ThumbnailUrl = thumbUri;
+                }
+            }
+        }
+        if (!hasVideoFormats && !hasAudioFormats && ytdlp.TryGetProperty("vcodec", out var topVcodecProp) && topVcodecProp.ValueKind != JsonValueKind.Null)
+        {
+            var topVcodec = topVcodecProp.GetString()?.ToLowerInvariant() ?? string.Empty;
+            var topAcodec = ytdlp.TryGetProperty("acodec", out var topAcodecProp) && topAcodecProp.ValueKind != JsonValueKind.Null
+                ? (topAcodecProp.GetString()?.ToLowerInvariant() ?? string.Empty)
+                : string.Empty;
+            if (topVcodec == "none" && topAcodec != "none")
+            {
+                hasAudioFormats = true;
+            }
+        }
+        if (hasVideoFormats)
         {
             Type = MediaType.Video;
             Formats.Insert(0, Format.WorstAudio);
@@ -276,6 +374,8 @@ public class Media
         else
         {
             Type = MediaType.Video;
+            Formats.Insert(0, Format.WorstAudio);
+            Formats.Insert(0, Format.BestAudio);
             Formats.Insert(0, Format.WorstVideo);
             Formats.Insert(0, Format.BestVideo);
         }

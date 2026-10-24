@@ -78,12 +78,19 @@ public sealed partial class DownloadRow : UserControl
 
     public async Task TriggerAddedStateAsync(DownloadAddedEventArgs args)
     {
-        using var thumbnailMemoryStream = await _thumbnailService.GetImageStreamAsync(args.Url);
-        using var thumbnailStream = thumbnailMemoryStream.AsRandomAccessStream();
-        var thumbnailDecoder = await BitmapDecoder.CreateAsync(thumbnailStream);
-        var thumbnailBitmap = await thumbnailDecoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
-        var thumbnailSource = new SoftwareBitmapSource();
-        await thumbnailSource.SetBitmapAsync(thumbnailBitmap);
+        SoftwareBitmapSource? thumbnailSource = null;
+        try
+        {
+            using var thumbnailMemoryStream = await _thumbnailService.GetImageStreamAsync(args.Url);
+            using var thumbnailStream = thumbnailMemoryStream.AsRandomAccessStream();
+            var thumbnailDecoder = await BitmapDecoder.CreateAsync(thumbnailStream);
+            var thumbnailBitmap = await thumbnailDecoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+            thumbnailSource = new SoftwareBitmapSource();
+            await thumbnailSource.SetBitmapAsync(thumbnailBitmap);
+        }
+        catch
+        {
+        }
         _id = args.Id;
         _path = args.Path;
         IcnStatus.Glyph = "\uE896";

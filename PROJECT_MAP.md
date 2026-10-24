@@ -12,7 +12,7 @@
 
 - `UI-05`: فتح الإعدادات والصفحات العربية → استخراج نصوص مساعد التصميم عند بناء الترجمة،
   وعرض أسماء اللغات بحجم متناسق مع بقاء رموزها المخزنة، وتوحيد عرض القوائم وحقول الإدخال (`MinWidth="180"`)، ووضع سهم التوسيع في `SettingsExpander` على يمين مفتاح التبديل في RTL (`ToggleSwitchHelper.ApplyExpanders`)، وتطابق حواف الأشرطة والقوائم في RTL وLTR عبر `ScrollViewportHelper.ReserveScrollbarRight="20"` مع وراثة اتجاه `FlowDirection` الطبيعي دون كسر RTL، وتمرير `PanelUserInterface` صراحةً إلى `GlassThemeHelper.AttachSettingsCard` لضمان ظهور بطاقتي الشفافية وتصميم الواجهة دائمًا، وإخفاء شارة الاختصارات العائمة (`KeyboardAcceleratorPlacementMode.Hidden`) ومحاذاة قائمة المساعدة المنبثقة (`FlyoutHelp`) حسب اتجاه الواجهة.
-- `TIKTOK-01`: اكتشاف وتنزيل مقاطع TikTok → ترقية `yt-dlp` المدمج إلى `2026.10.21` مع إضافة `tiktok_fix` في `resources/yt-dlp-plugins/tiktok_fix` لتوليد ترويسات تجاوز `HTTP Error 403` ودعم روابط المشاركة مع `impersonate=True`.
+- `TIKTOK-01`: اكتشاف وتنزيل مقاطع TikTok وأغلب المواقع المعروفة → ترقية `yt-dlp` المدمج إلى `2026.10.21` وDeno إلى `2.9.8`، مع إضافة `tiktok_fix` في `resources/yt-dlp-plugins/tiktok_fix` لتوليد ترويسات تجاوز `HTTP Error 403` ودعم روابط المشاركة مع `impersonate=True`، وتحديث `Format.cs` و`Media.cs` و`DiscoveryResult.cs` و`YtdlpExecutableService.cs` و`StringExtensions.TryExtractHttpUri` لدعم الصيغ المدمجة (Video+Audio)، والمنشورات متعددة الوسائط، واستخلاص الروابط من نصوص المشاركة، وحماية تحميل الصور المصغرة.
 - `COPY-01`: نسخ ملف مكتمل في Windows → `FileClipboard.CopyFileAsync` يكتب قائمة ملفات Unicode
   بصيغة Shell مع تأثير COPY → إمكان لصق الملف نفسه واستمرار بياناته بعد إغلاق المصدر.
 - `UI-04`: الضغط على «تنزيل» في اقتراح الحافظة على Windows → `ClipboardUse_Click` يلتقط

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Nickvision.Desktop.Helpers;
 using Nickvision.Parabolic.Shared.Models;
 using System;
@@ -85,7 +85,15 @@ public class ThumbnailService : IThumbnailService
             return;
         }
         _logger.LogDebug($"Downloading image bytes for url: {url}");
-        var bytes = await _httpClient.GetByteArrayAsync(_mediaMap.TryGetValue(url, out var mappedUrl) ? mappedUrl : url);
+        var bytes = Array.Empty<byte>();
+        try
+        {
+            bytes = await _httpClient.GetByteArrayAsync(_mediaMap.TryGetValue(url, out var mappedUrl) ? mappedUrl : url);
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning($"Failed to download thumbnail for url ({url}): {e.Message}. Using default thumbnail.");
+        }
         if (bytes.Length == 0)
         {
             _logger.LogWarning($"Downloaded image bytes for url ({url}) are empty. Using default thumbnail.");
@@ -95,10 +103,9 @@ public class ThumbnailService : IThumbnailService
             _logger.LogDebug($"Downloaded image bytes for url ({url}).");
         }
         _cache[url] = bytes.Length == 0 ? _cache[Uri.Empty] : bytes;
-        if (mappedUrl is not null)
+        if (_mediaMap.Remove(url, out var removedUrl))
         {
-            _cache[mappedUrl] = bytes.Length == 0 ? _cache[Uri.Empty] : bytes;
-            _mediaMap.Remove(url);
+            _cache[removedUrl] = bytes.Length == 0 ? _cache[Uri.Empty] : bytes;
             _logger.LogDebug($"Removed media url ({url}) from media map.");
         }
     }

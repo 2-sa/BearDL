@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -72,6 +72,36 @@ public static class StringExtensions
         }
 
         public string Clean() => s.Trim().Trim('"').Trim();
+
+        public bool TryExtractHttpUri(out Uri uri)
+        {
+            uri = null!;
+            if (string.IsNullOrWhiteSpace(s))
+            {
+                return false;
+            }
+            var trimmed = s.Clean();
+            if (!trimmed.StartsWith("//", StringComparison.Ordinal)
+                && Uri.TryCreate(trimmed, UriKind.Absolute, out var directUri)
+                && (directUri.Scheme == Uri.UriSchemeHttp || directUri.Scheme == Uri.UriSchemeHttps))
+            {
+                uri = directUri;
+                return true;
+            }
+            foreach (var token in trimmed.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var candidate = token.Trim('"', '\'', '<', '>', '(', ')', '[', ']', '{', '}', ',', ';', '\u2066', '\u2067', '\u2068', '\u2069', '\u200E', '\u200F', '\u202A', '\u202B', '\u202C');
+                if ((candidate.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                     || candidate.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                    && Uri.TryCreate(candidate, UriKind.Absolute, out var tokenUri)
+                    && (tokenUri.Scheme == Uri.UriSchemeHttp || tokenUri.Scheme == Uri.UriSchemeHttps))
+                {
+                    uri = tokenUri;
+                    return true;
+                }
+            }
+            return false;
+        }
 
         public string SanitizeForFilename(bool includeWindowsCharacters)
         {

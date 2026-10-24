@@ -1,9 +1,10 @@
-﻿using Nickvision.Desktop.Application;
+using Nickvision.Desktop.Application;
 using Nickvision.Desktop.Globalization;
 using Nickvision.Desktop.GNOME.Helpers;
 using Nickvision.Desktop.Keyring;
 using Nickvision.Parabolic.GNOME.Helpers;
 using Nickvision.Parabolic.Shared.Controllers;
+using Nickvision.Parabolic.Shared.Helpers;
 using Nickvision.Parabolic.Shared.Models;
 using System;
 using System.Collections.Generic;
@@ -230,7 +231,7 @@ public class AddDownloadDialog : Adw.Dialog
             try
             {
                 var text = await Gdk.Display.GetDefault()!.GetClipboard().ReadTextAsync();
-                if (!string.IsNullOrEmpty(text) && Uri.TryCreate(text, UriKind.Absolute, out var url))
+                if (!string.IsNullOrEmpty(text) && text.TryExtractHttpUri(out var url))
                 {
                     _urlRow!.Text_ = url.ToString();
                 }
@@ -304,7 +305,16 @@ public class AddDownloadDialog : Adw.Dialog
         _cancellationTokenSource?.Dispose();
     }
 
-    private void UrlRow_OnChanged(Gtk.Editable sender, EventArgs e) => _discoverUrlButton!.Sensitive = !(_urlRow!.Text_?.StartsWith("//") ?? false) && Uri.TryCreate(_urlRow!.Text_, UriKind.Absolute, out var _);
+    private static Uri ParseInputUrl(string? text)
+    {
+        if (!string.IsNullOrEmpty(text) && text.TryExtractHttpUri(out var httpUri))
+        {
+            return httpUri;
+        }
+        return new Uri((text ?? string.Empty).Trim());
+    }
+
+    private void UrlRow_OnChanged(Gtk.Editable sender, EventArgs e) => _discoverUrlButton!.Sensitive = (_urlRow!.Text_ is { } text && text.TryExtractHttpUri(out _)) || (!(_urlRow.Text_?.StartsWith("//") ?? false) && Uri.TryCreate(_urlRow.Text_, UriKind.Absolute, out _));
 
     private async void SelectBathFileRow_OnActivated(Adw.ButtonRow sender, EventArgs e)
     {
@@ -367,7 +377,7 @@ public class AddDownloadDialog : Adw.Dialog
         }
         if (_controller.FastDownload)
         {
-            var url = new Uri(_urlRow!.Text_!);
+            var url = ParseInputUrl(_urlRow!.Text_);
             Close();
             _ = _controller.AddFastDownloadsAsync(url, credential, _fastSaveFolderRow!.Subtitle);
             return;
@@ -376,7 +386,7 @@ public class AddDownloadDialog : Adw.Dialog
         _navigationView!.PushByTag("loading");
         _controller.PreviousDownloadImmediatelyAsVideo = _downloadImmediatelyAsVideoRow!.Active;
         _controller.PreviousDownloadImmediatelyAsAudio = _downloadImmediatelyAsAudioRow!.Active;
-        _discoveryContext = await _controller.DiscoverAsync(new Uri(_urlRow!.Text_!), credential, _cancellationTokenSource.Token);
+        _discoveryContext = await _controller.DiscoverAsync(ParseInputUrl(_urlRow!.Text_), credential, _cancellationTokenSource.Token);
         _cancellationTokenSource.Dispose();
         _cancellationTokenSource = null;
         if (_discoveryContext is null)

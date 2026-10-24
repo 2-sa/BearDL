@@ -14,6 +14,7 @@ using Nickvision.Desktop.Notifications;
 using Nickvision.Desktop.WinUI.Helpers;
 using Nickvision.Parabolic.Shared.Controllers;
 using Nickvision.Parabolic.Shared.Events;
+using Nickvision.Parabolic.Shared.Helpers;
 using Nickvision.Parabolic.Shared.Models;
 using Nickvision.Parabolic.Shared.Services;
 using Nickvision.Parabolic.WinUI.Controls;
@@ -747,7 +748,7 @@ public sealed partial class MainWindow : Window
 
     private void TxtQuickUrl_TextChanged(object sender, TextChangedEventArgs e)
     {
-        var isValid = Uri.TryCreate(TxtQuickUrl.Text.Trim(), UriKind.Absolute, out _);
+        var isValid = TxtQuickUrl.Text.TryExtractHttpUri(out _);
         BtnQuickDownload.IsEnabled = isValid;
         BtnQuickCustomize.IsEnabled = isValid;
     }
@@ -768,7 +769,7 @@ public sealed partial class MainWindow : Window
             var text = (await Clipboard.GetContent().GetTextAsync())?.Trim();
             if (!string.IsNullOrEmpty(text))
             {
-                TxtQuickUrl.Text = text;
+                TxtQuickUrl.Text = text.TryExtractHttpUri(out var uri) ? uri.ToString() : text;
                 TxtQuickUrl.Focus(FocusState.Programmatic);
                 TxtQuickUrl.SelectAll();
             }
@@ -779,7 +780,7 @@ public sealed partial class MainWindow : Window
 
     private async Task TriggerQuickDownloadAsync()
     {
-        if (!Uri.TryCreate(TxtQuickUrl.Text.Trim(), UriKind.Absolute, out var uri))
+        if (!TxtQuickUrl.Text.TryExtractHttpUri(out var uri))
         {
             return;
         }
@@ -793,7 +794,7 @@ public sealed partial class MainWindow : Window
 
     private async void QuickCustomize_Click(object sender, RoutedEventArgs e)
     {
-        if (!Uri.TryCreate(TxtQuickUrl.Text.Trim(), UriKind.Absolute, out var uri))
+        if (!TxtQuickUrl.Text.TryExtractHttpUri(out var uri))
         {
             return;
         }
@@ -832,11 +833,9 @@ public sealed partial class MainWindow : Window
             if (content.Contains(StandardDataFormats.Text))
             {
                 var text = (await content.GetTextAsync())?.Trim();
-                if (!string.IsNullOrEmpty(text)
-                    && Uri.TryCreate(text, UriKind.Absolute, out var uri)
-                    && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+                if (!string.IsNullOrEmpty(text) && text.TryExtractHttpUri(out var uri))
                 {
-                    TxtQuickUrl.Text = text;
+                    TxtQuickUrl.Text = uri.ToString();
                     TxtQuickUrl.Focus(FocusState.Keyboard);
                     TxtQuickUrl.SelectAll();
                     args.Handled = true;
@@ -867,14 +866,16 @@ public sealed partial class MainWindow : Window
             {
                 var text = (await content.GetTextAsync())?.Trim();
                 if (!string.IsNullOrEmpty(text)
-                    && Uri.TryCreate(text, UriKind.Absolute, out var uri)
-                    && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
-                    && text != _clipboardDismissedUrl)
+                    && text.TryExtractHttpUri(out var uri))
                 {
-                    _clipboardSuggestedUrl = text;
-                    LblClipboardUrl.Text = text;
-                    ClipboardSuggestion.Visibility = Visibility.Visible;
-                    return;
+                    var extractedUrl = uri.ToString();
+                    if (extractedUrl != _clipboardDismissedUrl)
+                    {
+                        _clipboardSuggestedUrl = extractedUrl;
+                        LblClipboardUrl.Text = extractedUrl;
+                        ClipboardSuggestion.Visibility = Visibility.Visible;
+                        return;
+                    }
                 }
             }
         }
@@ -887,8 +888,7 @@ public sealed partial class MainWindow : Window
 
     private async void ClipboardUse_Click(object sender, RoutedEventArgs e)
     {
-        if (!Uri.TryCreate(_clipboardSuggestedUrl, UriKind.Absolute, out var uri)
-            || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        if (_clipboardSuggestedUrl is null || !_clipboardSuggestedUrl.TryExtractHttpUri(out var uri))
         {
             return;
         }
@@ -945,11 +945,9 @@ public sealed partial class MainWindow : Window
         catch
         {
         }
-        if (!string.IsNullOrEmpty(url)
-            && Uri.TryCreate(url, UriKind.Absolute, out var dropUri)
-            && (dropUri.Scheme == Uri.UriSchemeHttp || dropUri.Scheme == Uri.UriSchemeHttps))
+        if (!string.IsNullOrEmpty(url) && url.TryExtractHttpUri(out var dropUri))
         {
-            TxtQuickUrl.Text = url;
+            TxtQuickUrl.Text = dropUri.ToString();
             TxtQuickUrl.Focus(FocusState.Keyboard);
             TxtQuickUrl.SelectAll();
         }

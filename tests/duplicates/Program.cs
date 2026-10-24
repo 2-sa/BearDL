@@ -1,3 +1,4 @@
+using Nickvision.Parabolic.Shared.Helpers;
 using Nickvision.Parabolic.Shared.Models;
 
 var first = new Uri("https://example.com/watch?v=first");
@@ -28,7 +29,11 @@ try
     result = DuplicateDownloadDetector.Find(new[] { first, second, first }, active, saved);
     Check(result.Count == 2 && result.All(item => item.Reason == DuplicateDownloadReason.Active), "Batch checks include each conflicting URL once");
     Check(DuplicateDownloadDetector.Find(Array.Empty<Uri>(), active, saved).Count == 0, "Empty selections are allowed");
-    Console.WriteLine("Duplicate download checks passed (9 scenarios).");
+    Check("https://www.tiktok.com/@user/video/7683926991468367121".TryExtractHttpUri(out var tiktokUri) && tiktokUri.Host == "www.tiktok.com", "Direct HTTPS URL is extracted");
+    Check("شاهد هذا المقطع الرائع https://vt.tiktok.com/ZSh12345/ من تيك توك".TryExtractHttpUri(out var sharedUri) && sharedUri.ToString() == "https://vt.tiktok.com/ZSh12345/", "Social share text extracts embedded URL");
+    Check("\u2066https://www.instagram.com/reel/C9abc123/\u2069".TryExtractHttpUri(out var bidiUri) && bidiUri.Host == "www.instagram.com", "Bidi-isolated URL is extracted cleanly");
+    Check(!("//example.com/path".TryExtractHttpUri(out _)), "Protocol-relative string is rejected");
+    Console.WriteLine("Duplicate download checks passed (13 scenarios).");
     BearDL.Tests.ResourceChecks.Run();
 }
 finally

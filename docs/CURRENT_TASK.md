@@ -2,11 +2,30 @@
 
 آخر تحديث: 2026-10-24، بتوقيت الرياض. هذه الوثيقة هي المرجع الموحد للحالة والتسليم؛ دُمجت فيها تفاصيل وثيقة التسليم المؤرخة لتجنب تكرار المعلومات وتناقض حالتها.
 
-## الطلب الحالي: توحيد عرض عناصر الإعدادات، تصحيح موضع سهم التوسيع في RTL، وإصلاح تحميل مقاطع TikTok — 2026-10-24
+## الطلب الحالي: دعم أغلب المواقع المعروفة وتوسيع توافق استخراج وتنزيل الوسائط — 2026-10-24
+
+- طلب المستخدم: «خلي التطبيق يدعم اغلب المواقع المعروفه»، مع الالتزام بعدم إعادة كوميتات `javhd` الملغاة وعدم تثبيت أي برامج على جهاز المستخدم.
+- ما تم فحصه وتنفيذه لتحقيق التوافق الشامل مع أشهر المنصات (YouTube، TikTok، Instagram، X/Twitter، Facebook، Reddit، Twitch، Kick، SoundCloud، Vimeo، Dailymotion، Bilibili، Pinterest، Snapchat، Threads، VK، Streamable، وغيرها):
+  1. **دعم الصيغ المدمجة (Video+Audio Muxed Formats) والصوتيات في `Media.cs` و`Format.cs` و`YtdlpExecutableService.cs`**:
+     - أغلب المواقع خارج YouTube (مثل Instagram وX/Twitter وTikTok وFacebook وReddit وTwitch Clips وVimeo وPinterest وKick) توفّر بثًا مدمجًا واحدًا يحوي الفيديو والصوت معًا (`hasVideoFormats == true` و`hasAudioFormats == false`)، وكان `Media.cs` في هذه الحالة يضيف `BestVideo`/`WorstVideo` فقط دون `BestAudio`/`WorstAudio`، مما يجعل قائمة صيغ الصوت فارغة (لا تحوي سوى `None`) أو يؤدي لتنزيل فيديو صامت عند اختيار صيغة فيديو منفصلة أو فشل استخراج الصوت (`bestaudio`) لعدم وجود مسار صوتي مستقل.
+     - حُدّث `Nickvision.Parabolic.Shared/Models/Media.cs` ليضمن إدراج `Format.BestAudio` و`Format.WorstAudio` دائمًا في `Formats` متى وُجدت صيغ فيديو، وحُدّث `Nickvision.Parabolic.Shared/Services/YtdlpExecutableService.cs` ليضيف `/best` (`/worst`) تلقائيًا إلى محدد الصوت (`bestaudio/best`) عند التحويل إلى ملف صوتي (`FileType.IsAudio`) حتى يستخرج الصوت بنجاح من المواقع ذات البث المدمج.
+     - حُدّث `Nickvision.Parabolic.Shared/Models/Format.cs` للتعرف على الصيغ الصوتية عندما تكون `vcodec == "none"` حتى لو غاب نص `resolution == "audio only"` (مثل SoundCloud وبعض مستخرجات البودكاست)، ولاستنتاج أبعاد الفيديو (`VideoResolution`) من حقلي `width` و`height` الرقميين عند غياب نص `resolution`، ولدعم ترميزات `hev1` و`bytevc1` و`dvh1` كـ`VideoCodec.H265` (المستخدمة في TikTok وDouyin وBilibili وInstagram) و`vorbis` و`pcm`، وقراءة الحجم التقريبي `filesize_approx` ومعدل بت الصوت `abr` ومعدلات الإطارات العشرية (`23.98`/`29.97`/`59.94`).
+  2. **معالجة القوائم والمنشورات متعددة الوسائط والروابط المباشرة في `DiscoveryResult.cs` و`Media.cs` و`DiscoveryService.cs`**:
+     - حُدّث `Nickvision.Parabolic.Shared/Models/DiscoveryResult.cs` لتسطيح قوائم `entries` المتداخلة (`AddEntries`) وتمرير رابط المنشور الأصلي كرابط احتياطي (`fallbackUrl`) حتى تعمل المنشورات متعددة المقاطع (ألبومات Instagram وتغريدات X/Twitter متعددة الفيديو وBilibili) دون فقدان العناصر.
+     - حُدّث `Media.cs` لتجنب اعتماد روابط البث المباشر المؤقتة (`.mp4`، `.m3u8`، `.mpd`، `.ts`، `.mp3`، `.m4a`...) كرابط صفحة للعنصر في القوائم، وتفضيل `webpage_url` أو `original_url` عليها حتى يعمل `yt-dlp` عبر المستخرج الأصلي للموقع مع الترويسات والكوكيز و`--playlist-items` بدل الفشل بخطأ `403 Forbidden` على رابط CDN منتهي الصلاحية، مع دعم قراءة الصور المصغرة من مصفوفة `thumbnails` والعناوين البديلة (`fulltitle` / `id`).
+     - حُدّث `Nickvision.Parabolic.Shared/Services/DiscoveryService.cs` لتخطي أي أسطر نصية تسبق كائن JSON في مخرجات `yt-dlp` قبل التحليل.
+  3. **استخلاص الروابط الذكي من نصوص المشاركة (`TryExtractHttpUri`) في الواجهتين**:
+     - أُضيفت الدالة `TryExtractHttpUri` في `Nickvision.Parabolic.Shared/Helpers/StringExtensions.cs` ورُبطت في `Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs` و`AddDownloadDialog.xaml.cs` و`Nickvision.Parabolic.GNOME/Views/AddDownloadDialog.cs` و`DiscoveryService.cs` لاستخراج رابط `http://` أو `https://` تلقائيًا عند لصق نص مشاركة كامل من تطبيقات الجوال أو المتصفح (مثل نصوص المشاركة من TikTok أو Instagram أو X أو Snapchat أو WhatsApp أو الروابط المحاطة بمحارف العزل ثنائي الاتجاه Unicode bidi isolates).
+  4. **حماية عرض الصور المصغرة وترقية محرك Deno المرفق**:
+     - حُدّث `Nickvision.Parabolic.Shared/Services/ThumbnailService.cs` و`AddDownloadDialog.xaml.cs` و`DownloadRow.xaml.cs` للتعامل الآمن مع فشل جلب الصور المصغرة أو صيغ الصور غير المدعومة من بعض المواقع والرجوع للصورة الافتراضية دون إسقاط عملية الاكتشاف أو التنزيل.
+     - رُقّي إصدار Deno المدمج من `2.8.0` إلى `2.9.8` في `DenoExecutableService.cs` و`.github/workflows/windows.yml` و`flatpak/org.nickvision.tubeconverter.json` توافقًا مع متطلبات `yt-dlp 2026.10.21` (`deno>=2.9.8`) لحل تحديات JavaScript.
+
+## طلب سابق: توحيد عرض عناصر الإعدادات، تصحيح موضع سهم التوسيع في RTL، وإصلاح تحميل مقاطع TikTok — 2026-10-24
 
 - بعد إصدار `2026.5.139`، أرسل المستخدم ثلاث لقطات شاشة جديدة لصفحات الإعدادات ولخطأ تنزيل TikTok، وطلب:
   1. «مفروض حجم موحد لهم كلهم بدل ذي فوضى والاسهم مفروض تكون يمين الزر وليس يسار الزر»
   2. «وصلح دعم تحميل مقاطع تيك توك»
+- الإذن الساري والنتيجة: رُفعت الإصلاحات في `11d332e6` و`020e04e3`، ونُشر الإصدار [BearDL 2026.5.141](https://github.com/2-sa/BearDL/releases/tag/2026.5.141) بنجاح من الكوميت `020e04e38c575e37383d9a723b48093897ff29e9` عبر [البناء 40100781992](https://github.com/2-sa/BearDL/actions/runs/40100781992) مع اكتمال جميع الفحوص والمنصات الست ورفع جميع الملفات الأحد عشر غير الفارغة.
 - المشاكل المشخصة والإصلاحات المنفّذة:
   1. **توحيد عرض عناصر الإدخال والقوائم في صفحة الإعدادات (`SettingsPage`)**:
      - أُضيف `<Setter Property="MinWidth" Value="180"/>` إلى `PageComboBoxStyle` و`PageNumberBoxStyle` في `Nickvision.Parabolic.WinUI/Styles/InterfaceStyles.xaml`، مع `MinWidth="180"` لحقول النصوص (`TxtProxyUrl` و`TxtYtdlpDiscoveryArgs` و`TxtYtdlpDownloadArgs`) في `SettingsPage.xaml` لتظهر جميع القوائم المنسدلة وحقول الأرقام والنصوص بعرض موحد ومتناسق بدل تفاوت أحجامها حسب طول النص.

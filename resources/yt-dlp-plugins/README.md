@@ -30,3 +30,11 @@ app. Tracks unavailable on the source page cannot be downloaded by this plugin.
 
 Regression checks run on GitHub Actions against bundled and latest yt-dlp:
 `python -m unittest discover -s tests/plugins -v`.
+
+## TikTok HTTP 403 and share URL compatibility
+
+`tiktok_fix` extends the built-in TikTok extractors (`TikTokIE`, `TikTokUserIE`,
+and `TikTokLiveIE`) so webpage requests include randomized vowel-free headers
+and browser impersonation across yt-dlp versions, and `TikTokIE` accepts
+`/share/video/` and `tiktokv.com` URLs. Tests in `tests/plugins/test_tiktok_fix.py`
+run without network requests.

@@ -346,7 +346,7 @@
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE71B;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtProxyUrl" FlowDirection="LeftToRight" TextChanged="Txt_TextChanged"/>
+                                <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtProxyUrl" MinWidth="180" FlowDirection="LeftToRight" TextChanged="Txt_TextChanged"/>
                             </community:SettingsCard>
 
                             <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowCookiesFile">
@@ -387,7 +387,7 @@
 
                             <TextBlock x:Name="LblAria" Margin="0,12,0,0" Style="{StaticResource SectionHeadingStyle}"/>
 
-                            <community:SettingsExpander x:Name="RowUseAria">
+                            <community:SettingsExpander Style="{StaticResource PreferenceExpanderStyle}" x:Name="RowUseAria">
                                 <community:SettingsExpander.Resources>
                                     <!-- Keep compact toggles beside the header at every width. -->
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
@@ -425,7 +425,7 @@
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE756;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtYtdlpDiscoveryArgs" FlowDirection="LeftToRight" TextChanged="Txt_TextChanged"/>
+                                <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtYtdlpDiscoveryArgs" MinWidth="180" FlowDirection="LeftToRight" TextChanged="Txt_TextChanged"/>
                             </community:SettingsCard>
 
                             <community:SettingsCard Style="{StaticResource PreferenceCardStyle}" x:Name="RowYtdlpDownloadArgs">
@@ -433,7 +433,7 @@
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE756;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtYtdlpDownloadArgs" FlowDirection="LeftToRight" TextChanged="Txt_TextChanged"/>
+                                <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtYtdlpDownloadArgs" MinWidth="180" FlowDirection="LeftToRight" TextChanged="Txt_TextChanged"/>
                             </community:SettingsCard>
                         </StackPanel>
 
@@ -457,7 +457,7 @@
                                 <ToggleSwitch x:Name="TglTranslateMetadataAndChapters" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 
-                            <community:SettingsExpander x:Name="RowEmbedMetadata">
+                            <community:SettingsExpander Style="{StaticResource PreferenceExpanderStyle}" x:Name="RowEmbedMetadata">
                                 <community:SettingsExpander.Resources>
                                     <!-- Keep compact toggles beside the header at every width. -->
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
@@ -485,7 +485,7 @@
                                 </community:SettingsExpander.Items>
                             </community:SettingsExpander>
 
-                            <community:SettingsExpander x:Name="RowEmbedThumbnails">
+                            <community:SettingsExpander Style="{StaticResource PreferenceExpanderStyle}" x:Name="RowEmbedThumbnails">
                                 <community:SettingsExpander.Resources>
                                     <!-- Keep compact toggles beside the header at every width. -->
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>

@@ -63,6 +63,7 @@
     <Style x:Key="PageComboBoxStyle" TargetType="ComboBox">
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="MinHeight" Value="36"/>
+        <Setter Property="MinWidth" Value="180"/>
     </Style>
     <Style x:Key="PageSearchStyle" TargetType="AutoSuggestBox">
         <Setter Property="CornerRadius" Value="8"/>
@@ -71,10 +72,15 @@
     <Style x:Key="PageNumberBoxStyle" TargetType="NumberBox">
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="MinHeight" Value="36"/>
+        <Setter Property="MinWidth" Value="180"/>
     </Style>
     <Style x:Key="PreferenceCardStyle" TargetType="community:SettingsCard">
         <Setter Property="CornerRadius" Value="12"/>
         <Setter Property="Padding" Value="16,12"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    </Style>
+    <Style x:Key="PreferenceExpanderStyle" TargetType="community:SettingsExpander">
+        <Setter Property="CornerRadius" Value="12"/>
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
     </Style>
     <DataTemplate x:Key="DialogHeadingTemplate">

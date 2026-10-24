@@ -2,10 +2,27 @@
 
 آخر تحديث: 2026-10-24، بتوقيت الرياض. هذه الوثيقة هي المرجع الموحد للحالة والتسليم؛ دُمجت فيها تفاصيل وثيقة التسليم المؤرخة لتجنب تكرار المعلومات وتناقض حالتها.
 
-## الطلب الحالي: إصلاح انزياح الأشرطة العلوية وتفاصيل الإعدادات وقائمة المساعدة في RTL — 2026-10-24
+## الطلب الحالي: توحيد عرض عناصر الإعدادات، تصحيح موضع سهم التوسيع في RTL، وإصلاح تحميل مقاطع TikTok — 2026-10-24
+
+- بعد إصدار `2026.5.139`، أرسل المستخدم ثلاث لقطات شاشة جديدة لصفحات الإعدادات ولخطأ تنزيل TikTok، وطلب:
+  1. «مفروض حجم موحد لهم كلهم بدل ذي فوضى والاسهم مفروض تكون يمين الزر وليس يسار الزر»
+  2. «وصلح دعم تحميل مقاطع تيك توك»
+- المشاكل المشخصة والإصلاحات المنفّذة:
+  1. **توحيد عرض عناصر الإدخال والقوائم في صفحة الإعدادات (`SettingsPage`)**:
+     - أُضيف `<Setter Property="MinWidth" Value="180"/>` إلى `PageComboBoxStyle` و`PageNumberBoxStyle` في `Nickvision.Parabolic.WinUI/Styles/InterfaceStyles.xaml`، مع `MinWidth="180"` لحقول النصوص (`TxtProxyUrl` و`TxtYtdlpDiscoveryArgs` و`TxtYtdlpDownloadArgs`) في `SettingsPage.xaml` لتظهر جميع القوائم المنسدلة وحقول الأرقام والنصوص بعرض موحد ومتناسق بدل تفاوت أحجامها حسب طول النص.
+  2. **تصحيح موضع سهم التوسيع (`ExpandCollapseChevronBorder`) في بطاقات `SettingsExpander` بالواجهة العربية RTL**:
+     - في قالب `CommunityToolkit.WinUI.Controls.SettingsExpander`، يضع `ExpanderHeader` زر التوسيع (`ExpandCollapseChevronBorder`) في العمود `1` (أقصى يسار البطاقة في RTL) بينما تبقى بطاقة `SettingsCard` الداخلية بمفتاح التبديل (`ToggleSwitch`) في العمود `0` على يمينه، مما يضع السهم يسار مفتاح التبديل ويدفع المفتاح إلى الداخل بعيدًا عن محاذاة بقية مفاتيح الإعدادات.
+     - أُضيفت الدالة `ToggleSwitchHelper.ApplyExpanders` في `Nickvision.Parabolic.WinUI/Helpers/ToggleSwitchHelper.cs` واستُدعيت لبطاقات `RowUseAria` و`RowEmbedMetadata` و`RowEmbedThumbnails` في `SettingsPage.xaml.cs` لنقل `ExpandCollapseChevronBorder` في وضع RTL إلى العمود `2` داخل شبكة `PART_RootGrid` لبطاقة الترويسة وتحريك `PART_ContentPresenter` (مفتاح التبديل) إلى العمود `3`، فيصبح مفتاح التبديل في أقصى اليسار بمحاذاة جميع المفاتيح الأخرى ويكون سهم التوسيع على **يمين الزر** مباشرةً.
+  3. **إصلاح خطأ `HTTP Error 403: Forbidden` عند تحميل مقاطع TikTok**:
+     - السبب: حظر جدار الحماية في TikTok طلبات صفحات الويب الصادرة من `yt-dlp 2026.03.17` المرفق سابقًا مع التطبيق، إضافةً إلى عدم مطابقة روابط المشاركة القصيرة (`/share/video/` و`/@/video/`).
+     - الإصلاح المزدوج:
+       - ترقية إصدار `yt-dlp` المدمج من `2026.03.17` إلى `2026.10.21` في `Nickvision.Parabolic.Shared/Services/YtdlpExecutableService.cs`، و`.github/workflows/windows.yml`، و`.github/workflows/macos.yml`، و`flatpak/python3-modules.json`، وإضافة `2026.10.21` إلى مصفوفة فحوص `.github/workflows/plugins.yml`.
+       - إضافة إضافة `resources/yt-dlp-plugins/tiktok_fix/yt_dlp_plugins/extractor/tiktok_fix.py` لتزويد مستخرجات `TikTokIE` و`TikTokUserIE` و`TikTokLiveIE` بترويسات عشوائية خالية من حروف العلة (`generate_blockbuster_headers`) مع تفعيل `impersonate=True` ودعم صيغ روابط `/share/video/` و`tiktokv.com` حتى في حال وجود نسخة `yt-dlp` أقدم، مع اختبارات وحدة غير متصلة بالشبكة في `tests/plugins/test_tiktok_fix.py`.
+
+## طلب سابق: إصلاح انزياح الأشرطة العلوية وتفاصيل الإعدادات وقائمة المساعدة في RTL — 2026-10-24
 
 - أرسل المستخدم خمس لقطات شاشة من النسخة العربية (الرئيسية الحديثة، وحلقة المفاتيح، والإعدادات، وقائمة المساعدة المنبثقة) وطلب «صلحها ثم سوي ابديت»، كما أكد أنه ألغى كوميتات `javhd` السابقة بالكامل عن عمد.
-- الإذن الساري: شمل طلب المستخدم «صلحها ثم سوي ابديت» رفع هذه الإصلاحات إلى `origin/main` وتشغيل مسار الإصدار (`release.yml`) لنشر تحديث جديد.
+- الإذن الساري والنتيجة: شمل طلب المستخدم «صلحها ثم سوي ابديت» و«انت خربت ال RTL صلحه» رفع هذه الإصلاحات إلى `origin/main` وتشغيل مسار الإصدار (`release.yml`) لنشر تحديث جديد. نُشر الإصدار [BearDL 2026.5.139](https://github.com/2-sa/BearDL/releases/tag/2026.5.139) بنجاح من الكوميت `12e3dc690a1a8a8d8688ed89ed8a96d3651b00a0` عبر [البناء 40089604938](https://github.com/2-sa/BearDL/actions/runs/40089604938) مع اكتمال جميع الفحوص والمنصات الست ورفع جميع الملفات الأحد عشر غير الفارغة.
 - المشاكل المشخصة والإصلاحات المنفّذة:
   1. **انزياح واختلاف عرض الأشرطة العلوية عن البطاقات السفلية في RTL وإصلاح اتجاه RTL الداخلي**:
      - في WinUI 3 عندما يكون العنصر الأب باتجاه `RightToLeft`، تُفسَّر القيمة الأولى `Margin.Left` على أنها الهامش **الأيمن** على الشاشة، وتُفسَّر القيمة الثالثة `Margin.Right` على أنها الهامش **الأيسر** على الشاشة. وبما أن `ScrollViewer` السفلية مضبوطة على `FlowDirection="LeftToRight"` مع `Padding="0,0,20,0"` لإبقاء شريط التمرير في أقصى يمين الشاشة، فإن كتابة `Margin="0,0,20,0"` ثابتة في XAML كانت تقتطع `20px` من **يسار** الشريط العلوي في RTL بدل يمينه.

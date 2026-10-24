@@ -47,6 +47,10 @@ public sealed partial class SettingsPage : Page
             TglCropAudioThumbnails,
             TglEmbedChapters,
             TglEmbedSubtitles);
+        ToggleSwitchHelper.ApplyExpanders(FlowDirection,
+            RowUseAria,
+            RowEmbedMetadata,
+            RowEmbedThumbnails);
         _controller = controller;
         _translationService = translationService;
         _constructing = true;

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Nickvision.Desktop.Application;
 using Nickvision.Desktop.Filesystem;
 using Nickvision.Desktop.Keyring;
@@ -30,11 +30,11 @@ public class YtdlpExecutableService : DependencyExecutableService, IYtdlpExecuta
     {
         if (OperatingSystem.IsLinux())
         {
-            YtdlpBundledVersion = new AppVersion(Desktop.System.Environment.DeploymentMode == DeploymentMode.Local ? "0.0.0" : "2026.03.17");
+            YtdlpBundledVersion = new AppVersion(Desktop.System.Environment.DeploymentMode == DeploymentMode.Local ? "0.0.0" : "2026.10.21");
         }
         else
         {
-            YtdlpBundledVersion = new AppVersion("2026.03.17");
+            YtdlpBundledVersion = new AppVersion("2026.10.21");
         }
         if (OperatingSystem.IsWindows())
         {

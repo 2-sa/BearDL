@@ -70,7 +70,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ytdlp: ['2026.3.17', 'latest']
+        ytdlp: ['2026.3.17', '2026.10.21', 'latest']
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6

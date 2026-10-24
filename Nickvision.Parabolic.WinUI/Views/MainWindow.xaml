@@ -479,7 +479,7 @@
                                     </NavigationViewItem>
                                 </NavigationView.FooterMenuItems>
 
-                                <Grid x:Name="WorkspaceDownloadsGrid" FlowDirection="LeftToRight" Background="Transparent" AllowDrop="True" DragOver="Workspace_DragOver" Drop="Workspace_Drop">
+                                <Grid x:Name="WorkspaceDownloadsGrid" Background="Transparent" AllowDrop="True" DragOver="Workspace_DragOver" Drop="Workspace_Drop">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
@@ -489,7 +489,7 @@
 
                                     <!-- Single Modern URL Command Bar (Modern Layout Only) -->
                                     <Border x:Name="QuickUrlCard" Grid.Row="0" Margin="12,8,32,4" Padding="6,6" CornerRadius="12" Visibility="Collapsed"
-                                            FlowDirection="{Binding FlowDirection, ElementName=MainGrid}"
+                                            parabolic:ScrollViewportHelper.ReserveScrollbarRight="20"
                                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                                         <Grid ColumnSpacing="8">
@@ -529,7 +529,7 @@
 
                                     <!-- Clipboard link suggestion (Modern Layout Only, shown when the clipboard holds a URL) -->
                                     <Border x:Name="ClipboardSuggestion" Grid.Row="1" Margin="12,2,32,4" Padding="12,6" CornerRadius="10" Visibility="Collapsed"
-                                            FlowDirection="{Binding FlowDirection, ElementName=MainGrid}"
+                                            parabolic:ScrollViewportHelper.ReserveScrollbarRight="20"
                                             Background="{ThemeResource AccentFillColorTertiaryBrush}">
                                         <Grid ColumnSpacing="10">
                                             <Grid.ColumnDefinitions>
@@ -559,7 +559,7 @@
 
                                     <!-- Section header: current filter + count, batch actions only when they apply (Modern Layout Only) -->
                                     <Grid x:Name="ModernDownloadsToolbar" Grid.Row="2" Margin="12,6,32,4" ColumnSpacing="8" Visibility="Collapsed"
-                                          FlowDirection="{Binding FlowDirection, ElementName=MainGrid}">
+                                          parabolic:ScrollViewportHelper.ReserveScrollbarRight="20">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
@@ -629,7 +629,7 @@
 
                                     <!-- Empty state with start hints (Modern Layout Only, shown when there are no downloads at all) -->
                                     <Grid x:Name="ModernEmptyState" Grid.Row="3" Margin="12,8,32,16" Visibility="Collapsed"
-                                          FlowDirection="{Binding FlowDirection, ElementName=MainGrid}">
+                                          parabolic:ScrollViewportHelper.ReserveScrollbarRight="20">
                                         <Rectangle RadiusX="16" RadiusY="16" StrokeThickness="1.5" StrokeDashArray="5,4"
                                                    Stroke="{ThemeResource ControlStrongStrokeColorDefaultBrush}" Opacity="0.6"/>
 

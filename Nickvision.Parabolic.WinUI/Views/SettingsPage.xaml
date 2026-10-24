@@ -12,12 +12,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" Loaded="Page_Loaded">
 
-    <Grid FlowDirection="LeftToRight" RowSpacing="16" Padding="20,16,20,0">
+    <Grid RowSpacing="16" Padding="20,16,20,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Border Style="{StaticResource PageSurfaceStyle}" Margin="0,0,20,0" FlowDirection="{Binding FlowDirection, ElementName=PageRoot}">
+        <Border Style="{StaticResource PageSurfaceStyle}" Margin="0,0,20,0" parabolic:ScrollViewportHelper.ReserveScrollbarRight="20">
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -30,7 +30,7 @@
                 </StackPanel>
             </Grid>
         </Border>
-        <NavigationView x:Name="NavigationView" Grid.Row="1" FlowDirection="{Binding FlowDirection, ElementName=PageRoot}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+        <NavigationView x:Name="NavigationView" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                         IsPaneToggleButtonVisible="False" IsBackButtonVisible="Collapsed" IsSettingsVisible="False"
                         PaneDisplayMode="Top" SelectionChanged="NavigationView_SelectionChanged">
             <NavigationView.Resources>

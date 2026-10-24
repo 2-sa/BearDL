@@ -8,12 +8,12 @@
     Style="{StaticResource DefaultContentDialogStyle}"
     TitleTemplate="{StaticResource DialogHeadingTemplate}"
     DefaultButton="Primary" Loaded="Dialog_Loaded">
-    <Grid Width="498" MaxWidth="498" FlowDirection="LeftToRight" RowSpacing="12">
+    <Grid Width="498" MaxWidth="498" RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Border Style="{StaticResource InsetSurfaceStyle}" Margin="0,0,20,0" FlowDirection="{Binding FlowDirection, ElementName=DialogRoot}">
+        <Border Style="{StaticResource InsetSurfaceStyle}" Margin="0,0,20,0" parabolic:ScrollViewportHelper.ReserveScrollbarRight="20">
             <Grid RowSpacing="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>

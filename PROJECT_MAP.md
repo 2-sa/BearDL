@@ -11,7 +11,7 @@
 ## [SYSTEM_FLOW]
 
 - `UI-05`: فتح الإعدادات والصفحات العربية → استخراج نصوص مساعد التصميم عند بناء الترجمة،
-  وعرض أسماء اللغات بحجم متناسق مع بقاء رموزها المخزنة، وتطابق حواف الأشرطة والقوائم في RTL وLTR بتوحيد اتجاه الحاوية الخارجية (`FlowDirection="LeftToRight"`) مع `ScrollViewer` وحجز موضع التمرير يمينًا (`20px`) مع استعادة اتجاه الواجهة (`FlowDirection`) للعناصر الداخلية، وتمرير `PanelUserInterface` صراحةً إلى `GlassThemeHelper.AttachSettingsCard` لضمان ظهور بطاقتي الشفافية وتصميم الواجهة دائمًا، وإخفاء شارة الاختصارات العائمة (`KeyboardAcceleratorPlacementMode.Hidden`) ومحاذاة قائمة المساعدة المنبثقة (`FlyoutHelp`) حسب اتجاه الواجهة.
+  وعرض أسماء اللغات بحجم متناسق مع بقاء رموزها المخزنة، وتطابق حواف الأشرطة والقوائم في RTL وLTR عبر `ScrollViewportHelper.ReserveScrollbarRight="20"` مع وراثة اتجاه `FlowDirection` الطبيعي دون كسر RTL، وتمرير `PanelUserInterface` صراحةً إلى `GlassThemeHelper.AttachSettingsCard` لضمان ظهور بطاقتي الشفافية وتصميم الواجهة دائمًا، وإخفاء شارة الاختصارات العائمة (`KeyboardAcceleratorPlacementMode.Hidden`) ومحاذاة قائمة المساعدة المنبثقة (`FlyoutHelp`) حسب اتجاه الواجهة.
 - `COPY-01`: نسخ ملف مكتمل في Windows → `FileClipboard.CopyFileAsync` يكتب قائمة ملفات Unicode
   بصيغة Shell مع تأثير COPY → إمكان لصق الملف نفسه واستمرار بياناته بعد إغلاق المصدر.
 - `UI-04`: الضغط على «تنزيل» في اقتراح الحافظة على Windows → `ClipboardUse_Click` يلتقط

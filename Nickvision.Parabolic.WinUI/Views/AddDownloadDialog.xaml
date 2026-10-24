@@ -497,9 +497,9 @@
                                                     <Button.Flyout>
                                                         <Flyout Placement="Bottom">
                                                             <StackPanel Orientation="Vertical" Spacing="12" HorizontalAlignment="Stretch">
-                                                                <TextBox Style="{StaticResource PageTextBoxStyle}" Header="{x:Bind StartTimeHeader}" PlaceholderText="{x:Bind StartTime}" Text="{x:Bind StartTime, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                <TextBox Style="{StaticResource PageTextBoxStyle}" FlowDirection="LeftToRight" Header="{x:Bind StartTimeHeader}" PlaceholderText="{x:Bind StartTime}" Text="{x:Bind StartTime, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-                                                                <TextBox Style="{StaticResource PageTextBoxStyle}" Header="{x:Bind EndTimeHeader}" PlaceholderText="{x:Bind EndTime}" Text="{x:Bind EndTime, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                <TextBox Style="{StaticResource PageTextBoxStyle}" FlowDirection="LeftToRight" Header="{x:Bind EndTimeHeader}" PlaceholderText="{x:Bind EndTime}" Text="{x:Bind EndTime, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                                             </StackPanel>
                                                         </Flyout>
                                                     </Button.Flyout>

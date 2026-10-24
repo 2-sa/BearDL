@@ -692,11 +692,11 @@
                     <StackPanel Orientation="Vertical" Spacing="16">
                         <TextBlock x:Name="LblCredentialRequired"/>
 
-                        <TextBox x:Name="TxtCredentialUrl" Style="{StaticResource PageTextBoxStyle}" IsReadOnly="True"/>
+                        <TextBox x:Name="TxtCredentialUrl" Style="{StaticResource PageTextBoxStyle}" FlowDirection="LeftToRight" IsReadOnly="True"/>
 
-                        <TextBox x:Name="TxtCredentialUsername" Style="{StaticResource PageTextBoxStyle}"/>
+                        <TextBox x:Name="TxtCredentialUsername" Style="{StaticResource PageTextBoxStyle}" FlowDirection="LeftToRight"/>
 
-                        <PasswordBox x:Name="TxtCredentialPassword" Style="{StaticResource PagePasswordBoxStyle}"/>
+                        <PasswordBox x:Name="TxtCredentialPassword" Style="{StaticResource PagePasswordBoxStyle}" FlowDirection="LeftToRight"/>
                     </StackPanel>
                 </Border>
             </ContentDialog>

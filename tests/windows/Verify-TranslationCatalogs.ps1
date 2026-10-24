@@ -28,7 +28,7 @@ if (-not [System.Text.Encoding]::UTF8.GetString($arabicCatalog).Contains('الإ
     throw 'The published Arabic catalog does not contain the Settings translation.'
 }
 $arabicText = [System.Text.Encoding]::UTF8.GetString($arabicCatalog)
-foreach ($requiredTranslation in @('تصميم الواجهة', 'القديم (الكلاسيكي)', 'الجديد (الحديث)', 'التبديل بين التصميم القديم (الكلاسيكي) أو التصميم الجديد للواجهة')) {
+foreach ($requiredTranslation in @('تصميم الواجهة', 'كلاسيكي', 'حديث', 'المفاضلة بين التصميم الكلاسيكي والحديث للواجهة')) {
     if (-not $arabicText.Contains($requiredTranslation)) {
         throw "The published Arabic catalog is missing a layout translation: $requiredTranslation"
     }

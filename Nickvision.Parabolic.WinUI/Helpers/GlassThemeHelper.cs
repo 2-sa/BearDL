@@ -380,13 +380,8 @@ public static class GlassThemeHelper
         }
     }
 
-    public static void AttachSettingsCard(SettingsCard rowTheme, ComboBox cmbTheme, PreferencesViewController controller, ITranslationService translationService)
+    public static void AttachSettingsCard(Panel parentPanel, SettingsCard rowTheme, ComboBox cmbTheme, PreferencesViewController controller, ITranslationService translationService)
     {
-        if (rowTheme.Parent is not Panel parentPanel)
-        {
-            return;
-        }
-
         foreach (var child in parentPanel.Children)
         {
             if (child is FrameworkElement fe && fe.Tag as string == "GlassTransparencyCard")
@@ -456,7 +451,6 @@ public static class GlassThemeHelper
         var cmbLayout = new ComboBox
         {
             Style = (Style)Application.Current.Resources["PageComboBoxStyle"],
-            MinWidth = 160,
             VerticalAlignment = VerticalAlignment.Center
         };
         cmbLayout.Items.Add(translationService._("Classic"));

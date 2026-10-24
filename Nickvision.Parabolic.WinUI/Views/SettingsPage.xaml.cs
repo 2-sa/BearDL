@@ -172,7 +172,7 @@ public sealed partial class SettingsPage : Page
     private void Page_Loaded(object sender, RoutedEventArgs e)
     {
         CmbTheme.SelectSelectionItem();
-        GlassThemeHelper.AttachSettingsCard(RowTheme, CmbTheme, _controller, _translationService);
+        GlassThemeHelper.AttachSettingsCard(PanelUserInterface, RowTheme, CmbTheme, _controller, _translationService);
         CmbTranslationLanguage.SelectSelectionItem();
         TglPreviewUpdates.IsOn = _controller.AllowPreviewUpdates;
         TglFastDownload.IsOn = _controller.FastDownload;

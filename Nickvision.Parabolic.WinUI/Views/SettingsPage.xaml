@@ -12,12 +12,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" Loaded="Page_Loaded">
 
-    <Grid RowSpacing="16" Padding="20,16,20,0">
+    <Grid FlowDirection="LeftToRight" RowSpacing="16" Padding="20,16,20,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Border Style="{StaticResource PageSurfaceStyle}" Margin="0,0,20,0">
+        <Border Style="{StaticResource PageSurfaceStyle}" Margin="0,0,20,0" FlowDirection="{Binding FlowDirection, ElementName=PageRoot}">
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -30,7 +30,7 @@
                 </StackPanel>
             </Grid>
         </Border>
-        <NavigationView x:Name="NavigationView" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+        <NavigationView x:Name="NavigationView" Grid.Row="1" FlowDirection="{Binding FlowDirection, ElementName=PageRoot}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                         IsPaneToggleButtonVisible="False" IsBackButtonVisible="Collapsed" IsSettingsVisible="False"
                         PaneDisplayMode="Top" SelectionChanged="NavigationView_SelectionChanged">
             <NavigationView.Resources>
@@ -67,7 +67,7 @@
             <ScrollViewer FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
                 <nickvision:ViewStack x:Name="ViewStack" FlowDirection="{Binding FlowDirection, ElementName=PageRoot}" Margin="0,12,0,20">
                     <nickvision:ViewStack.Pages>
-                        <StackPanel Spacing="10">
+                        <StackPanel x:Name="PanelUserInterface" Spacing="10">
                             <StackPanel.Transitions>
                                 <TransitionCollection>
                                     <EntranceThemeTransition/>
@@ -93,7 +93,7 @@
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xF2B7;"/>
                                 </community:SettingsCard.HeaderIcon>
 
-                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbTranslationLanguage" MinWidth="200" MaxWidth="280" SelectionChanged="Cmb_SelectionChanged">
+                                <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbTranslationLanguage" MaxWidth="280" SelectionChanged="Cmb_SelectionChanged">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="helpers:BindableSelectionItem">
                                             <TextBlock Text="{x:Bind Label}" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind Label}"/>

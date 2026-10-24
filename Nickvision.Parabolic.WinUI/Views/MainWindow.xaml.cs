@@ -189,6 +189,7 @@ public sealed partial class MainWindow : Window
         DlgCredential.PrimaryButtonText = _translationService._("Submit");
         DlgCredential.CloseButtonText = _translationService._("Cancel");
         // Modern layout shortcuts: Ctrl+L focuses the link bar, Ctrl+V pastes a link from anywhere.
+        MainGrid.KeyboardAcceleratorPlacementMode = KeyboardAcceleratorPlacementMode.Hidden;
         var focusUrlAccelerator = new KeyboardAccelerator { Key = VirtualKey.L, Modifiers = VirtualKeyModifiers.Control };
         focusUrlAccelerator.Invoked += FocusUrlAccelerator_Invoked;
         MainGrid.KeyboardAccelerators.Add(focusUrlAccelerator);
@@ -733,6 +734,9 @@ public sealed partial class MainWindow : Window
         }
         else if (tag == "Help")
         {
+            FlyoutHelp.Placement = MainGrid.FlowDirection == FlowDirection.RightToLeft
+                ? Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.TopEdgeAlignedRight
+                : Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.TopEdgeAlignedLeft;
             Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase.ShowAttachedFlyout(NavAbout);
         }
         else if (tag == "About")

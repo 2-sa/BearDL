@@ -1,4 +1,4 @@
-﻿using Nickvision.Desktop.Application;
+using Nickvision.Desktop.Application;
 using Nickvision.Desktop.Filesystem;
 using Nickvision.Parabolic.Shared.Models;
 using System;
@@ -398,7 +398,11 @@ public static class IConfigurationServiceExtensions
 
         public Theme Theme
         {
-            get => configurationService.Get("Theme", Theme.System);
+            get
+            {
+                var theme = configurationService.Get("Theme", Theme.System);
+                return Enum.IsDefined(theme) ? theme : Theme.System;
+            }
 
             set => configurationService.Set("Theme", value);
         }

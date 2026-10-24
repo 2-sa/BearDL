@@ -396,23 +396,15 @@ public sealed partial class MainWindow : Window
         AppWindow.TitleBar.PreferredTheme = _controller.Theme switch
         {
             Theme.Light => TitleBarTheme.Light,
-            Theme.Dark or Theme.Glass => TitleBarTheme.Dark,
+            Theme.Dark => TitleBarTheme.Dark,
             _ => TitleBarTheme.UseDefaultAppMode
         };
         var requestedTheme = _controller.Theme switch
         {
             Theme.Light => ElementTheme.Light,
-            Theme.Dark or Theme.Glass => ElementTheme.Dark,
+            Theme.Dark => ElementTheme.Dark,
             _ => ElementTheme.Default
         };
-        GlassThemeHelper.Apply(this, WindowRoot, MainGrid, NavViewDownloads, _controller.Theme == Theme.Glass);
-        // Force WinUI to re-evaluate {ThemeResource} brushes when switching between Dark and Glass
-        if (WindowRoot.RequestedTheme == requestedTheme)
-        {
-            var flipTheme = requestedTheme == ElementTheme.Light ? ElementTheme.Dark : ElementTheme.Light;
-            WindowRoot.RequestedTheme = flipTheme;
-            MainGrid.RequestedTheme = flipTheme;
-        }
         // Window.SystemBackdrop (MicaBackdrop) and PopupRoot observe the root
         // Window.Content element rather than child grids.
         WindowRoot.RequestedTheme = requestedTheme;
@@ -574,9 +566,9 @@ public sealed partial class MainWindow : Window
             TopMenuBar.Height = double.NaN;
             TopMenuBar.Opacity = 1;
             TopMenuBar.IsHitTestVisible = true;
-            TopSeparator.Visibility = _controller.Theme == Theme.Glass ? Visibility.Collapsed : Visibility.Visible;
+            TopSeparator.Visibility = Visibility.Visible;
             ClassicDownloadsToolbar.Visibility = Visibility.Visible;
-            ClassicDownloadsSeparator.Visibility = _controller.Theme == Theme.Glass ? Visibility.Collapsed : Visibility.Visible;
+            ClassicDownloadsSeparator.Visibility = Visibility.Visible;
             NavFooterSeparator.Visibility = Visibility.Collapsed;
             NavHistory.Visibility = Visibility.Collapsed;
             NavKeyring.Visibility = Visibility.Collapsed;

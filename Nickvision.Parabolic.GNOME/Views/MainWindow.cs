@@ -67,7 +67,12 @@ public class MainWindow : Adw.ApplicationWindow
         _shown = false;
         _builder.Connect(this);
         // Window
-        GlassThemeHelper.Apply(this, _controller.Theme);
+        Adw.StyleManager.GetDefault().ColorScheme = _controller.Theme switch
+        {
+            Theme.Light => Adw.ColorScheme.ForceLight,
+            Theme.Dark => Adw.ColorScheme.ForceDark,
+            _ => Adw.ColorScheme.Default
+        };
         Title = _appInfo.ShortName;
         IconName = _appInfo.Id;
         if (_appInfo.Version!.IsPreview)

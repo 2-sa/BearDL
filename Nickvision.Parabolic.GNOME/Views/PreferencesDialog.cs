@@ -261,7 +261,12 @@ public class PreferencesDialog : Adw.PreferencesDialog
         if (args.Pspec.GetName() == "selected-item")
         {
             _controller.Theme = _controller.Themes[(int)_themeRow!.Selected];
-            GlassThemeHelper.Apply(_parent, _controller.Themes[(int)_themeRow!.Selected].Value);
+            Adw.StyleManager.GetDefault().ColorScheme = _controller.Themes[(int)_themeRow!.Selected].Value switch
+            {
+                Theme.Light => Adw.ColorScheme.ForceLight,
+                Theme.Dark => Adw.ColorScheme.ForceDark,
+                _ => Adw.ColorScheme.Default
+            };
         }
     }
 

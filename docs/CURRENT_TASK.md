@@ -2,11 +2,18 @@
 
 آخر تحديث: 2026-10-24، بتوقيت الرياض. هذه الوثيقة هي المرجع الموحد للحالة والتسليم؛ دُمجت فيها تفاصيل وثيقة التسليم المؤرخة لتجنب تكرار المعلومات وتناقض حالتها.
 
-## الطلب الحالي: دعم أغلب المواقع المعروفة وتوسيع توافق استخراج وتنزيل الوسائط — 2026-10-24
+## الطلب الحالي: إزالة الوضع الزجاجي (`Theme.Glass`) بالكامل مع الإبقاء على (فاتح / داكن / النظام) + دعم أغلب المواقع المعروفة — 2026-10-24
 
-- طلب المستخدم: «خلي التطبيق يدعم اغلب المواقع المعروفه»، مع الالتزام بعدم إعادة كوميتات `javhd` الملغاة وعدم تثبيت أي برامج على جهاز المستخدم.
-- ما تم فحصه وتنفيذه لتحقيق التوافق الشامل مع أشهر المنصات (YouTube، TikTok، Instagram، X/Twitter، Facebook، Reddit، Twitch، Kick، SoundCloud، Vimeo، Dailymotion، Bilibili، Pinterest، Snapchat، Threads، VK، Streamable، وغيرها):
-  1. **دعم الصيغ المدمجة (Video+Audio Muxed Formats) والصوتيات في `Media.cs` و`Format.cs` و`YtdlpExecutableService.cs`**:
+- طلب المستخدم:
+  1. «خلي التطبيق يدعم اغلب المواقع المعروفه»
+  2. «لما غيرت من الوضع الداكن للزجاجي ثم رجعته للداكن البرنامج كرش وتقفل لحاله» ثم «ازل الوضع الزجاجي بالكامل من الكود واحتفظ ب الداكن والابيض فقط» و«لاتمسح خيار ال system».
+- ما تم فحصه وتنفيذه:
+  1. **إزالة الوضع الزجاجي (`Theme.Glass` / `ClearGlassBackdrop`) بالكامل مع الاحتفاظ بخيارات السمة الثلاثة (`Light` / `Dark` / `System`) وخيار تصميم الواجهة (`Classic` / `Modern`)**:
+     - السبب المثبت لانهيار التطبيق عند التبديل من الوضع الزجاجي إلى الداكن (`Exception code: 0xc000027b` في `Microsoft.ui.xaml.dll` / `combase.dll`): قيام `ClearGlassBackdrop.OnTargetDisconnected` باستدعاء `Dispose()` على فرشاة التركيب بينما لا يزال محرك WinUI 3 ينفذ دورة تقييم موارد `{ThemeResource}` أثناء حذف القاموس الزجاجي وتقليب `RequestedTheme`.
+     - أُزيلت قيمة `Glass` من `Nickvision.Parabolic.Shared/Models/Theme.cs` و`PreferencesViewController.cs` بحيث تبقى الخيارات الثلاثة فقط: **فاتح (`Light`)**، **داكن (`Dark`)**، و**النظام (`System`)**، مع إرجاع الإعداد المحفوظ تلقائيًا إلى `Theme.System` في `IConfigurationServiceExtensions.cs` إذا كان يحمل قيمة سابقة غير معرّفة.
+     - أُزيل `ClearGlassBackdrop` وقاموس الموارد الزجاجي وشريط نسبة الشفافية من `Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs` (مع الإبقاء فقط على منطق التبديل بين التصميم القديم الكلاسيكي والتصميم الجديد الحديث `UseModernLayout`)، وبُسّطت `ApplyTheme()` في `Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs` لتعتمد كليًا على `MicaBackdrop` الأصلي دون تبديل `SystemBackdrop` أو قواميس الموارد.
+     - حُذف الملفان `Nickvision.Parabolic.GNOME/Helpers/GlassThemeHelper.cs` و`Nickvision.Parabolic.GNOME/Resources/glass-theme.css` وأُعيد ضبط السمة في `MainWindow.cs` و`PreferencesDialog.cs` عبر `Adw.StyleManager.GetDefault().ColorScheme` مباشرةً.
+  2. **دعم الصيغ المدمجة (Video+Audio Muxed Formats) والصوتيات في `Media.cs` و`Format.cs` و`YtdlpExecutableService.cs`**:
      - أغلب المواقع خارج YouTube (مثل Instagram وX/Twitter وTikTok وFacebook وReddit وTwitch Clips وVimeo وPinterest وKick) توفّر بثًا مدمجًا واحدًا يحوي الفيديو والصوت معًا (`hasVideoFormats == true` و`hasAudioFormats == false`)، وكان `Media.cs` في هذه الحالة يضيف `BestVideo`/`WorstVideo` فقط دون `BestAudio`/`WorstAudio`، مما يجعل قائمة صيغ الصوت فارغة (لا تحوي سوى `None`) أو يؤدي لتنزيل فيديو صامت عند اختيار صيغة فيديو منفصلة أو فشل استخراج الصوت (`bestaudio`) لعدم وجود مسار صوتي مستقل.
      - حُدّث `Nickvision.Parabolic.Shared/Models/Media.cs` ليضمن إدراج `Format.BestAudio` و`Format.WorstAudio` دائمًا في `Formats` متى وُجدت صيغ فيديو، وحُدّث `Nickvision.Parabolic.Shared/Services/YtdlpExecutableService.cs` ليضيف `/best` (`/worst`) تلقائيًا إلى محدد الصوت (`bestaudio/best`) عند التحويل إلى ملف صوتي (`FileType.IsAudio`) حتى يستخرج الصوت بنجاح من المواقع ذات البث المدمج.
      - حُدّث `Nickvision.Parabolic.Shared/Models/Format.cs` للتعرف على الصيغ الصوتية عندما تكون `vcodec == "none"` حتى لو غاب نص `resolution == "audio only"` (مثل SoundCloud وبعض مستخرجات البودكاست)، ولاستنتاج أبعاد الفيديو (`VideoResolution`) من حقلي `width` و`height` الرقميين عند غياب نص `resolution`، ولدعم ترميزات `hev1` و`bytevc1` و`dvh1` كـ`VideoCodec.H265` (المستخدمة في TikTok وDouyin وBilibili وInstagram) و`vorbis` و`pcm`، وقراءة الحجم التقريبي `filesize_approx` ومعدل بت الصوت `abr` ومعدلات الإطارات العشرية (`23.98`/`29.97`/`59.94`).

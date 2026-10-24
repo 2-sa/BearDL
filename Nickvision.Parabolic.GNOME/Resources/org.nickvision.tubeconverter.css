@@ -1,5 +1,3 @@
-@import url("resource:///org/nickvision/tubeconverter/glass-theme.css");
-
 .status-icon {
     border-radius: 50%;
     background: @accent_bg_color;

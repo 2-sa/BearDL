@@ -23,13 +23,10 @@
   من EnglishShortName → اكتشاف مجلدات اللغات → تحميل العربية من `ar/parabolic.mo`.
 - النتيجة المطلوبة: ظهور العربية في قائمة اللغات وقراءة ترجماتها، مع بقاء
   اسم العرض BearDL. اختلاف مجال التهيئة عن اسم ملف MO يجعل اللغات غير مكتشفة.
-- `THEME-01`: بدء التطبيق أو تغيير السمة في الإعدادات → `MainWindow.ApplyTheme()`
+- `THEME-01`: بدء التطبيق أو تغيير السمة في الإعدادات (`Light` / `Dark` / `System`) → `MainWindow.ApplyTheme()`
   يضبط `PreferredTheme` لشريط العنوان و`RequestedTheme` على `WindowRoot` (`Window.Content`)
   و`MainGrid` معًا → تحدّث `MicaBackdrop` و`PopupRoot` خلفية النافذة والقوائم المنبثقة
-  وفق السمة المختارة بدل البقاء على سمة نظام Windows.
-- `THEME-02`: اختيار سمة `Glass` («زجاجي») في الإعدادات → استدعاء `GlassThemeHelper.Apply`
-  في WinUI (`ClearGlassBackdrop` بشفافية DWM افتراضية `50%` مع شريط تحكم حي `AttachSettingsCard`
-  في الإعدادات + حواف زجاجية عاكسة + بطاقات عائمة) وفي GTK (`glass-mode` CSS مع `glass-theme.css`).
+  وفق السمة المختارة بدل البقاء على سمة نظام Windows. أُزيل الوضع الزجاجي (`Theme.Glass` / `ClearGlassBackdrop`) بالكامل لمنع انهيار WinUI 3 عند تبديل `SystemBackdrop`.
 - `UI-01`: فتح النافذة الرئيسية على Windows → يفتح افتراضيًا على التصميم القديم الكلاسيكي (`Classic`)،
   مع توفير خيار **«تصميم الواجهة» (`Interface Layout`)** في الإعدادات (`GlassThemeHelper.AttachSettingsCard`)
   للتبديل الفوري الحيّ بين **القديم (الكلاسيكي)** و**الجديد (الحديث)** (`MainWindow.ApplyLayoutMode`).

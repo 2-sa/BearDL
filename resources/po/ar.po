@@ -1573,19 +1573,6 @@ msgctxt "Theme"
 msgid "System"
 msgstr "النظام"
 
-#: Nickvision.Parabolic.Shared/Controllers/PreferencesViewController.cs:129
-msgctxt "Theme"
-msgid "Glass"
-msgstr "زجاجي"
-
-#: Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs:1
-msgid "Glass Transparency"
-msgstr "نسبة الشفافية"
-
-#: Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs:2
-msgid "Adjust the window transparency level in Glass mode"
-msgstr "التحكم بدرجة شفافية النافذة في الوضع الزجاجي"
-
 #: Nickvision.Parabolic.Shared/Controllers/PreferencesViewController.cs:135
 msgid "H.264 (AVC)"
 msgstr "H.264 (AVC)"

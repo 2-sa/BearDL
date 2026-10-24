@@ -4,6 +4,5 @@ public enum Theme
 {
     Light,
     Dark,
-    System,
-    Glass
+    System
 }

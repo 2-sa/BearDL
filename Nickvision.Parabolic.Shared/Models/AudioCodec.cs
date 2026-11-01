@@ -8,5 +8,6 @@ public enum AudioCodec
     OPUS,
     AAC,
     MP4A,
-    MP3
+    MP3,
+    Vorbis
 }

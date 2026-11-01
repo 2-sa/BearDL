@@ -1,5 +1,10 @@
 # Installer translations
 
+For BearDL build and delivery rules, see [RELEASING.md](../../docs/RELEASING.md).
+Current release and acceptance status are recorded in
+[CURRENT_TASK.md](../../docs/CURRENT_TASK.md); historical Windows build failures
+are not current installer defects.
+
 `Arabic.isl` is the Arabic translation distributed by Inno Setup, retained with
 its translator attribution and `RightToLeft=yes` setting.
 

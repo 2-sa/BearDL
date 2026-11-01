@@ -11,7 +11,7 @@
 ## [SYSTEM_FLOW]
 
 - `UI-05`: فتح الإعدادات والصفحات العربية → استخراج نصوص مساعد التصميم عند بناء الترجمة،
-  وعرض أسماء اللغات بحجم متناسق مع بقاء رموزها المخزنة، وتوحيد عرض القوائم وحقول الإدخال (`MinWidth="180"`)، ووضع سهم التوسيع في `SettingsExpander` على يمين مفتاح التبديل في RTL (`ToggleSwitchHelper.ApplyExpanders`)، وتطابق حواف الأشرطة والقوائم في RTL وLTR عبر `ScrollViewportHelper.ReserveScrollbarRight="20"` مع وراثة اتجاه `FlowDirection` الطبيعي دون كسر RTL، وتمرير `PanelUserInterface` صراحةً إلى `GlassThemeHelper.AttachSettingsCard` لضمان ظهور بطاقتي الشفافية وتصميم الواجهة دائمًا، وإخفاء شارة الاختصارات العائمة (`KeyboardAcceleratorPlacementMode.Hidden`) ومحاذاة قائمة المساعدة المنبثقة (`FlyoutHelp`) حسب اتجاه الواجهة.
+  وعرض أسماء اللغات بحجم متناسق مع بقاء رموزها المخزنة، وتوحيد عرض القوائم وحقول الإدخال (`MinWidth="180"`)، ووضع سهم التوسيع في `SettingsExpander` على يمين مفتاح التبديل في RTL (`ToggleSwitchHelper.ApplyExpanders`)، وتطابق حواف الأشرطة والقوائم في RTL وLTR عبر `ScrollViewportHelper.ReserveScrollbarRight="20"` مع وراثة اتجاه `FlowDirection` الطبيعي دون كسر RTL، وتمرير `PanelUserInterface` صراحةً إلى `GlassThemeHelper.AttachSettingsCard` لضمان ظهور بطاقة تصميم الواجهة، وإخفاء شارة الاختصارات العائمة (`KeyboardAcceleratorPlacementMode.Hidden`) ومحاذاة قائمة المساعدة المنبثقة (`FlyoutHelp`) حسب اتجاه الواجهة.
 - `TIKTOK-01`: اكتشاف وتنزيل مقاطع TikTok وأغلب المواقع المعروفة → ترقية `yt-dlp` المدمج إلى `2026.10.21` وDeno إلى `2.9.8`، مع إضافة `tiktok_fix` في `resources/yt-dlp-plugins/tiktok_fix` لتوليد ترويسات تجاوز `HTTP Error 403` ودعم روابط المشاركة مع `impersonate=True`، وتحديث `Format.cs` و`Media.cs` و`DiscoveryResult.cs` و`YtdlpExecutableService.cs` و`StringExtensions.TryExtractHttpUri` لدعم الصيغ المدمجة (Video+Audio)، والمنشورات متعددة الوسائط، واستخلاص الروابط من نصوص المشاركة، وحماية تحميل الصور المصغرة.
 - `COPY-01`: نسخ ملف مكتمل في Windows → `FileClipboard.CopyFileAsync` يكتب قائمة ملفات Unicode
   بصيغة Shell مع تأثير COPY → إمكان لصق الملف نفسه واستمرار بياناته بعد إغلاق المصدر.
@@ -54,18 +54,20 @@
 - `Nickvision.Parabolic.WinUI/Views/MainWindow.xaml` و`MainWindow.xaml.cs`: الجذر الخارجي
   `WindowRoot` يحتفظ باتجاه LTR لمناطق النقر في شريط العنوان ويتلقى `RequestedTheme`
   مباشرةً لأن `MicaBackdrop` و`PopupRoot` يراقبان جذر `Window.Content` لا الشبكة الداخلية `MainGrid`.
-- عزل الوضع الزجاجي (`Theme.Glass`):
-  - `Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs`: يحوي كامل منطق وألوان وطبقات الوضع الزجاجي لـWinUI 3 وشريط التحكم بنسبة الشفافية وخيار التبديل بين التصميم القديم والجديد.
-  - `Nickvision.Parabolic.GNOME/Helpers/GlassThemeHelper.cs` و`Resources/glass-theme.css`: يحويان منطق وتنسيقات الوضع الزجاجي لـGTK4/libadwaita.
+- السمات والتصميم بعد إزالة الوضع الزجاجي:
+  - `Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs`: احتُفظ باسمه، ويقتصر دوره على اختيار التصميم الكلاسيكي أو الحديث وحفظه؛ لا يحتوي وضعًا زجاجيًا أو بطاقة شفافية.
+  - حُذف مساعد الوضع الزجاجي وملف CSS الخاص به في GNOME. تضبط الواجهة السمة عبر `Adw.StyleManager`، مع الإبقاء على فاتح وداكن والنظام في الواجهتين.
 - مجلدات البيانات ومعرفات التطبيق والبروتوكول منفصلة عن نصوص العرض.
 - `Nickvision.Parabolic.WinUI/Controls/DownloadRow.xaml` و`DownloadRow.xaml.cs`: تنسيق أزرار
   `UI-02` وتلميحاتها وأسماء الوصول وتبديل حالات الإيقاف المؤقت ونتيجة النسخ؛ أصبح النسخ يستخدم
   `FileClipboard` وصيغة Shell الأصلية، وتبقى أحداث التنزيل الحالية دون تغيير.
 - `Nickvision.Parabolic.WinUI/Styles/InterfaceStyles.xaml`: موارد `UI-02` و`UI-03` المشتركة؛
   يُدمج في `App.xaml` ويستخدم موارد السمة الدلالية. تطبّقه صفحات Windows وحوارات الحسابات
-  والمعالجة الفرعية، وبطاقتا إعداد الشفافية وتصميم الواجهة المنشأتان في `GlassThemeHelper`.
+  والمعالجة الفرعية، وبطاقة تصميم الواجهة المنشأة في `GlassThemeHelper`.
 
-## [ORPHANS & PENDING]
+## [VERIFICATION HISTORY]
+
+الحالة الحالية والإذن في `docs/CURRENT_TASK.md`. نتائج الفحص التالية تاريخية؛ أكد المستخدم سلامة النسخة الأخيرة وإصلاح Windows وmacOS. لا تمثل قوائم القبول القديمة بلاغات مفتوحة.
 
 - `UI-02` إلى `UI-05` و`COPY-01` (2026-10-23): نُفّذت ورُفعت في `8ccbf579` ونُشرت في
   [2026.5.136](https://github.com/2-sa/BearDL/releases/tag/2026.5.136). نجحت فحوص الحافظة الفعلية
@@ -79,7 +81,7 @@
 - `L10N-01`: نُفّذ فحص الحزمة `Verify-TranslationCatalogs.ps1` ونجح على Actions في البناء
   `38990949083` (`2026.5.124` من الكوميت `c17c224d`). أكدت لقطة المستخدم في 2026-10-18
   عودة الواجهة العربية واتجاه RTL وظهور الاسم `BearDL`.
-- `UI-01`: أُعيد التصميم القديم كوضع افتراضي وأُضيف خيار «تصميم الواجهة» في الإعدادات، وحُل انهيار التبديل بتأجيل تغيير الصفحات عبر DispatcherQueue، مع إعادة تصميم الواجهة الحديثة بشكل موحد وإضافة زر نسخ الملف المكتمل للحافظة محليًا؛ جاهز للرفع.
+- `UI-01`: أُعيد التصميم القديم كوضع افتراضي وأُضيف خيار «تصميم الواجهة» في الإعدادات، وحُل انهيار التبديل بتأجيل تغيير الصفحات عبر DispatcherQueue، مع إعادة تصميم الواجهة الحديثة بشكل موحد وإضافة زر نسخ الملف المكتمل للحافظة ضمن الإصدارات المنشورة.
 
 ## Artifact storage policy — 2026-10-19
 
@@ -88,4 +90,4 @@
 - Every six hours, maintenance deletes expired (>24h) or superseded artifacts from completed runs only. Commit-suffixed names are grouped by platform; current runs are protected and checked again immediately before deletion. Manual dispatch defaults to preview-only. Maintenance never modifies release assets or caches.
 - Distribution builds run on explicit manual/release triggers where separated from verification. Existing tests remain automatic; site/container deployment and platform-managed delivery retain their existing purpose. Publishing requires its existing release trigger or an explicit manual publishing choice.
 - Verification: policy behavior and workflow checks run on GitHub-hosted Ubuntu for this source commit; see the **Artifact storage policy** Actions run attached to the commit for its actual result. No application tests, builds, downloads, or installations were run on the user's device. Application packaging/updater behavior was not exercised by a policy-only check.
-- Pending: GitHub may take 6–12 hours to recalculate storage after deletions. Existing artifacts do not receive shorter expiry retroactively; scheduled maintenance applies the same policy to them. Quota recovery and a future authorized release/upload must be observed separately. Scheduled workflows can be delayed or disabled by GitHub after inactivity; one-day upload retention remains the primary limit.
+- Operational note: GitHub may take 6–12 hours to recalculate storage after deletions. Existing artifacts do not receive shorter expiry retroactively; scheduled maintenance applies the same policy to them. Quota recovery and a future authorized release/upload must be observed separately. Scheduled workflows can be delayed or disabled by GitHub after inactivity; one-day upload retention remains the primary limit.

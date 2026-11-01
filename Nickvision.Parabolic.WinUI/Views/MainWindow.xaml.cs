@@ -1034,9 +1034,9 @@ public sealed partial class MainWindow : Window
         UpdateDownloadsList();
     }
 
-    private void ClearAllQueued(object? sender, RoutedEventArgs e)
+    private async void ClearAllQueued(object? sender, RoutedEventArgs e)
     {
-        foreach (var id in _controller.ClearQueuedDownloads())
+        foreach (var id in await _controller.ClearQueuedDownloadsAsync())
         {
             _downloadRows.Remove(id);
         }

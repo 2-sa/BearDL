@@ -1,5 +1,10 @@
 # yt-dlp-plugins
 
+This file describes bundled extractor behavior and focused regression checks.
+Application release status and review observations belong in
+[CURRENT_TASK.md](../../docs/CURRENT_TASK.md). Passing plugin checks does not
+establish support for every site, authentication flow, or nested playlist.
+
 Adapted from:
 
 - https://github.com/bindestriche/srt_fix

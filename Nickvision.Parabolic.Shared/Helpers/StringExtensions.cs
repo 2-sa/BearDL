@@ -82,6 +82,7 @@ public static class StringExtensions
             }
             var trimmed = s.Clean();
             if (!trimmed.StartsWith("//", StringComparison.Ordinal)
+                && !trimmed.Any(char.IsWhiteSpace)
                 && Uri.TryCreate(trimmed, UriKind.Absolute, out var directUri)
                 && (directUri.Scheme == Uri.UriSchemeHttp || directUri.Scheme == Uri.UriSchemeHttps))
             {

@@ -26,6 +26,7 @@ public class DownloadOptions
     public VideoResolution? VideoResolution { get; set; }
     public double? AudioBitrate { get; set; }
     public bool UseBestQuality { get; set; }
+    public bool ExcludeFromHistory { get; set; }
 
     public DownloadOptions(Uri url)
     {
@@ -85,9 +86,10 @@ public class DownloadOptions
             {
                 SaveFilename = SaveFilename.Substring(0, SaveFilename.Length - excessLength);
             }
-            else if (SaveFolder.Length > excessLength)
+            else
             {
-                SaveFolder = UserDirectories.Downloads;
+                _isEnsuringPath = false;
+                throw new PathTooLongException("The selected folder leaves no room for a filename. Choose a shorter folder path.");
             }
         }
         _isEnsuringPath = false;

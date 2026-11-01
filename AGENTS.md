@@ -11,7 +11,7 @@ Read these documents in order:
 3. [docs/PROJECT_AND_COMMIT_GUIDE.md](docs/PROJECT_AND_COMMIT_GUIDE.md): architecture and the 22 historical commits.
 4. [docs/RESOURCE_REVIEW_2026-10-14.md](docs/RESOURCE_REVIEW_2026-10-14.md): resource review, measurements, and their limits.
 
-Inspect `git status --short`, `git diff`, branch, remotes, and relevant CI results. Preserve local edits and new files. Treat dated history as evidence, not as the current task or reusable permission. Follow the latest direct user instruction; summarize the current state and unresolved work before editing.
+Inspect `git status --short`, `git diff`, branch, remotes, and relevant CI results. Preserve local edits and new files. Treat dated history as evidence, not as the current task or reusable permission. User-confirmed resolutions supersede old pending reports; do not reopen resolved Windows or macOS issues from historical notes. Follow the latest direct user instruction; summarize the current state and unresolved work before editing.
 
 ## Authorization and delivery
 
@@ -75,6 +75,8 @@ Verify artifacts for Arabic RTL, English LTR, mixed technical text, toggle state
 ## Documentation and review
 
 Keep `CURRENT_TASK.md` as the single current-state and handoff document. Keep architecture/history in `PROJECT_AND_COMMIT_GUIDE.md`, build rules in `RELEASING.md`, and measurements in the resource report. Do not recreate a parallel dated handoff with conflicting authorization or stale build status.
+
+Keep runtime acceptance, CI results, source-review observations, and resource measurements distinct. A source-review concern without runtime reproduction must not be described as a confirmed failure of the published release.
 
 After meaningful progress, update the current-state document with what changed, what was tested, known failures, and the next step. Do not start another release just to record build status unless requested.
 

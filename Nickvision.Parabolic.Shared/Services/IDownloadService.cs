@@ -26,7 +26,7 @@ public interface IDownloadService
     Task AddAsync(IReadOnlyList<DownloadOptions> options, bool excludeFromHistory);
     Task<bool> AddWithDuplicateCheckAsync(IReadOnlyList<DownloadOptions> options, bool excludeFromHistory, Func<IReadOnlyList<DuplicateDownload>, Task<bool>> confirm);
     IReadOnlyList<int> ClearCompleted();
-    IReadOnlyList<int> ClearQueued();
+    Task<IReadOnlyList<int>> ClearQueuedAsync();
     bool Pause(int id);
     Task RecoverAllAsync();
     bool Resume(int id);

@@ -474,13 +474,18 @@ public class MainWindow : Adw.ApplicationWindow
 
     private async void RetryAllFailed(Gio.SimpleAction sender, Gio.SimpleAction.ActivateSignalArgs e) => await _controller.RetryFailedDownloadsAsync();
 
-    private void ClearAllQueued(Gio.SimpleAction sender, Gio.SimpleAction.ActivateSignalArgs e)
+    private async void ClearAllQueued(Gio.SimpleAction sender, Gio.SimpleAction.ActivateSignalArgs e)
     {
-        foreach (var id in _controller.ClearQueuedDownloads())
+        var ids = await _controller.ClearQueuedDownloadsAsync();
+        GLib.Functions.IdleAdd(0, () =>
         {
-            _downloadRows.Remove(id);
-        }
-        UpdateDownloadsList();
+            foreach (var id in ids)
+            {
+                _downloadRows.Remove(id);
+            }
+            UpdateDownloadsList();
+            return false;
+        });
     }
 
     private void ClearAllCompleted(Gio.SimpleAction sender, Gio.SimpleAction.ActivateSignalArgs e)

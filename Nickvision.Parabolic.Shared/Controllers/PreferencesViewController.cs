@@ -41,6 +41,7 @@ public class PreferencesViewController
             new SelectionItem<AudioCodec>(AudioCodec.FLAC, _translationService._("FLAC (ALAC)"), _configurationService.PreferredAudioCodec == AudioCodec.FLAC),
             new SelectionItem<AudioCodec>(AudioCodec.WAV, _translationService._("WAV (AIFF)"), _configurationService.PreferredAudioCodec == AudioCodec.WAV),
             new SelectionItem<AudioCodec>(AudioCodec.OPUS, "OPUS", _configurationService.PreferredAudioCodec == AudioCodec.OPUS),
+            new SelectionItem<AudioCodec>(AudioCodec.Vorbis, "Vorbis", _configurationService.PreferredAudioCodec == AudioCodec.Vorbis),
             new SelectionItem<AudioCodec>(AudioCodec.AAC, "AAC", _configurationService.PreferredAudioCodec == AudioCodec.AAC),
             new SelectionItem<AudioCodec>(AudioCodec.MP4A, "MP4A", _configurationService.PreferredAudioCodec == AudioCodec.MP4A),
             new SelectionItem<AudioCodec>(AudioCodec.MP3, "MP3", _configurationService.PreferredAudioCodec == AudioCodec.MP3)

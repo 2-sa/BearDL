@@ -33,7 +33,9 @@ try
     Check("شاهد هذا المقطع الرائع https://vt.tiktok.com/ZSh12345/ من تيك توك".TryExtractHttpUri(out var sharedUri) && sharedUri.ToString() == "https://vt.tiktok.com/ZSh12345/", "Social share text extracts embedded URL");
     Check("\u2066https://www.instagram.com/reel/C9abc123/\u2069".TryExtractHttpUri(out var bidiUri) && bidiUri.Host == "www.instagram.com", "Bidi-isolated URL is extracted cleanly");
     Check(!("//example.com/path".TryExtractHttpUri(out _)), "Protocol-relative string is rejected");
-    Console.WriteLine("Duplicate download checks passed (13 scenarios).");
+    Check("https://example.com/video shared description".TryExtractHttpUri(out var leadingUri) && leadingUri.AbsoluteUri == "https://example.com/video", "Leading URL excludes share description");
+    Check("https://example.com/a%20b".TryExtractHttpUri(out var escapedUri) && escapedUri.AbsoluteUri == "https://example.com/a%20b", "Encoded spaces remain part of the URL");
+    Console.WriteLine("Duplicate download checks passed (15 scenarios).");
     BearDL.Tests.ResourceChecks.Run();
 }
 finally

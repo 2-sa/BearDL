@@ -91,6 +91,33 @@ public class RecoveryService : IRecoveryService
         return true;
     }
 
+    public async Task<bool> ReplaceAsync(IReadOnlyList<int> oldIds, IReadOnlyList<RecoverableDownload> downloads)
+    {
+        await EnsureTableAsync();
+        using var transaction = await _databaseService.CreateTransactionAsync();
+        foreach (var id in oldIds)
+        {
+            if (!await _databaseService.DeleteFromTableAsync(TableName, "id", id))
+            {
+                return false;
+            }
+        }
+        foreach (var download in downloads)
+        {
+            if (!await _databaseService.InsertIntoTableAsync(TableName, new Dictionary<string, object>()
+            {
+                { "id", download.Id },
+                { "options", JsonSerializer.Serialize(download.Options, ApplicationJsonContext.Default.DownloadOptions) },
+                { "credentialRequired", download.CredentialRequired ? 1 : 0 }
+            }))
+            {
+                return false;
+            }
+        }
+        await transaction.CommitAsync();
+        return true;
+    }
+
     public async Task<bool> ClearAsync()
     {
         _logger.LogDebug("Clearing all recoverable downloads...");

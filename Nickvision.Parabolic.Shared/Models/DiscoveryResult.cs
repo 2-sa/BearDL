@@ -41,7 +41,7 @@ public class DiscoveryResult
         }
         if (ytdlp.TryGetProperty("entries", out var entriesProperty) && entriesProperty.ValueKind == JsonValueKind.Array && entriesProperty.GetArrayLength() > 0)
         {
-            AddEntries(entriesProperty, configurationService, translator, suggestedSaveFolder);
+            AddEntries(entriesProperty, configurationService, translator, suggestedSaveFolder, Url);
             var urlCounts = new Dictionary<string, int>(Media.Count);
             foreach (var m in Media)
             {
@@ -65,23 +65,41 @@ public class DiscoveryResult
         }
     }
 
-    private void AddEntries(JsonElement entriesProperty, IConfigurationService configurationService, ITranslationService translator, string suggestedSaveFolder)
+    private void AddEntries(JsonElement entriesProperty, IConfigurationService configurationService, ITranslationService translator, string suggestedSaveFolder, Uri? parentUrl)
     {
+        var position = 0;
         foreach (var mediaObject in entriesProperty.EnumerateArray())
         {
+            position++;
             if (mediaObject.ValueKind != JsonValueKind.Object)
             {
                 continue;
             }
             if (mediaObject.TryGetProperty("entries", out var nestedEntries) && nestedEntries.ValueKind == JsonValueKind.Array && nestedEntries.GetArrayLength() > 0)
             {
-                AddEntries(nestedEntries, configurationService, translator, suggestedSaveFolder);
+                Uri? nestedUrl = null;
+                foreach (var property in new[] { "webpage_url", "original_url", "url" })
+                {
+                    if (mediaObject.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.String
+                        && Uri.TryCreate(value.GetString(), UriKind.Absolute, out var candidate)
+                        && (candidate.Scheme == Uri.UriSchemeHttps || candidate.Scheme == Uri.UriSchemeHttp)
+                        && !Models.Media.IsDirectMediaStreamUrl(candidate.ToString()))
+                    {
+                        nestedUrl = candidate;
+                        break;
+                    }
+                }
+                AddEntries(nestedEntries, configurationService, translator, suggestedSaveFolder, nestedUrl);
                 continue;
             }
-            var media = new Media(mediaObject, configurationService, translator, suggestedSaveFolder, string.Empty, Url);
+            var media = new Media(mediaObject, configurationService, translator, suggestedSaveFolder, string.Empty, parentUrl, position);
             if (!media.Url.IsEmpty)
             {
                 Media.Add(media);
+            }
+            else
+            {
+                throw new InvalidOperationException("A playlist entry has no independently addressable URL.");
             }
         }
     }

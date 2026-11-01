@@ -9,6 +9,8 @@ on:
       - 'resources/po/**'
       - 'tests/plugins/**'
       - 'tests/duplicates/**'
+      - 'tests/engine/**'
+      - 'Nickvision.Parabolic.Shared/**'
       - 'tests/windows/Clipboard*'
       - 'Nickvision.Parabolic.WinUI/Helpers/FileClipboard.cs'
       - 'Nickvision.Parabolic.Shared/Models/DuplicateDownload.cs'
@@ -21,6 +23,20 @@ permissions:
   contents: read
 
 jobs:
+  engine:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, ubuntu-24.04-arm, windows-2025-vs2026, windows-11-arm, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+      - name: Check download lifecycle and media regressions
+        run: dotnet run --project tests/engine/EngineChecks.csproj --configuration Release
+
   file-clipboard:
     strategy:
       fail-fast: false

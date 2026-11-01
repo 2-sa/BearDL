@@ -155,7 +155,7 @@ public class YtdlpExecutableService : DependencyExecutableService, IYtdlpExecuta
             "--output",
             $"chapter:%(section_number)03d - {downloadOptions.SaveFilename}.%(ext)s",
             "--print",
-            "after_move:filepath"
+            "after_move:__BEARDL_FILE__%(filepath)s"
         };
         if (downloadOptions.RequiresPlaylistItems && downloadOptions.PlaylistPosition != -1)
         {
@@ -214,6 +214,7 @@ public class YtdlpExecutableService : DependencyExecutableService, IYtdlpExecuta
                 AudioCodec.FLAC => "flac",
                 AudioCodec.WAV => "wav",
                 AudioCodec.OPUS => "opus",
+                AudioCodec.Vorbis => "vorbis",
                 AudioCodec.AAC => "aac",
                 AudioCodec.MP4A => "mp4a",
                 AudioCodec.MP3 => "mp3",

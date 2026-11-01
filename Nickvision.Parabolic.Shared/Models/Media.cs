@@ -35,7 +35,7 @@ public class Media
         SuggestedSaveFolder = suggestedSaveFolder;
     }
 
-    private static bool IsDirectMediaStreamUrl(string rawUrl)
+    internal static bool IsDirectMediaStreamUrl(string rawUrl)
     {
         if (!Uri.TryCreate(rawUrl, UriKind.Absolute, out var uri))
         {
@@ -65,11 +65,15 @@ public class Media
             || rawUrl.Contains(".ism", StringComparison.OrdinalIgnoreCase);
     }
 
-    public Media(JsonElement ytdlp, IConfigurationService configurationService, ITranslationService translator, string suggestedSaveFolder, string suggestedSaveFilename, Uri? fallbackUrl = null) : this(suggestedSaveFolder, suggestedSaveFilename)
+    public Media(JsonElement ytdlp, IConfigurationService configurationService, ITranslationService translator, string suggestedSaveFolder, string suggestedSaveFilename, Uri? fallbackUrl = null, int? fallbackPlaylistPosition = null) : this(suggestedSaveFolder, suggestedSaveFilename)
     {
         if (ytdlp.TryGetProperty("playlist_index", out var playlistIndexProperty) && playlistIndexProperty.ValueKind == JsonValueKind.Number && playlistIndexProperty.TryGetInt32(out var playlistIndex))
         {
             PlaylistPosition = playlistIndex;
+        }
+        else if (fallbackPlaylistPosition.HasValue)
+        {
+            PlaylistPosition = fallbackPlaylistPosition.Value;
         }
         if (PlaylistPosition != -1)
         {
@@ -98,6 +102,7 @@ public class Media
             if (Url.IsEmpty && fallbackUrl is not null && !fallbackUrl.IsEmpty)
             {
                 Url = fallbackUrl;
+                RequiresPlaylistItems = true;
             }
             if (Url.IsEmpty && ytdlp.TryGetProperty("url", out var fallbackUrlProperty) && fallbackUrlProperty.ValueKind != JsonValueKind.Null)
             {
@@ -134,6 +139,10 @@ public class Media
                     Url = uri;
                 }
             }
+        }
+        if (fallbackPlaylistPosition.HasValue && fallbackUrl is not null && Url == fallbackUrl)
+        {
+            RequiresPlaylistItems = true;
         }
         if (string.IsNullOrEmpty(Title) && ytdlp.TryGetProperty("title", out var titleProperty) && titleProperty.ValueKind != JsonValueKind.Null)
         {

@@ -1,14 +1,14 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Nickvision.Desktop.Application;
 using Nickvision.Desktop.Globalization;
 using Nickvision.Parabolic.Shared.Events;
 using Nickvision.Parabolic.Shared.Helpers;
 using Nickvision.Parabolic.Shared.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,10 +22,14 @@ public class DownloadService : IDisposable, IDownloadService
     private readonly IRecoveryService _recoveryService;
     private readonly ITranslationService _translationService;
     private readonly IYtdlpExecutableService _ytdlpService;
-    private readonly Dictionary<int, Download> _downloading;
-    private readonly Dictionary<int, Download> _queued;
-    private readonly Dictionary<int, Download> _completed;
+    private readonly ConcurrentDictionary<int, Download> _downloading = new();
+    private readonly ConcurrentDictionary<int, Download> _queued = new();
+    private readonly ConcurrentDictionary<int, Download> _completed = new();
+    private readonly Queue<int> _queueOrder = new();
     private readonly SemaphoreSlim _additionLock = new(1, 1);
+    private readonly SemaphoreSlim _mutationLock = new(1, 1);
+    private volatile bool _disposed;
+    private bool _idsInitialized;
 
     public event EventHandler<DownloadAddedEventArgs>? DownloadAdded;
     public event EventHandler<DownloadCompletedEventArgs>? DownloadCompleted;
@@ -33,10 +37,10 @@ public class DownloadService : IDisposable, IDownloadService
     public event EventHandler<DownloadEventArgs>? DownloadRetired;
     public event EventHandler<DownloadEventArgs>? DownloadStartedFromQueue;
     public event EventHandler<DownloadEventArgs>? DownloadStopped;
-
     public int DownloadingCount => _downloading.Count;
     public int QueuedCount => _queued.Count;
     public int CompletedCount => _completed.Count;
+    public int FailedCount => _completed.Values.Count(download => download.Status == DownloadStatus.Error);
 
     public DownloadService(ILogger<DownloadService> logger, IConfigurationService configurationService, IHistoryService historyService, IRecoveryService recoveryService, ITranslationService translationService, IYtdlpExecutableService ytdlpService)
     {
@@ -46,53 +50,36 @@ public class DownloadService : IDisposable, IDownloadService
         _recoveryService = recoveryService;
         _translationService = translationService;
         _ytdlpService = ytdlpService;
-        _downloading = new Dictionary<int, Download>();
-        _queued = new Dictionary<int, Download>();
-        _completed = new Dictionary<int, Download>();
-    }
-
-    ~DownloadService()
-    {
-        Dispose(false);
-    }
-
-    public int FailedCount
-    {
-        get
-        {
-            var failed = 0;
-            foreach (var pair in _completed)
-            {
-                if (pair.Value.Status == DownloadStatus.Error)
-                {
-                    failed++;
-                }
-            }
-            return failed;
-        }
     }
 
     public async Task<bool> AddWithDuplicateCheckAsync(IReadOnlyList<DownloadOptions> options, bool excludeFromHistory, Func<IReadOnlyList<DuplicateDownload>, Task<bool>> confirm)
     {
-        // Keep user additions serialized through both confirmation and queuing,
-        // so simultaneous background discoveries cannot miss each other.
+        // Serialize submissions, never hold the state gate while waiting for UI.
         await _additionLock.WaitAsync();
         try
         {
             if (_configurationService.WarnBeforeDuplicateDownload)
             {
-                var requestedUrls = options.Select(item => item.Url).ToHashSet();
-                var savedFiles = new Dictionary<Uri, string>(await _historyService.GetSavedFilesAsync(requestedUrls));
-                // Completed rows still protect files when history is disabled.
-                foreach (var item in _completed.Values)
+                var urls = options.Select(item => item.Url).ToHashSet();
+                var saved = new Dictionary<Uri, string>(await _historyService.GetSavedFilesAsync(urls));
+                HashSet<Uri> active;
+                await _mutationLock.WaitAsync();
+                try
                 {
-                    if (requestedUrls.Contains(item.Options.Url) && item.Status == DownloadStatus.Success)
+                    foreach (var item in _completed.Values)
                     {
-                        savedFiles[item.Options.Url] = item.FilePath;
+                        if (urls.Contains(item.Options.Url) && item.Status == DownloadStatus.Success)
+                        {
+                            saved[item.Options.Url] = item.FilePath;
+                        }
                     }
+                    active = _downloading.Values.Concat(_queued.Values).Select(item => item.Options.Url).Where(urls.Contains).ToHashSet();
                 }
-                var activeUrls = _downloading.Values.Concat(_queued.Values).Select(item => item.Options.Url).Where(requestedUrls.Contains).ToHashSet();
-                var duplicates = DuplicateDownloadDetector.Find(options.Select(item => item.Url), activeUrls, savedFiles);
+                finally
+                {
+                    _mutationLock.Release();
+                }
+                var duplicates = DuplicateDownloadDetector.Find(options.Select(item => item.Url), active, saved);
                 if (duplicates.Count > 0 && !await confirm(duplicates))
                 {
                     return false;
@@ -107,326 +94,331 @@ public class DownloadService : IDisposable, IDownloadService
         }
     }
 
-    public async Task AddAsync(DownloadOptions options, bool excludeFromHistory)
-    {
-        var download = new Download(_configurationService, _translationService, _ytdlpService, options);
-        _logger.LogDebug($"Adding download ({download.Id}): {JsonSerializer.Serialize(options, ApplicationJsonContext.Default.DownloadOptions)}");
-        download.Completed += Download_Completed;
-        download.ProgressChanged += Download_ProgressChanged;
-        await _recoveryService.AddAsync(new RecoverableDownload(download.Id, download.Options));
-        if (!excludeFromHistory)
-        {
-            await _historyService.AddAsync(new HistoricDownload(download.Options.Url)
-            {
-                Title = Path.GetFileNameWithoutExtension(download.FilePath),
-                Path = download.FilePath
-            });
-        }
-        if (_downloading.Count < _configurationService.MaxNumberOfActiveDownloads)
-        {
-            _logger.LogDebug($"Starting download ({download.Id}).");
-            _downloading.Add(download.Id, download);
-            DownloadAdded?.Invoke(this, new DownloadAddedEventArgs(download.Id, download.FilePath, download.Options.Url, DownloadStatus.Running));
-            download.Start();
-        }
-        else
-        {
-            _logger.LogDebug($"Queueing download ({download.Id})...");
-            _queued.Add(download.Id, download);
-            DownloadAdded?.Invoke(this, new DownloadAddedEventArgs(download));
-        }
-    }
+    public Task AddAsync(DownloadOptions options, bool excludeFromHistory) => AddAsync(new[] { options }, excludeFromHistory);
 
     public async Task AddAsync(IReadOnlyList<DownloadOptions> options, bool excludeFromHistory)
     {
-        var recoverableDownloads = new List<RecoverableDownload>();
-        var historicDownloads = new List<HistoricDownload>();
-        var downloadsToStart = new List<Download>();
+        await _mutationLock.WaitAsync();
+        try
+        {
+            await AddCoreAsync(options, excludeFromHistory);
+        }
+        finally
+        {
+            _mutationLock.Release();
+        }
+    }
+
+    // Caller owns the mutation gate. Commit recovery before publishing rows.
+    private async Task AddCoreAsync(IReadOnlyList<DownloadOptions> options, bool excludeFromHistory, IReadOnlyList<int>? recoveredIds = null)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (!_idsInitialized)
+        {
+            var existing = await _recoveryService.GetAllAsync();
+            if (existing.Count > 0)
+            {
+                Download.ReserveIdsThrough(existing.Max(record => record.Id));
+            }
+            _idsInitialized = true;
+        }
+        var downloads = new List<Download>(options.Count);
         foreach (var option in options)
         {
-            var download = new Download(_configurationService, _translationService, _ytdlpService, option);
-            _logger.LogDebug($"Adding download ({download.Id}): {JsonSerializer.Serialize(option, ApplicationJsonContext.Default.DownloadOptions)}");
+            if (recoveredIds is null)
+            {
+                option.ExcludeFromHistory = excludeFromHistory;
+            }
+            downloads.Add(new Download(_configurationService, _translationService, _ytdlpService, option));
+        }
+        var records = downloads.Select(download => new RecoverableDownload(download.Id, download.Options)).ToList();
+        var persisted = recoveredIds is null
+            ? await _recoveryService.AddAsync(records)
+            : await _recoveryService.ReplaceAsync(recoveredIds, records);
+        if (!persisted)
+        {
+            throw new IOException("Unable to save download recovery data.");
+        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        var ready = new List<Download>();
+        foreach (var download in downloads)
+        {
             download.Completed += Download_Completed;
             download.ProgressChanged += Download_ProgressChanged;
-            recoverableDownloads.Add(new RecoverableDownload(download.Id, download.Options));
-            if (!excludeFromHistory)
+            if (_queued.IsEmpty && _downloading.Count < _configurationService.MaxNumberOfActiveDownloads)
             {
-                historicDownloads.Add(new HistoricDownload(download.Options.Url)
-                {
-                    Title = Path.GetFileNameWithoutExtension(download.FilePath),
-                    Path = download.FilePath
-                });
-            }
-            if (_downloading.Count < _configurationService.MaxNumberOfActiveDownloads)
-            {
-                _logger.LogDebug($"Starting download ({download.Id}).");
-                _downloading.Add(download.Id, download);
+                _downloading[download.Id] = download;
+                ready.Add(download);
                 DownloadAdded?.Invoke(this, new DownloadAddedEventArgs(download.Id, download.FilePath, download.Options.Url, DownloadStatus.Running));
-                downloadsToStart.Add(download);
             }
             else
             {
-                _logger.LogDebug($"Queueing download ({download.Id})...");
-                _queued.Add(download.Id, download);
+                _queued[download.Id] = download;
+                _queueOrder.Enqueue(download.Id);
                 DownloadAdded?.Invoke(this, new DownloadAddedEventArgs(download));
             }
         }
-        await _recoveryService.AddAsync(recoverableDownloads);
-        await _historyService.AddAsync(historicDownloads);
-        foreach (var download in downloadsToStart)
+        foreach (var download in ready)
         {
-            download.Start();
+            if (!_disposed)
+            {
+                download.Start();
+            }
+        }
+        StartQueued();
+    }
+
+    private void StartQueued()
+    {
+        while (!_disposed && _downloading.Count < _configurationService.MaxNumberOfActiveDownloads && _queueOrder.TryDequeue(out var id))
+        {
+            if (_queued.TryRemove(id, out var download))
+            {
+                _downloading[id] = download;
+                DownloadStartedFromQueue?.Invoke(this, new DownloadEventArgs(id));
+                download.Start();
+            }
         }
     }
 
     public IReadOnlyList<int> ClearCompleted()
     {
-        _logger.LogDebug($"Clearing completed downloads...");
-        var ids = new List<int>(_completed.Keys);
-        foreach (var pair in _completed)
+        var ids = new List<int>();
+        foreach (var id in _completed.Keys)
         {
-            pair.Value.Completed -= Download_Completed;
-            pair.Value.ProgressChanged -= Download_ProgressChanged;
-            pair.Value.Dispose();
+            if (_completed.TryRemove(id, out var download))
+            {
+                Detach(download);
+                download.Dispose();
+                ids.Add(id);
+            }
         }
-        _completed.Clear();
-        _logger.LogDebug($"Cleared {ids.Count} completed download(s).");
         return ids;
     }
 
-    public IReadOnlyList<int> ClearQueued()
+    public async Task<IReadOnlyList<int>> ClearQueuedAsync()
     {
-        _logger.LogDebug($"Clearing queued downloads...");
-        var ids = new List<int>(_queued.Keys);
-        foreach (var pair in _queued)
+        await _mutationLock.WaitAsync();
+        try
         {
-            pair.Value.Completed -= Download_Completed;
-            pair.Value.ProgressChanged -= Download_ProgressChanged;
-            pair.Value.Dispose();
+            var ids = _queued.Keys.ToList();
+            if (!await _recoveryService.RemoveAsync(ids))
+            {
+                throw new IOException("Unable to remove queued recovery data.");
+            }
+            foreach (var id in ids)
+            {
+                if (_queued.TryRemove(id, out var download))
+                {
+                    Detach(download);
+                    download.Dispose();
+                }
+            }
+            _queueOrder.Clear();
+            return ids;
         }
-        _queued.Clear();
-        _logger.LogDebug($"Cleared {ids.Count} queued download(s).");
-        return ids;
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
+        finally
+        {
+            _mutationLock.Release();
+        }
     }
 
     public bool Pause(int id)
     {
-        _logger.LogDebug($"Pausing download ({id})...");
-        if (_downloading.TryGetValue(id, out var download))
+        if (!_downloading.TryGetValue(id, out var download))
         {
-            download.Pause();
-            _logger.LogDebug($"Paused download ({id}).");
-            return true;
+            return false;
         }
-        _logger.LogWarning($"Unable to pause download ({id}), not found.");
-        return false;
-    }
-
-    public async Task RecoverAllAsync()
-    {
-        var downloads = await _recoveryService.GetAllAsync();
-        await _recoveryService.ClearAsync();
-        var options = new List<DownloadOptions>(downloads.Count);
-        foreach (var recoverableDownload in downloads)
-        {
-            options.Add(recoverableDownload.Options);
-        }
-        await AddAsync(options, false);
+        download.Pause();
+        return true;
     }
 
     public bool Resume(int id)
     {
-        _logger.LogDebug($"Resuming download ({id})...");
-        if (_downloading.TryGetValue(id, out var download))
+        if (!_downloading.TryGetValue(id, out var download))
         {
-            download.Resume();
-            _logger.LogDebug($"Resumed download ({id}).");
-            return true;
+            return false;
         }
-        _logger.LogWarning($"Unable to resume download ({id}), not found.");
-        return false;
+        download.Resume();
+        return true;
+    }
+
+    public async Task RecoverAllAsync()
+    {
+        await _mutationLock.WaitAsync();
+        try
+        {
+            var records = await _recoveryService.GetAllAsync();
+            var pending = records.Where(record => !_downloading.ContainsKey(record.Id) && !_queued.ContainsKey(record.Id)).ToList();
+            if (pending.Count == 0)
+            {
+                return;
+            }
+            Download.ReserveIdsThrough(records.Max(record => record.Id));
+            await AddCoreAsync(pending.Select(record => record.Options).ToList(), false, pending.Select(record => record.Id).ToList());
+        }
+        finally
+        {
+            _mutationLock.Release();
+        }
     }
 
     public async Task<bool> RetryAsync(int id)
     {
-        _logger.LogDebug($"Retrying download ({id})...");
-        if (_completed.TryGetValue(id, out var download))
+        await _mutationLock.WaitAsync();
+        try
         {
-            _logger.LogDebug($"Retried download ({id}).");
-            DownloadRetired?.Invoke(this, new DownloadEventArgs(id));
-            await AddAsync(download.Options, true);
-            download.Completed -= Download_Completed;
-            download.ProgressChanged -= Download_ProgressChanged;
+            if (!_completed.TryGetValue(id, out var download))
+            {
+                return false;
+            }
+            await AddCoreAsync(new[] { download.Options }, download.Options.ExcludeFromHistory);
+            _completed.TryRemove(id, out _);
+            Detach(download);
             download.Dispose();
-            _completed.Remove(id);
+            DownloadRetired?.Invoke(this, new DownloadEventArgs(id));
             return true;
         }
-        _logger.LogWarning($"Unable to retry download ({id}), not found.");
-        return false;
+        finally
+        {
+            _mutationLock.Release();
+        }
     }
 
     public async Task RetryFailedAsync()
     {
-        _logger.LogDebug($"Retrying failed downloads...");
-        var retryDownloadOptions = new List<DownloadOptions>();
-        var ids = new List<int>();
-        foreach (var pair in _completed)
+        foreach (var id in _completed.Values.Where(download => download.Status == DownloadStatus.Error).Select(download => download.Id).ToArray())
         {
-            if (pair.Value.Status == DownloadStatus.Error)
-            {
-                ids.Add(pair.Key);
-            }
+            await RetryAsync(id);
         }
-        foreach (var id in ids)
-        {
-            var download = _completed[id];
-            retryDownloadOptions.Add(download.Options);
-            DownloadRetired?.Invoke(this, new DownloadEventArgs(id));
-            download.Completed -= Download_Completed;
-            download.ProgressChanged -= Download_ProgressChanged;
-            download.Dispose();
-            _completed.Remove(id);
-            _logger.LogDebug($"Retried download ({id}).");
-        }
-        _logger.LogDebug($"Retried {retryDownloadOptions.Count} failed download(s).");
-        await AddAsync(retryDownloadOptions, true);
     }
 
     public async Task<bool> StopAsync(int id)
     {
-        _logger.LogDebug($"Stopping download ({id})...");
-        Download? download = null;
-        if (_downloading.TryGetValue(id, out download) || _queued.TryGetValue(id, out download))
+        await _mutationLock.WaitAsync();
+        try
         {
-            download.Stop();
-            download.Completed -= Download_Completed;
-            download.ProgressChanged -= Download_ProgressChanged;
-            download.Dispose();
-            _downloading.Remove(id);
-            _queued.Remove(id);
-            _completed.Add(id, download);
-            await _recoveryService.RemoveAsync(id);
-            _logger.LogDebug($"Stopped download ({id}).");
-            DownloadStopped?.Invoke(this, new DownloadEventArgs(id));
+            if (!_downloading.TryGetValue(id, out var download) && !_queued.TryGetValue(id, out download))
+            {
+                return false;
+            }
+            try
+            {
+                await StopCoreAsync(new[] { download });
+            }
+            finally
+            {
+                StartQueued();
+            }
             return true;
         }
-        _logger.LogWarning($"Unable to stop download ({id}), not found.");
-        return false;
+        finally
+        {
+            _mutationLock.Release();
+        }
     }
 
     public async Task StopAllAsync()
     {
-        _logger.LogDebug($"Stopping all downloads...");
-        var ids = new List<int>(_downloading.Count + _queued.Count);
-        foreach (var id in _downloading.Keys)
+        await _mutationLock.WaitAsync();
+        try
         {
-            ids.Add(id);
+            await StopCoreAsync(_downloading.Values.Concat(_queued.Values).ToArray());
         }
-        foreach (var id in _queued.Keys)
+        finally
         {
-            ids.Add(id);
+            _mutationLock.Release();
         }
-        foreach (var pair in _downloading)
-        {
-            pair.Value.Stop();
-            pair.Value.Completed -= Download_Completed;
-            pair.Value.ProgressChanged -= Download_ProgressChanged;
-            pair.Value.Dispose();
-            _completed.Add(pair.Key, pair.Value);
-            _logger.LogDebug($"Stopped download ({pair.Key}).");
-            DownloadStopped?.Invoke(this, new DownloadEventArgs(pair.Key));
-        }
-        foreach (var pair in _queued)
-        {
-            pair.Value.Stop();
-            pair.Value.Completed -= Download_Completed;
-            pair.Value.ProgressChanged -= Download_ProgressChanged;
-            pair.Value.Dispose();
-            _completed.Add(pair.Key, pair.Value);
-            _logger.LogDebug($"Stopped download ({pair.Key}).");
-            DownloadStopped?.Invoke(this, new DownloadEventArgs(pair.Key));
-        }
-        _downloading.Clear();
-        _queued.Clear();
-        await _recoveryService.RemoveAsync(ids);
-        _logger.LogDebug($"Stopped {ids.Count} download(s).");
     }
 
-    private void Dispose(bool disposing)
+    private async Task StopCoreAsync(IReadOnlyList<Download> downloads)
     {
-        if (!disposing)
+        foreach (var download in downloads)
         {
-            return;
+            download.Stop();
+            Detach(download);
+            _downloading.TryRemove(download.Id, out _);
+            _queued.TryRemove(download.Id, out _);
+            _completed[download.Id] = download;
+            DownloadStopped?.Invoke(this, new DownloadEventArgs(download.Id));
         }
-        foreach (var pair in _downloading)
+        if (!await _recoveryService.RemoveAsync(downloads.Select(download => download.Id).ToList()))
         {
-            pair.Value.Completed -= Download_Completed;
-            pair.Value.ProgressChanged -= Download_ProgressChanged;
-            pair.Value.Dispose();
+            throw new IOException("Unable to remove stopped recovery data.");
         }
-        foreach (var pair in _queued)
+        if (_queued.IsEmpty)
         {
-            pair.Value.Completed -= Download_Completed;
-            pair.Value.ProgressChanged -= Download_ProgressChanged;
-            pair.Value.Dispose();
-        }
-        foreach (var pair in _completed)
-        {
-            pair.Value.Completed -= Download_Completed;
-            pair.Value.ProgressChanged -= Download_ProgressChanged;
-            pair.Value.Dispose();
+            _queueOrder.Clear();
         }
     }
 
     private async void Download_Completed(object? sender, DownloadCompletedEventArgs e)
     {
-        if (!_downloading.TryGetValue(e.Id, out var download) || download.Status == DownloadStatus.Stopped)
+        await _mutationLock.WaitAsync();
+        try
         {
-            return;
-        }
-        _completed.Add(e.Id, download);
-        _downloading.Remove(e.Id);
-        await _recoveryService.RemoveAsync(e.Id);
-        if (e.Status == DownloadStatus.Error)
-        {
-            _logger.LogError($"Download failed ({e.Id}): {download.Log}");
-        }
-        else if (e.Status == DownloadStatus.Success)
-        {
-            _logger.LogDebug($"Download completed ({e.Id}): {download.Log}");
-        }
-        else if (e.Status == DownloadStatus.Stopped)
-        {
-            _logger.LogDebug($"Download stopped ({e.Id}): {download.Log}");
-        }
-        DownloadCompleted?.Invoke(this, e);
-        if (_queued.Count > 0 && _downloading.Count < _configurationService.MaxNumberOfActiveDownloads)
-        {
-            using var queuedEnumerator = _queued.GetEnumerator();
-            if (queuedEnumerator.MoveNext())
+            if (!_downloading.TryRemove(e.Id, out var download))
             {
-                var firstDownload = queuedEnumerator.Current.Value;
-                _downloading.Add(firstDownload.Id, firstDownload);
-                _queued.Remove(firstDownload.Id);
-                _logger.LogDebug($"Starting download from queue ({firstDownload.Id}).");
-                DownloadStartedFromQueue?.Invoke(this, new DownloadEventArgs(firstDownload.Id));
-                firstDownload.Start();
+                return;
             }
+            _completed[e.Id] = download;
+            try
+            {
+                if (e.Status == DownloadStatus.Success && !download.Options.ExcludeFromHistory)
+                {
+                    if (!await _historyService.AddAsync(new HistoricDownload(download.Options.Url)
+                    {
+                        Title = Path.GetFileNameWithoutExtension(download.FilePath),
+                        Path = download.FilePath
+                    }))
+                    {
+                        throw new IOException("Unable to save completed download history.");
+                    }
+                }
+                if (!await _recoveryService.RemoveAsync(e.Id))
+                {
+                    throw new IOException("Unable to remove completed recovery data.");
+                }
+            }
+            catch (Exception error)
+            {
+                _logger.LogError(error, "Unable to persist completed download {Id}", e.Id);
+            }
+            DownloadCompleted?.Invoke(this, e);
+            StartQueued();
+        }
+        catch (Exception error)
+        {
+            _logger.LogError(error, "Unable to complete download {Id}", e.Id);
+        }
+        finally
+        {
+            _mutationLock.Release();
         }
     }
 
     private void Download_ProgressChanged(object? sender, DownloadProgressChangedEventArgs e)
     {
-        if (!_downloading.TryGetValue(e.Id, out var download) || download.Status != DownloadStatus.Running)
+        if (_downloading.TryGetValue(e.Id, out var download) && download.Status == DownloadStatus.Running)
         {
-            return;
+            DownloadProgressChanged?.Invoke(this, e);
         }
-        DownloadProgressChanged?.Invoke(this, e);
+    }
+
+    private void Detach(Download download)
+    {
+        download.Completed -= Download_Completed;
+        download.ProgressChanged -= Download_ProgressChanged;
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        foreach (var download in _downloading.Values.Concat(_queued.Values).Concat(_completed.Values))
+        {
+            Detach(download);
+            download.Dispose();
+        }
+        GC.SuppressFinalize(this);
     }
 }

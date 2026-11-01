@@ -254,11 +254,11 @@ public class MainWindowController
         }
     }
 
-    public IEnumerable<int> ClearQueuedDownloads()
+    public async Task<IEnumerable<int>> ClearQueuedDownloadsAsync()
     {
         try
         {
-            return _downloadService.ClearQueued();
+            return await _downloadService.ClearQueuedAsync();
         }
         catch (Exception e)
         {

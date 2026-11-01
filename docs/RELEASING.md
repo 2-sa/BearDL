@@ -1,6 +1,7 @@
-# BearDL automatic releases
+# BearDL releases
 
-Read [CURRENT_TASK.md](CURRENT_TASK.md) first. The user currently requires all new
+Read [CURRENT_TASK.md](CURRENT_TASK.md) first. It owns the current release, CI links,
+and user acceptance status; historical failures do not reopen resolved issues. The user requires all new
 edits to stay local until explicitly asking for a commit. Do not interpret this
 release guide as authorization to commit, push, install tools, or start a build.
 When delivery is authorized, use `2-sa/BearDL` and the user's chosen `main` branch.
@@ -56,6 +57,12 @@ upstream projects. Draft releases and Actions artifacts are not application upda
 
 ## Platform verification
 
+The focused checks include `tests/engine/EngineChecks.csproj` on Windows, Linux,
+and macOS. It exercises the Shared download lifecycle with local child processes
+and fake persistence/extractor dependencies, including queue advancement, recovery
+failure, final paths, and concurrent submissions. It does not replace frontend
+builds or real downloads. New local tests have no CI result until their commit runs.
+
 Windows bundles include runtime and media tools. macOS ZIPs preserve executable
 permissions and contain the app and dependencies; builds target macOS 15 or later.
 The macOS workflow also creates compressed read-only DMGs with an Applications
@@ -68,7 +75,11 @@ verify startup crashes.
 The macOS app is ad-hoc signed, not Apple-notarized. Flatpak requires its referenced
 GNOME runtime. CI success does not establish visual or download correctness.
 
-Before announcing a release as visually verified, test Arabic RTL, English LTR,
+Record user acceptance separately from checks performed by the maintainer. The user
+has confirmed that the latest reviewed release works correctly on Windows and macOS;
+this does not claim new screenshots or new resource measurements.
+
+For future UI changes, before announcing a release as visually verified, test Arabic RTL, English LTR,
 caption controls, scrolling, normal downloads, Fast Download, playlists, and
 updating from an older Windows release. Fixes are published by the next successful
 run; do not move an existing version tag to different source code.

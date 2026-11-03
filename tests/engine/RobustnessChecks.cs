@@ -17,6 +17,9 @@ internal static class RobustnessChecks
         log.Enqueue("last diagnostic");
         Require(log.ToString().Length <= 4096 && log.ToString().EndsWith("last diagnostic"), "Bounded concurrent log tail");
         Require(ReferenceEquals(log.ToString(), log.ToString()), "Unchanged log snapshot reused");
+        var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
+        for (var i = 0; i < 10000; i++) { _ = log.ToString(); }
+        Require(GC.GetAllocatedBytesForCurrentThread() - allocatedBefore < 1024, "Repeated log reads do not allocate full snapshots");
         log.Enqueue(new string('y', 20000));
         Require(log.ToString().Length <= 4096, "Oversized diagnostic bounded");
 
@@ -46,6 +49,20 @@ internal static class RobustnessChecks
         var result = await discovery.GetForBatchFileAsync(batch);
         Require(result.Media.Count == 1 && result.FailedUrls.Count == 2, "Batch preserves valid entries and reports failures");
         Require((await discovery.GetForUrlAsync(new Uri("https://example.com/empty"))).Media.Count == 0, "Empty playlist stays empty");
+        await File.WriteAllLinesAsync(batch, new[] { "https://example.com/invalid", "https://example.com/null" });
+        result = await discovery.GetForBatchFileAsync(batch);
+        Require(result.Media.Count == 0 && result.FailedUrls.Count == 2, "All failed entries remain reported");
+        var nested = """{"title":"leaf"}""";
+        for (var i = 0; i < 18; i++) { nested = "{\"entries\":[" + nested + "]}"; }
+        using (var document = System.Text.Json.JsonDocument.Parse(nested))
+        {
+            try
+            {
+                _ = new DiscoveryResult(document.RootElement, config, translator, new Uri("https://example.com/deep"), root, "");
+                throw new Exception("Deep nesting accepted");
+            }
+            catch (YtdlpException) { }
+        }
         calls = 0;
         try { await discovery.GetForUrlAsync(new Uri("https://example.com/cycle")); throw new Exception("Cycle accepted"); }
         catch (YtdlpException) { Require(calls == 1, "Cycle rejected before repeated extraction"); }

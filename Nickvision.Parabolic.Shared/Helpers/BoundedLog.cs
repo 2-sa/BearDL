@@ -15,7 +15,10 @@ public sealed class BoundedLog
 
     public BoundedLog(int capacity = DefaultCapacity)
     {
-        if (capacity <= Environment.NewLine.Length) { throw new ArgumentOutOfRangeException(nameof(capacity)); }
+        if (capacity <= Environment.NewLine.Length)
+        {
+            throw new ArgumentOutOfRangeException(nameof(capacity));
+        }
         _capacity = capacity;
     }
 
@@ -24,7 +27,10 @@ public sealed class BoundedLog
         lock (_sync)
         {
             var limit = _capacity - Environment.NewLine.Length;
-            if (line.Length > limit) { line = line[^limit..]; }
+            if (line.Length > limit)
+            {
+                line = line[^limit..];
+            }
             var size = line.Length + Environment.NewLine.Length;
             while (_length + size > _capacity && _lines.TryDequeue(out var removed))
             {

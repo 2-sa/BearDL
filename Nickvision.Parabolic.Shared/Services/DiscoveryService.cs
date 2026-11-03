@@ -120,9 +120,11 @@ public class DiscoveryService : IDiscoveryService
                         }
                     }
                 }
-                if (urlInfos.Count > 0 && json.RootElement.TryGetProperty("title", out var titleProperty))
+                if (urlInfos.Count > 0)
                 {
-                    result = new DiscoveryResult(url, titleProperty.GetString() ?? "Tab", urlInfos);
+                    var title = json.RootElement.TryGetProperty("title", out var titleProperty) && titleProperty.ValueKind == JsonValueKind.String
+                        ? titleProperty.GetString() ?? "Tab" : "Tab";
+                    result = new DiscoveryResult(url, title, urlInfos);
                 }
             }
             if (result is null)

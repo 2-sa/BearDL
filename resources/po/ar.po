@@ -3251,3 +3251,6 @@ msgstr "اسحب الرابط إلى النافذة"
 
 msgid "Quick download at best quality"
 msgstr "تنزيل سريع بأعلى جودة"
+
+msgid "Some links could not be processed. Available media will still be shown."
+msgstr "تعذّر تجهيز بعض الروابط. ستظهر الوسائط المتاحة."

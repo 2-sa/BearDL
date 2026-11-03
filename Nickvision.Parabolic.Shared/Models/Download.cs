@@ -7,7 +7,7 @@ using Nickvision.Parabolic.Shared.Helpers;
 using Nickvision.Parabolic.Shared.Services;
 using System;
 using System.Diagnostics;
-using System.Collections.Concurrent;
+
 using System.Threading;
 using System.Globalization;
 using System.IO;
@@ -22,7 +22,7 @@ public partial class Download : IDisposable
     private readonly IConfigurationService _configurationService;
     private readonly ITranslationService _translationService;
     private readonly IYtdlpExecutableService _ytdlpExecutableService;
-    private readonly ConcurrentQueue<string> _logLines;
+    private readonly BoundedLog _logLines;
     private string? _finalPath;
     private readonly object _processLock = new();
     private bool _removeSourceData;
@@ -33,7 +33,7 @@ public partial class Download : IDisposable
     public DownloadOptions Options { get; }
     public string FilePath { get; private set; }
     public DownloadStatus Status { get; private set; }
-    public string Log => string.Join(Environment.NewLine, _logLines);
+    public string Log => _logLines.ToString();
 
     public event EventHandler<DownloadCompletedEventArgs>? Completed;
     public event EventHandler<DownloadProgressChangedEventArgs>? ProgressChanged;
@@ -48,7 +48,7 @@ public partial class Download : IDisposable
         _configurationService = configurationService;
         _translationService = translationService;
         _ytdlpExecutableService = ytdlpExecutableService;
-        _logLines = new ConcurrentQueue<string>();
+        _logLines = new BoundedLog();
         _removeSourceData = false;
         _process = null;
         _progressSkipCounter = 0;

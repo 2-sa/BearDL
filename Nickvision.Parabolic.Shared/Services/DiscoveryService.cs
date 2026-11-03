@@ -46,79 +46,112 @@ public class DiscoveryService : IDiscoveryService
             throw new ArgumentException("The batch file is empty or is of invalid syntax.");
         }
         var entryInfos = new List<DiscoveryResult>();
+        var failures = new List<string>();
         foreach (var entry in entries)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var urlInfo = await GetForUrlAsync(entry.Url, credential, entry.SuggestedSaveFolder, entry.SuggestedFilename, cancellationToken);
-            if (urlInfo is not null)
+            try
             {
+                var urlInfo = await GetForUrlAsync(entry.Url, credential, entry.SuggestedSaveFolder, entry.SuggestedFilename, cancellationToken);
                 entryInfos.Add(urlInfo);
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception error) when (error is YtdlpException or JsonException or InvalidOperationException or ArgumentException)
+            {
+                failures.Add(entry.Url.ToString());
+                _logger.LogWarning(error, "Unable to discover batch entry {Url}", entry.Url);
             }
         }
         cancellationToken.ThrowIfCancellationRequested();
-        return new DiscoveryResult(new Uri(path), Path.GetFileNameWithoutExtension(path), entryInfos);
+        var result = new DiscoveryResult(new Uri(path), Path.GetFileNameWithoutExtension(path), entryInfos);
+        result.FailedUrls.AddRange(failures);
+        return result;
     }
 
     public Task<DiscoveryResult> GetForUrlAsync(Uri url, Credential? credential = null, CancellationToken cancellationToken = default) => GetForUrlAsync(url, credential, string.Empty, string.Empty, cancellationToken);
 
-    private async Task<DiscoveryResult> GetForUrlAsync(Uri url, Credential? credential, string suggestedSaveFolder, string suggestedFilename, CancellationToken cancellationToken = default)
+    private async Task<DiscoveryResult> GetForUrlAsync(Uri url, Credential? credential, string suggestedSaveFolder, string suggestedFilename, CancellationToken cancellationToken = default, HashSet<Uri>? ancestors = null)
     {
-        _logger.LogInformation($"Discovering media for {url}...");
-        var processResult = await _ytdlpExecutableService.ExecuteAsync(_ytdlpExecutableService.GetDiscoveryProcessArguments(url, credential), cancellationToken);
-        var jsonStartIndex = processResult.Output?.IndexOf('{') ?? -1;
-        if (processResult.ExitCode != 0 && jsonStartIndex == -1)
+        ancestors ??= new HashSet<Uri>();
+        if (ancestors.Count >= 16 || !ancestors.Add(url))
         {
-            _logger.LogError($"Failed to discover media for {url}: {processResult.Error.TrimEnd()}");
-            throw new YtdlpException(processResult.Error);
+            throw new YtdlpException("The playlist contains a cycle or exceeds the nesting limit.");
         }
-        if (jsonStartIndex == -1)
+        try
         {
-            _logger.LogError($"Empty or non-JSON output from yt-dlp for {url}: {processResult.Error.TrimEnd()}");
-            throw new YtdlpException(!string.IsNullOrWhiteSpace(processResult.Error) ? processResult.Error : processResult.Output ?? string.Empty);
-        }
-        cancellationToken.ThrowIfCancellationRequested();
-        var jsonPayload = jsonStartIndex > 0 ? processResult.Output![jsonStartIndex..] : processResult.Output!;
-        using var json = JsonDocument.Parse(jsonPayload);
-        if (json.RootElement.ValueKind != JsonValueKind.Object)
-        {
-            _logger.LogError($"Unexpected output format from yt-dlp for {url}: {processResult.Output.TrimEnd()}");
-            throw new YtdlpException($"Unexpected output format from yt-dlp: {processResult.Output}");
-        }
-        DiscoveryResult? result = null;
-        if (json!.RootElement.TryGetProperty("entries", out var entriesProperty) && entriesProperty.GetArrayLength() > 0)
-        {
-            var urlInfos = new List<DiscoveryResult>();
-            foreach (var entry in entriesProperty.EnumerateArray())
+            _logger.LogInformation($"Discovering media for {url}...");
+            var processResult = await _ytdlpExecutableService.ExecuteAsync(_ytdlpExecutableService.GetDiscoveryProcessArguments(url, credential), cancellationToken);
+            var jsonStartIndex = processResult.Output?.IndexOf('{') ?? -1;
+            if (processResult.ExitCode != 0 && jsonStartIndex == -1)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                if (entry.ValueKind != JsonValueKind.Object)
+                _logger.LogError($"Failed to discover media for {url}: {processResult.Error.TrimEnd()}");
+                throw new YtdlpException(processResult.Error);
+            }
+            if (jsonStartIndex == -1)
+            {
+                _logger.LogError($"Empty or non-JSON output from yt-dlp for {url}: {processResult.Error.TrimEnd()}");
+                throw new YtdlpException(!string.IsNullOrWhiteSpace(processResult.Error) ? processResult.Error : processResult.Output ?? string.Empty);
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            var jsonPayload = jsonStartIndex > 0 ? processResult.Output![jsonStartIndex..] : processResult.Output!;
+            using var json = ParseDiscoveryJson(jsonPayload);
+            if (json.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                _logger.LogError($"Unexpected output format from yt-dlp for {url}: {processResult.Output.TrimEnd()}");
+                throw new YtdlpException($"Unexpected output format from yt-dlp: {processResult.Output}");
+            }
+            DiscoveryResult? result = null;
+            if (json!.RootElement.TryGetProperty("entries", out var entriesProperty) && entriesProperty.ValueKind == JsonValueKind.Array && entriesProperty.GetArrayLength() > 0)
+            {
+                var urlInfos = new List<DiscoveryResult>();
+                foreach (var entry in entriesProperty.EnumerateArray())
                 {
-                    continue;
-                }
-                if (entry.TryGetProperty("ie_key", out var ieProperty) && (ieProperty.GetString() ?? string.Empty) == "YoutubeTab" && entry.TryGetProperty("url", out var urlProperty))
-                {
-                    var urlInfo = await GetForUrlAsync(new Uri(urlProperty.GetString() ?? string.Empty), credential, suggestedSaveFolder, suggestedFilename, cancellationToken);
-                    if (urlInfo is not null)
+                    cancellationToken.ThrowIfCancellationRequested();
+                    if (entry.ValueKind != JsonValueKind.Object)
                     {
-                        urlInfos.Add(urlInfo);
+                        continue;
+                    }
+                    if (entry.TryGetProperty("ie_key", out var ieProperty) && ieProperty.ValueKind == JsonValueKind.String && ieProperty.GetString() == "YoutubeTab" && entry.TryGetProperty("url", out var urlProperty) && urlProperty.ValueKind == JsonValueKind.String)
+                    {
+                        var urlInfo = await GetForUrlAsync(new Uri(urlProperty.GetString() ?? string.Empty), credential, suggestedSaveFolder, suggestedFilename, cancellationToken, ancestors);
+                        if (urlInfo is not null)
+                        {
+                            urlInfos.Add(urlInfo);
+                        }
                     }
                 }
+                if (urlInfos.Count > 0 && json.RootElement.TryGetProperty("title", out var titleProperty))
+                {
+                    result = new DiscoveryResult(url, titleProperty.GetString() ?? "Tab", urlInfos);
+                }
             }
-            if (urlInfos.Count > 0 && json.RootElement.TryGetProperty("title", out var titleProperty))
+            if (result is null)
             {
-                result = new DiscoveryResult(url, titleProperty.GetString() ?? "Tab", urlInfos);
+                result = new DiscoveryResult(json.RootElement, _configurationService, _translationService, url, suggestedSaveFolder, suggestedFilename);
             }
+            foreach (var media in result.Media)
+            {
+                _thumbnailService.MapMedia(media);
+            }
+            _logger.LogInformation($"Discovered media for {url}: {result.Media.Count} item(s)");
+            return result;
         }
-        if (result is null)
+        finally
         {
-            result = new DiscoveryResult(json.RootElement, _configurationService, _translationService, url, suggestedSaveFolder, suggestedFilename);
+            ancestors.Remove(url);
         }
-        foreach (var media in result.Media)
+    }
+
+    private static JsonDocument ParseDiscoveryJson(string payload)
+    {
+        try
         {
-            _thumbnailService.MapMedia(media);
+            return JsonDocument.Parse(payload);
         }
-        _logger.LogInformation($"Discovered media for {url}: {result.Media.Count} item(s)");
-        return result;
+        catch (JsonException)
+        {
+            throw new YtdlpException("The extractor returned invalid media information.");
+        }
     }
 
     private async Task<List<BatchFileEntry>> ParseBatchFileAsync(string batchFilePath, CancellationToken cancellationToken = default)

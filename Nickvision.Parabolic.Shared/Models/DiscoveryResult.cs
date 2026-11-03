@@ -4,6 +4,7 @@ using Nickvision.Desktop.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading;
 
 namespace Nickvision.Parabolic.Shared.Models;
 
@@ -16,6 +17,7 @@ public class DiscoveryResult
     public string Title { get; }
     public bool HasSuggestedSaveFolder { get; }
     public List<Media> Media { get; }
+    public List<string> FailedUrls { get; } = new();
 
     public bool IsPlaylist => Media.Count > 1;
 
@@ -26,7 +28,7 @@ public class DiscoveryResult
 
     private DiscoveryResult(Uri url, string suggestedSaveFolder, string suggestedSaveFilename)
     {
-        Id = _nextId++;
+        Id = Interlocked.Increment(ref _nextId);
         Url = url;
         Title = suggestedSaveFilename;
         HasSuggestedSaveFolder = !string.IsNullOrEmpty(suggestedSaveFolder);
@@ -35,12 +37,16 @@ public class DiscoveryResult
 
     public DiscoveryResult(JsonElement ytdlp, IConfigurationService configurationService, ITranslationService translator, Uri url, string suggestedSaveFolder, string suggestedSaveFilename) : this(url, suggestedSaveFolder, suggestedSaveFilename)
     {
-        if (ytdlp.TryGetProperty("title", out var titleProperty) && titleProperty.ValueKind != JsonValueKind.Null)
+        if (ytdlp.TryGetProperty("title", out var titleProperty) && titleProperty.ValueKind == JsonValueKind.String)
         {
             Title = titleProperty.GetString() ?? string.Empty;
         }
-        if (ytdlp.TryGetProperty("entries", out var entriesProperty) && entriesProperty.ValueKind == JsonValueKind.Array && entriesProperty.GetArrayLength() > 0)
+        if (ytdlp.TryGetProperty("entries", out var entriesProperty))
         {
+            if (entriesProperty.ValueKind != JsonValueKind.Array)
+            {
+                throw new YtdlpException("The extractor returned an invalid playlist.");
+            }
             AddEntries(entriesProperty, configurationService, translator, suggestedSaveFolder, Url);
             var urlCounts = new Dictionary<string, int>(Media.Count);
             foreach (var m in Media)
@@ -65,8 +71,12 @@ public class DiscoveryResult
         }
     }
 
-    private void AddEntries(JsonElement entriesProperty, IConfigurationService configurationService, ITranslationService translator, string suggestedSaveFolder, Uri? parentUrl)
+    private void AddEntries(JsonElement entriesProperty, IConfigurationService configurationService, ITranslationService translator, string suggestedSaveFolder, Uri? parentUrl, int depth = 0)
     {
+        if (depth >= 16)
+        {
+            throw new YtdlpException("The playlist exceeds the nesting limit.");
+        }
         var position = 0;
         foreach (var mediaObject in entriesProperty.EnumerateArray())
         {
@@ -89,7 +99,7 @@ public class DiscoveryResult
                         break;
                     }
                 }
-                AddEntries(nestedEntries, configurationService, translator, suggestedSaveFolder, nestedUrl);
+                AddEntries(nestedEntries, configurationService, translator, suggestedSaveFolder, nestedUrl, depth + 1);
                 continue;
             }
             var media = new Media(mediaObject, configurationService, translator, suggestedSaveFolder, string.Empty, parentUrl, position);
@@ -109,6 +119,7 @@ public class DiscoveryResult
         Title = title;
         foreach (var urlInfo in urlInfos)
         {
+            FailedUrls.AddRange(urlInfo.FailedUrls);
             HasSuggestedSaveFolder |= urlInfo.HasSuggestedSaveFolder;
             Media.EnsureCapacity(Media.Count + urlInfo.Media.Count);
             foreach (var media in urlInfo.Media)

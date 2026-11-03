@@ -1925,3 +1925,6 @@ msgstr ""
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:153
 msgid "Post-Processor"
 msgstr ""
+
+msgid "Some links could not be processed. Available media will still be shown."
+msgstr ""

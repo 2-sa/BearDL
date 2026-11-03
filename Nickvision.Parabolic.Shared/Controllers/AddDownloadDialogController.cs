@@ -346,6 +346,14 @@ public class AddDownloadDialogController
         try
         {
             var res = url.IsFile ? await _discoveryService.GetForBatchFileAsync(url.LocalPath, credential, cancellationToken) : await _discoveryService.GetForUrlAsync(url, credential, cancellationToken);
+            if (res.FailedUrls.Count > 0)
+            {
+                _notificationService.Send(new AppNotification(_translationService._("Some links could not be processed. Available media will still be shown."), NotificationSeverity.Warning)
+                {
+                    Action = "error",
+                    ActionParam = string.Join(Environment.NewLine, res.FailedUrls)
+                });
+            }
             if (res.Media.Count == 0)
             {
                 _logger.LogError($"No media was found: {url}");

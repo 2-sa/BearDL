@@ -57,6 +57,7 @@ try
     });
     var translator = Proxy.Create<ITranslationService>((method, values) =>
         method.ReturnType == typeof(string) ? values.FirstOrDefault(value => value is string) ?? "" : null);
+    await RobustnessChecks.RunAsync(config, translator, root);
 
     using (var json = JsonDocument.Parse("""{"format_id":"v","ext":"ogg","vcodec":"none","acodec":"vorbis"}"""))
     {

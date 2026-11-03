@@ -53,6 +53,10 @@ internal static class RobustnessChecks
         result = await discovery.GetForBatchFileAsync(batch);
         Require(result.Media.Count == 0 && result.FailedUrls.Count == 2, "All failed entries remain reported");
         var nested = """{"title":"leaf"}""";
+        using (var emptyNested = System.Text.Json.JsonDocument.Parse("""{"entries":[{"entries":[]}]}"""))
+        {
+            Require(new DiscoveryResult(emptyNested.RootElement, config, translator, new Uri("https://example.com/empty-nested"), root, "").Media.Count == 0, "Nested empty playlist does not become a download");
+        }
         for (var i = 0; i < 18; i++) { nested = "{\"entries\":[" + nested + "]}"; }
         using (var document = System.Text.Json.JsonDocument.Parse(nested))
         {

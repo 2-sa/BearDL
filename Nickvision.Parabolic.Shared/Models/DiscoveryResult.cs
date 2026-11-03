@@ -85,8 +85,16 @@ public class DiscoveryResult
             {
                 continue;
             }
-            if (mediaObject.TryGetProperty("entries", out var nestedEntries) && nestedEntries.ValueKind == JsonValueKind.Array && nestedEntries.GetArrayLength() > 0)
+            if (mediaObject.TryGetProperty("entries", out var nestedEntries))
             {
+                if (nestedEntries.ValueKind != JsonValueKind.Array)
+                {
+                    throw new YtdlpException("The extractor returned an invalid playlist.");
+                }
+                if (nestedEntries.GetArrayLength() == 0)
+                {
+                    continue;
+                }
                 Uri? nestedUrl = null;
                 foreach (var property in new[] { "webpage_url", "original_url", "url" })
                 {

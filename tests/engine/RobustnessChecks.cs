@@ -148,14 +148,14 @@ internal static class RobustnessChecks
         {
             if (method.Name != "GetDownloadProcess") { throw new NotSupportedException(method.Name); }
             var downloadOptions = (DownloadOptions)args[0]!;
-            var info = new ProcessStartInfo(Environment.ProcessPath!)
+            var info = new ProcessStartInfo(System.Environment.ProcessPath!)
             {
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 CreateNoWindow = true
             };
-            if (Path.GetFileNameWithoutExtension(Environment.ProcessPath!).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
+            if (Path.GetFileNameWithoutExtension(System.Environment.ProcessPath!).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
             {
                 info.ArgumentList.Add(Assembly.GetExecutingAssembly().Location);
             }

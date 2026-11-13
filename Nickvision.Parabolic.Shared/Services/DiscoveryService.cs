@@ -122,7 +122,7 @@ public class DiscoveryService : IDiscoveryService
             using var json = ParseDiscoveryJson(jsonPayload);
             if (json.RootElement.ValueKind != JsonValueKind.Object)
             {
-                _logger.LogError($"Unexpected output format from yt-dlp for {url}: {processResult.Output.TrimEnd()}");
+                _logger.LogError($"Unexpected output format from yt-dlp for {url}: {processResult.Output!.TrimEnd()}");
                 throw new YtdlpException($"Unexpected output format from yt-dlp: {processResult.Output}");
             }
             DiscoveryResult? result = null;

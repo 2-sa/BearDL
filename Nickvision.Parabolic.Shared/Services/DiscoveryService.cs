@@ -45,27 +45,52 @@ public class DiscoveryService : IDiscoveryService
         {
             throw new ArgumentException("The batch file is empty or is of invalid syntax.");
         }
-        var entryInfos = new List<DiscoveryResult>();
-        var failures = new List<string>();
-        foreach (var entry in entries)
+        var entryInfos = new DiscoveryResult?[entries.Count];
+        var failedUrls = new string?[entries.Count];
+        using var semaphore = new SemaphoreSlim(4, 4);
+        var tasks = new Task[entries.Count];
+        for (var i = 0; i < entries.Count; i++)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            tasks[i] = DiscoverBatchEntryAsync(i, entries[i]);
+        }
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        var orderedInfos = new List<DiscoveryResult>(entries.Count);
+        var orderedFailures = new List<string>();
+        for (var i = 0; i < entries.Count; i++)
+        {
+            if (entryInfos[i] is { } info)
+            {
+                orderedInfos.Add(info);
+            }
+            if (failedUrls[i] is { } failure)
+            {
+                orderedFailures.Add(failure);
+            }
+        }
+        var result = new DiscoveryResult(new Uri(path), Path.GetFileNameWithoutExtension(path), orderedInfos);
+        result.FailedUrls.AddRange(orderedFailures);
+        return result;
+
+        async Task DiscoverBatchEntryAsync(int index, BatchFileEntry entry)
+        {
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                var urlInfo = await GetForUrlAsync(entry.Url, credential, entry.SuggestedSaveFolder, entry.SuggestedFilename, cancellationToken);
-                entryInfos.Add(urlInfo);
+                cancellationToken.ThrowIfCancellationRequested();
+                entryInfos[index] = await GetForUrlAsync(entry.Url, credential, entry.SuggestedSaveFolder, entry.SuggestedFilename, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception error) when (error is YtdlpException or JsonException or InvalidOperationException or ArgumentException)
             {
-                failures.Add(entry.Url.ToString());
+                failedUrls[index] = entry.Url.ToString();
                 _logger.LogWarning(error, "Unable to discover batch entry {Url}", entry.Url);
             }
+            finally
+            {
+                semaphore.Release();
+            }
         }
-        cancellationToken.ThrowIfCancellationRequested();
-        var result = new DiscoveryResult(new Uri(path), Path.GetFileNameWithoutExtension(path), entryInfos);
-        result.FailedUrls.AddRange(failures);
-        return result;
     }
 
     public Task<DiscoveryResult> GetForUrlAsync(Uri url, Credential? credential = null, CancellationToken cancellationToken = default) => GetForUrlAsync(url, credential, string.Empty, string.Empty, cancellationToken);
@@ -103,7 +128,7 @@ public class DiscoveryService : IDiscoveryService
             DiscoveryResult? result = null;
             if (json!.RootElement.TryGetProperty("entries", out var entriesProperty) && entriesProperty.ValueKind == JsonValueKind.Array && entriesProperty.GetArrayLength() > 0)
             {
-                var urlInfos = new List<DiscoveryResult>();
+                var tabUrls = new List<Uri>();
                 foreach (var entry in entriesProperty.EnumerateArray())
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -113,18 +138,48 @@ public class DiscoveryService : IDiscoveryService
                     }
                     if (entry.TryGetProperty("ie_key", out var ieProperty) && ieProperty.ValueKind == JsonValueKind.String && ieProperty.GetString() == "YoutubeTab" && entry.TryGetProperty("url", out var urlProperty) && urlProperty.ValueKind == JsonValueKind.String)
                     {
-                        var urlInfo = await GetForUrlAsync(new Uri(urlProperty.GetString() ?? string.Empty), credential, suggestedSaveFolder, suggestedFilename, cancellationToken, ancestors);
-                        if (urlInfo is not null)
+                        tabUrls.Add(new Uri(urlProperty.GetString() ?? string.Empty));
+                    }
+                }
+                if (tabUrls.Count > 0)
+                {
+                    var tabResults = new DiscoveryResult?[tabUrls.Count];
+                    using var semaphore = new SemaphoreSlim(4, 4);
+                    var tasks = new Task[tabUrls.Count];
+                    for (var i = 0; i < tabUrls.Count; i++)
+                    {
+                        tasks[i] = DiscoverTabAsync(i, tabUrls[i], new HashSet<Uri>(ancestors));
+                    }
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var urlInfos = new List<DiscoveryResult>(tabUrls.Count);
+                    for (var i = 0; i < tabResults.Length; i++)
+                    {
+                        if (tabResults[i] is { } urlInfo)
                         {
                             urlInfos.Add(urlInfo);
                         }
                     }
-                }
-                if (urlInfos.Count > 0)
-                {
-                    var title = json.RootElement.TryGetProperty("title", out var titleProperty) && titleProperty.ValueKind == JsonValueKind.String
-                        ? titleProperty.GetString() ?? "Tab" : "Tab";
-                    result = new DiscoveryResult(url, title, urlInfos);
+                    if (urlInfos.Count > 0)
+                    {
+                        var title = json.RootElement.TryGetProperty("title", out var titleProperty) && titleProperty.ValueKind == JsonValueKind.String
+                            ? titleProperty.GetString() ?? "Tab" : "Tab";
+                        result = new DiscoveryResult(url, title, urlInfos);
+                    }
+
+                    async Task DiscoverTabAsync(int index, Uri tabUrl, HashSet<Uri> branchAncestors)
+                    {
+                        await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                        try
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                            tabResults[index] = await GetForUrlAsync(tabUrl, credential, suggestedSaveFolder, suggestedFilename, cancellationToken, branchAncestors).ConfigureAwait(false);
+                        }
+                        finally
+                        {
+                            semaphore.Release();
+                        }
+                    }
                 }
             }
             if (result is null)

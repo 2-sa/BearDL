@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
   "name": "BearDL Extension",
-  "version": "1.4",
+  "version": "1.5",
   "description": "Opens specified links in BearDL for download",
   "author": "NickvisionApps & OwlRoyalty",
-  "homepage_url": "https://github.com/NickvisionApps/Parabolic",
+  "homepage_url": "https://github.com/2-sa/BearDL",
   "browser_specific_settings": {
   "gecko": {
     "id": "addon@nickvision.org",

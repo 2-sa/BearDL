@@ -1,3 +1,4 @@
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
@@ -5,6 +6,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Extensions.Logging;
 using Nickvision.Desktop.Globalization;
 using Nickvision.Parabolic.Shared.Events;
+using Nickvision.Parabolic.Shared.Helpers;
 using Nickvision.Parabolic.Shared.Models;
 using Nickvision.Parabolic.Shared.Services;
 using Nickvision.Parabolic.WinUI.Helpers;
@@ -31,9 +33,12 @@ public sealed partial class DownloadRow : UserControl
     private readonly IThumbnailService _thumbnailService;
     private readonly ILogger<DownloadRow> _logger;
     private readonly ITranslationService _translator;
+    private readonly DispatcherQueueTimer _logRefreshTimer;
     private int _id;
     private string _path;
-    private string _log;
+    private BoundedLog _log;
+    private bool _logDirty;
+    private long _lastLogUiUpdateTicks;
     private bool _isPaused;
 
     public event EventHandler<int>? PauseRequested;
@@ -52,8 +57,20 @@ public sealed partial class DownloadRow : UserControl
         _translator = translator;
         _id = -1;
         _path = string.Empty;
-        _log = string.Empty;
+        _log = new BoundedLog();
+        _logDirty = false;
+        _lastLogUiUpdateTicks = 0;
         _isPaused = false;
+        _logRefreshTimer = DispatcherQueue.CreateTimer();
+        _logRefreshTimer.Interval = TimeSpan.FromMilliseconds(250);
+        _logRefreshTimer.IsRepeating = false;
+        _logRefreshTimer.Tick += (_, _) =>
+        {
+            if (_logDirty)
+            {
+                FlushLogToUi();
+            }
+        };
         BtnShowLog.Text = _translator._("Log");
         ActionsFlyout.MenuFlyoutPresenterStyle = new Style(typeof(MenuFlyoutPresenter))
         {
@@ -81,10 +98,29 @@ public sealed partial class DownloadRow : UserControl
         SoftwareBitmapSource? thumbnailSource = null;
         try
         {
+            const uint maxThumbnailWidth = 150;
+            const uint maxThumbnailHeight = 100;
             using var thumbnailMemoryStream = await _thumbnailService.GetImageStreamAsync(args.Url);
             using var thumbnailStream = thumbnailMemoryStream.AsRandomAccessStream();
             var thumbnailDecoder = await BitmapDecoder.CreateAsync(thumbnailStream);
-            var thumbnailBitmap = await thumbnailDecoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+            var transform = new BitmapTransform
+            {
+                InterpolationMode = BitmapInterpolationMode.Fant
+            };
+            var pixelWidth = thumbnailDecoder.PixelWidth;
+            var pixelHeight = thumbnailDecoder.PixelHeight;
+            if (pixelWidth > 0 && pixelHeight > 0 && (pixelWidth > maxThumbnailWidth || pixelHeight > maxThumbnailHeight))
+            {
+                var scale = Math.Min((double)maxThumbnailWidth / pixelWidth, (double)maxThumbnailHeight / pixelHeight);
+                transform.ScaledWidth = Math.Max(1u, (uint)Math.Round(pixelWidth * scale));
+                transform.ScaledHeight = Math.Max(1u, (uint)Math.Round(pixelHeight * scale));
+            }
+            using var thumbnailBitmap = await thumbnailDecoder.GetSoftwareBitmapAsync(
+                BitmapPixelFormat.Bgra8,
+                BitmapAlphaMode.Premultiplied,
+                transform,
+                ExifOrientationMode.RespectExifOrientation,
+                ColorManagementMode.DoNotColorManage);
             thumbnailSource = new SoftwareBitmapSource();
             await thumbnailSource.SetBitmapAsync(thumbnailBitmap);
         }
@@ -122,14 +158,19 @@ public sealed partial class DownloadRow : UserControl
     public void TriggerCompletedState(DownloadCompletedEventArgs args)
     {
         _path = args.Path;
+        _logRefreshTimer.Stop();
         if (args.Log.Length > 0)
         {
-            _log = args.Log.ToString();
+            _log = new BoundedLog();
+            _log.Enqueue(args.Log.ToString());
+            _logDirty = true;
         }
         LblTitle.Text = Path.GetFileName(_path);
         ToolTipService.SetToolTip(LblTitle, LblTitle.Text);
-        LblLog.Text = _log;
-        ScrollLog.ChangeView(null, ScrollLog.ScrollableHeight, null);
+        if (GridLog.Visibility == Visibility.Visible)
+        {
+            FlushLogToUi();
+        }
         ProgBar.Value = 1.0;
         ProgBar.IsIndeterminate = false;
         if (args.Status == DownloadStatus.Error)
@@ -164,7 +205,21 @@ public sealed partial class DownloadRow : UserControl
         IcnStatus.Glyph = "\uE896";
         if (args.LogChunk.Length > 0)
         {
-            _log += $"{args.LogChunk.ToString()}\n";
+            _log.Enqueue(args.LogChunk.ToString());
+            _logDirty = true;
+            if (GridLog.Visibility == Visibility.Visible)
+            {
+                var now = Environment.TickCount64;
+                if (now - _lastLogUiUpdateTicks >= 250)
+                {
+                    _logRefreshTimer.Stop();
+                    FlushLogToUi();
+                }
+                else if (!_logRefreshTimer.IsRunning)
+                {
+                    _logRefreshTimer.Start();
+                }
+            }
         }
         if (double.IsNaN(args.Progress))
         {
@@ -187,8 +242,6 @@ public sealed partial class DownloadRow : UserControl
             ProgBar.Value = args.Progress;
             ProgBar.IsIndeterminate = false;
         }
-        LblLog.Text = _log;
-        ScrollLog.ChangeView(null, ScrollLog.ScrollableHeight, null);
     }
 
     public void TriggerResumedState()
@@ -266,7 +319,11 @@ public sealed partial class DownloadRow : UserControl
         }
     }
 
-    private void OnUnloaded(object sender, RoutedEventArgs e) => CopyFileToolTip.IsOpen = false;
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        CopyFileToolTip.IsOpen = false;
+        _logRefreshTimer.Stop();
+    }
 
     private async void OpenFolder(object sender, RoutedEventArgs e)
     {
@@ -314,7 +371,28 @@ public sealed partial class DownloadRow : UserControl
 
     private void Retry(object sender, RoutedEventArgs e) => RetryRequested?.Invoke(this, _id);
 
-    private void ShowLog(object sender, RoutedEventArgs e) => GridLog.Visibility = BtnShowLog.IsChecked ? Visibility.Visible : Visibility.Collapsed;
+    private void ShowLog(object sender, RoutedEventArgs e)
+    {
+        var isVisible = BtnShowLog.IsChecked;
+        GridLog.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+        _logRefreshTimer.Stop();
+        if (isVisible)
+        {
+            FlushLogToUi();
+        }
+    }
+
+    private void FlushLogToUi()
+    {
+        _logDirty = false;
+        _lastLogUiUpdateTicks = Environment.TickCount64;
+        if (GridLog.Visibility != Visibility.Visible)
+        {
+            return;
+        }
+        LblLog.Text = _log.ToString();
+        ScrollLog.ChangeView(null, ScrollLog.ScrollableHeight, null);
+    }
 
     private void Stop(object sender, RoutedEventArgs e) => StopRequested?.Invoke(this, _id);
 }

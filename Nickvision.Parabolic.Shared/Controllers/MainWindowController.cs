@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Nickvision.Desktop.Application;
 using Nickvision.Desktop.Filesystem;
 using Nickvision.Desktop.Globalization;
@@ -107,11 +107,11 @@ public class MainWindowController
             for (var i = 0; i < _argumentsService.Data.Count; i++)
             {
                 var urlText = _argumentsService.Data[i].Trim();
-                if (urlText.StartsWith("parabolic://", StringComparison.Ordinal))
+                if (LaunchUrlParser.Parse(urlText) is Uri launchUrl)
                 {
-                    urlText = urlText.Replace("parabolic://", "https://");
+                    return launchUrl;
                 }
-                if (Uri.TryCreate(urlText, UriKind.Absolute, out var url))
+                if (Uri.TryCreate(urlText, UriKind.Absolute, out var url) && url.IsFile)
                 {
                     return url;
                 }
@@ -128,9 +128,13 @@ public class MainWindowController
             // The shared updater service otherwise reuses GitHub's release list for up to six hours.
             RefreshAppReleaseCache();
         }
-        var stableAppVersion = await _updaterService.GetLatestStableVersionAsync();
-        var stableYtdlpVersion = await _ytdlpExecutableService.GetLatestStableVersionAsync();
-        var stableDenoVersion = await _denoExecutableService.GetLatestStableVersionAsync();
+        var stableAppVersionTask = _updaterService.GetLatestStableVersionAsync();
+        var stableYtdlpVersionTask = _ytdlpExecutableService.GetLatestStableVersionAsync();
+        var stableDenoVersionTask = _denoExecutableService.GetLatestStableVersionAsync();
+        await Task.WhenAll(stableAppVersionTask, stableYtdlpVersionTask, stableDenoVersionTask);
+        var stableAppVersion = await stableAppVersionTask;
+        var stableYtdlpVersion = await stableYtdlpVersionTask;
+        var stableDenoVersion = await stableDenoVersionTask;
         if (stableAppVersion is not null)
         {
             _latestAppVersion = stableAppVersion;
@@ -145,8 +149,11 @@ public class MainWindowController
         }
         if (_configurationService.AllowPreviewUpdates)
         {
-            var previewAppVersion = await _updaterService.GetLatestPreviewVersionAsync();
-            var previewYtdlpVersion = await _ytdlpExecutableService.GetLatestPreviewVersionAsync();
+            var previewAppVersionTask = _updaterService.GetLatestPreviewVersionAsync();
+            var previewYtdlpVersionTask = _ytdlpExecutableService.GetLatestPreviewVersionAsync();
+            await Task.WhenAll(previewAppVersionTask, previewYtdlpVersionTask);
+            var previewAppVersion = await previewAppVersionTask;
+            var previewYtdlpVersion = await previewYtdlpVersionTask;
             if (previewAppVersion is not null && previewAppVersion > stableAppVersion)
             {
                 _latestAppVersion = previewAppVersion;

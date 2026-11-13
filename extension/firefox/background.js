@@ -1,83 +1,62 @@
-// Function to format the URL and open the scheme link
-function openParabolicUrl(url) {
-  browser.storage.sync.get(['trimPlaylist'], (result) => {
-    if (browser.runtime.lastError) {
-      console.error('Storage error:', browser.runtime.lastError);
+// Shared helpers are loaded by the manifest (Firefox) or importScripts (Chrome).
+async function openParabolicUrl(url, tabId) {
+  try {
+    if (typeof url !== 'string' || !/^https?:\/\//i.test(url) || !Number.isInteger(tabId)) {
+      return;
     }
-    let processedUrl = url;
-    if (result && result.trimPlaylist) {
-      processedUrl = trimPlaylistFromUrl(url);
+    let settings = {};
+    try {
+      settings = await browser.storage.sync.get(['trimPlaylist']);
+    } catch (error) {
+      console.warn('Unable to read extension settings:', error);
     }
-    // Remove "https://" or "http://" from the URL
-    let formattedUrl = processedUrl.replace(/^https?:\/\//, '');
-    // Construct the final scheme URL
-    let schemeUrl = `parabolic://${formattedUrl}`;
-
-    // Use the browser.tabs API to open the URL scheme
-    browser.tabs.update({ url: schemeUrl });
-  });
+    const processedUrl = settings.trimPlaylist ? trimPlaylistFromUrl(url) : url;
+    const schemeUrl = /^http:\/\//i.test(processedUrl)
+      ? `parabolic://http/${processedUrl.slice('http://'.length)}`
+      : `parabolic://${processedUrl.replace(/^https:\/\//i, '')}`;
+    // Keep the original tab: the user may switch tabs while storage is loading.
+    await browser.tabs.update(tabId, { url: schemeUrl });
+  } catch (error) {
+    console.error('Unable to send link to BearDL:', error);
+  }
 }
 
-// Function to create the context menu item
-function createContextMenu() {
-  browser.contextMenus.create({
-    id: "openParabolicLink",
-    title: "Open link in BearDL",
-    contexts: ["link", "page"]
-  });
-}
-
-// Function to remove the context menu item
-function removeContextMenu() {
-  browser.contextMenus.remove("openParabolicLink");
-}
-
-// Initialize context menu based on stored settings
-browser.runtime.onInstalled.addListener(() => {
-  browser.storage.sync.get('showContextMenu', (result) => {
-    if (result.showContextMenu !== false) {
-      createContextMenu();
+async function updateContextMenu() {
+  try {
+    await browser.contextMenus.removeAll();
+    const settings = await browser.storage.sync.get('showContextMenu');
+    if (settings.showContextMenu !== false) {
+      browser.contextMenus.create({ id: 'openParabolicLink', title: 'Open link in BearDL', contexts: ['link', 'page'] });
     }
-  });
-});
+  } catch (error) {
+    console.error('Unable to update context menu:', error);
+  }
+}
 
-// Listen for changes in storage to update the context menu
+browser.runtime.onInstalled.addListener(updateContextMenu);
+browser.runtime.onStartup.addListener(updateContextMenu);
 browser.storage.onChanged.addListener((changes, namespace) => {
   if (namespace === 'sync' && changes.showContextMenu) {
-    if (changes.showContextMenu.newValue) {
-      createContextMenu();
-    } else {
-      removeContextMenu();
-    }
+    void updateContextMenu();
   }
 });
-
-// Listener for context menu: Open link in Parabolic clicks
 browser.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === "openParabolicLink") {
-    // If the right click was on a link, use the link's URL.
-    // Otherwise, use the current tab's URL.
-    const urlToOpen = info.linkUrl || info.pageUrl;
-    openParabolicUrl(urlToOpen);
+  if (info.menuItemId === 'openParabolicLink') {
+    void openParabolicUrl(info.linkUrl || info.pageUrl, tab?.id);
   }
 });
-
-// Listener for action (Extension icon) clicks
-browser.action.onClicked.addListener((tab) => {
-  // Use the current tab's URL for the action button
-  openParabolicUrl(tab.url);
-});
-
-// Listener for Keyboard shorcut command(Alt+P, Alt+O)
-browser.commands.onCommand.addListener((command) => {
-  if (command === "open-parabolic-current-tab") {
-    browser.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+browser.action.onClicked.addListener(tab => { void openParabolicUrl(tab.url, tab.id); });
+browser.commands.onCommand.addListener(async command => {
+  try {
+    if (command === 'open-parabolic-current-tab') {
+      const tabs = await browser.tabs.query({ active: true, currentWindow: true });
       if (tabs.length > 0) {
-        openParabolicUrl(tabs[0].url);
+        await openParabolicUrl(tabs[0].url, tabs[0].id);
       }
-    });
-  };
-  if (command === "open-parabolic-options") {
-    browser.runtime.openOptionsPage();
+    } else if (command === 'open-parabolic-options') {
+      await browser.runtime.openOptionsPage();
+    }
+  } catch (error) {
+    console.error('Unable to handle extension command:', error);
   }
 });

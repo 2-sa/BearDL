@@ -17,6 +17,21 @@ namespace Nickvision.Parabolic.Shared.Models;
 
 public partial class Download : IDisposable
 {
+    private const long NonProgressThrottleMs = 150;
+    private static readonly string[] SourceDataAdditionalFieldKeys =
+    [
+        "comment",
+        "COMMENT",
+        "description",
+        "DESCRIPTION",
+        "purl",
+        "PURL",
+        "synopsis",
+        "SYNOPSIS",
+        "url",
+        "URL"
+    ];
+
     private static int _nextId;
 
     private readonly IConfigurationService _configurationService;
@@ -28,6 +43,7 @@ public partial class Download : IDisposable
     private bool _removeSourceData;
     private Process? _process;
     private int _progressSkipCounter;
+    private long _lastNonProgressTicks;
 
     public int Id { get; }
     public DownloadOptions Options { get; }
@@ -52,6 +68,7 @@ public partial class Download : IDisposable
         _removeSourceData = false;
         _process = null;
         _progressSkipCounter = 0;
+        _lastNonProgressTicks = Environment.TickCount64 - NonProgressThrottleMs;
         Id = Interlocked.Increment(ref _nextId);
         Options = options;
         FilePath = Path.Combine(Options.SaveFolder, $"{Options.SaveFilename}{Options.FileType.DotExtension}");
@@ -213,51 +230,37 @@ public partial class Download : IDisposable
                         if (_removeSourceData)
                         {
                             var track = new Track(FilePath);
-                            track.Comment = string.Empty;
-                            track.Description = string.Empty;
-                            track.EncodedBy = string.Empty;
-                            track.Encoder = string.Empty;
-                            if (track.AdditionalFields.ContainsKey("comment"))
+                            var hasSourceData = !string.IsNullOrEmpty(track.Comment)
+                                || !string.IsNullOrEmpty(track.Description)
+                                || !string.IsNullOrEmpty(track.EncodedBy)
+                                || !string.IsNullOrEmpty(track.Encoder);
+                            if (!string.IsNullOrEmpty(track.Comment))
                             {
-                                track.AdditionalFields.Remove("comment");
+                                track.Comment = string.Empty;
                             }
-                            if (track.AdditionalFields.ContainsKey("COMMENT"))
+                            if (!string.IsNullOrEmpty(track.Description))
                             {
-                                track.AdditionalFields.Remove("COMMENT");
+                                track.Description = string.Empty;
                             }
-                            if (track.AdditionalFields.ContainsKey("description"))
+                            if (!string.IsNullOrEmpty(track.EncodedBy))
                             {
-                                track.AdditionalFields.Remove("description");
+                                track.EncodedBy = string.Empty;
                             }
-                            if (track.AdditionalFields.ContainsKey("DESCRIPTION"))
+                            if (!string.IsNullOrEmpty(track.Encoder))
                             {
-                                track.AdditionalFields.Remove("DESCRIPTION");
+                                track.Encoder = string.Empty;
                             }
-                            if (track.AdditionalFields.ContainsKey("purl"))
+                            foreach (var key in SourceDataAdditionalFieldKeys)
                             {
-                                track.AdditionalFields.Remove("purl");
+                                if (track.AdditionalFields.Remove(key))
+                                {
+                                    hasSourceData = true;
+                                }
                             }
-                            if (track.AdditionalFields.ContainsKey("PURL"))
+                            if (hasSourceData)
                             {
-                                track.AdditionalFields.Remove("PURL");
+                                await track.SaveAsync();
                             }
-                            if (track.AdditionalFields.ContainsKey("synopsis"))
-                            {
-                                track.AdditionalFields.Remove("synopsis");
-                            }
-                            if (track.AdditionalFields.ContainsKey("SYNOPSIS"))
-                            {
-                                track.AdditionalFields.Remove("SYNOPSIS");
-                            }
-                            if (track.AdditionalFields.ContainsKey("url"))
-                            {
-                                track.AdditionalFields.Remove("url");
-                            }
-                            if (track.AdditionalFields.ContainsKey("URL"))
-                            {
-                                track.AdditionalFields.Remove("URL");
-                            }
-                            await track.SaveAsync();
                         }
                     }
                 }
@@ -329,23 +332,13 @@ public partial class Download : IDisposable
         {
             if (e.Data.StartsWith("[Parabolic] Progress", StringComparison.Ordinal))
             {
-                var fields = e.Data.Split(';');
-                if (fields.Length != 7 || fields[1] == "NA")
+                if (!TryParseParabolicProgress(e.Data, out var progress, out var speed, out var eta))
                 {
-                    ProgressChanged?.Invoke(this, new DownloadProgressChangedEventArgs(Id, e.Data.AsMemory(), double.NaN, 0.0, 0));
+                    progress = double.NaN;
+                    speed = 0.0;
+                    eta = 0;
                 }
-                else if (fields[1] == "finished" || fields[1] == "processing")
-                {
-                    ProgressChanged?.Invoke(this, new DownloadProgressChangedEventArgs(Id, e.Data.AsMemory(), double.NaN, 0.0, 0));
-                }
-                else
-                {
-                    ProgressChanged?.Invoke(this, new DownloadProgressChangedEventArgs(Id,
-                    e.Data.AsMemory(),
-                    (fields[2] != "NA" ? double.Parse(fields[2], NumberStyles.Any, CultureInfo.InvariantCulture) : 0.0) / (fields[3] != "NA" ? double.Parse(fields[3], NumberStyles.Any, CultureInfo.InvariantCulture) : (fields[4] != "NA" ? double.Parse(fields[4], NumberStyles.Any, CultureInfo.InvariantCulture) : 1.0)),
-                    fields[5] != "NA" ? double.Parse(fields[5], NumberStyles.Any, CultureInfo.InvariantCulture) : 0.0,
-                    fields[6] == "NA" || fields[6] == "Unknown" ? -1 : Convert.ToInt32(double.Parse(fields[6], NumberStyles.Any, CultureInfo.InvariantCulture))));
-                }
+                ProgressChanged?.Invoke(this, new DownloadProgressChangedEventArgs(Id, e.Data.AsMemory(), progress, speed, eta));
             }
             else if (e.Data.StartsWith("[#", StringComparison.Ordinal))
             {
@@ -367,7 +360,7 @@ public partial class Download : IDisposable
                 }
                 if (!line.TryParseAriaProgressLine(out var finalProgress, out var finalSpeed, out var finalEta))
                 {
-                    ProgressChanged?.Invoke(this, new DownloadProgressChangedEventArgs(Id, e.Data.AsMemory(), double.NaN, 0.0, 0));
+                    EmitThrottledNonProgressUpdate(e.Data);
                     return;
                 }
                 ProgressChanged?.Invoke(this, new DownloadProgressChangedEventArgs(Id, e.Data.AsMemory(), finalProgress, finalSpeed, finalEta));
@@ -377,7 +370,7 @@ public partial class Download : IDisposable
                 var seconds = 0.0;
                 var sleepingPrefixLength = "[download] Sleeping ".Length;
                 var secondsEnd = e.Data.IndexOf(" second", sleepingPrefixLength, StringComparison.Ordinal);
-                if (secondsEnd == -1 || !double.TryParse(e.Data.Substring(sleepingPrefixLength, secondsEnd - sleepingPrefixLength), NumberStyles.Any, CultureInfo.InvariantCulture, out seconds))
+                if (secondsEnd == -1 || !double.TryParse(e.Data.AsSpan(sleepingPrefixLength, secondsEnd - sleepingPrefixLength), NumberStyles.Any, CultureInfo.InvariantCulture, out seconds))
                 {
                     ProgressChanged?.Invoke(this, new DownloadProgressChangedEventArgs(Id, e.Data.AsMemory(), double.NegativeInfinity, 0.0, 0));
                 }
@@ -398,12 +391,104 @@ public partial class Download : IDisposable
             }
             else
             {
-                ProgressChanged?.Invoke(this, new DownloadProgressChangedEventArgs(Id, e.Data.AsMemory(), double.NaN, 0.0, 0));
+                EmitThrottledNonProgressUpdate(e.Data);
             }
         }
         catch
         {
-            ProgressChanged?.Invoke(this, new DownloadProgressChangedEventArgs(Id, e.Data.AsMemory(), double.NaN, 0.0, 0));
+            EmitThrottledNonProgressUpdate(e.Data);
         }
+    }
+
+    private void EmitThrottledNonProgressUpdate(string line)
+    {
+        var now = Environment.TickCount64;
+        var last = Volatile.Read(ref _lastNonProgressTicks);
+        if (now - last < NonProgressThrottleMs || Interlocked.CompareExchange(ref _lastNonProgressTicks, now, last) != last)
+        {
+            return;
+        }
+        ProgressChanged?.Invoke(this, new DownloadProgressChangedEventArgs(Id, line.AsMemory(), double.NaN, 0.0, 0));
+    }
+
+    private static bool TryParseParabolicProgress(ReadOnlySpan<char> line, out double progress, out double speed, out int eta)
+    {
+        progress = double.NaN;
+        speed = 0.0;
+        eta = 0;
+        if (!TryNextField(ref line, out _)
+            || !TryNextField(ref line, out var status)
+            || !TryNextField(ref line, out var downloadedSpan)
+            || !TryNextField(ref line, out var totalSpan)
+            || !TryNextField(ref line, out var totalEstimateSpan)
+            || !TryNextField(ref line, out var speedSpan)
+            || line.Contains(';'))
+        {
+            return false;
+        }
+        var etaSpan = line;
+        if (status.Equals("NA", StringComparison.Ordinal)
+            || status.Equals("finished", StringComparison.Ordinal)
+            || status.Equals("processing", StringComparison.Ordinal))
+        {
+            return true;
+        }
+        var downloaded = 0.0;
+        if (!downloadedSpan.Equals("NA", StringComparison.Ordinal)
+            && !double.TryParse(downloadedSpan, NumberStyles.Any, CultureInfo.InvariantCulture, out downloaded))
+        {
+            return false;
+        }
+        double total;
+        if (!totalSpan.Equals("NA", StringComparison.Ordinal))
+        {
+            if (!double.TryParse(totalSpan, NumberStyles.Any, CultureInfo.InvariantCulture, out total))
+            {
+                return false;
+            }
+        }
+        else if (!totalEstimateSpan.Equals("NA", StringComparison.Ordinal))
+        {
+            if (!double.TryParse(totalEstimateSpan, NumberStyles.Any, CultureInfo.InvariantCulture, out total))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            total = 1.0;
+        }
+        if (!speedSpan.Equals("NA", StringComparison.Ordinal)
+            && !double.TryParse(speedSpan, NumberStyles.Any, CultureInfo.InvariantCulture, out speed))
+        {
+            return false;
+        }
+        if (etaSpan.Equals("NA", StringComparison.Ordinal) || etaSpan.Equals("Unknown", StringComparison.Ordinal))
+        {
+            eta = -1;
+        }
+        else if (double.TryParse(etaSpan, NumberStyles.Any, CultureInfo.InvariantCulture, out var etaSeconds))
+        {
+            eta = Convert.ToInt32(etaSeconds);
+        }
+        else
+        {
+            return false;
+        }
+        progress = downloaded / total;
+        return true;
+    }
+
+    private static bool TryNextField(ref ReadOnlySpan<char> remaining, out ReadOnlySpan<char> field)
+    {
+        var separatorIndex = remaining.IndexOf(';');
+        if (separatorIndex < 0)
+        {
+            field = default;
+            return false;
+        }
+        field = remaining[..separatorIndex];
+        remaining = remaining[(separatorIndex + 1)..];
+        return true;
     }
 }

@@ -21,8 +21,10 @@ using Nickvision.Parabolic.WinUI.Controls;
 using Nickvision.Parabolic.WinUI.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.Graphics;
@@ -44,10 +46,16 @@ public sealed partial class MainWindow : Window
     private readonly AppInfo _appInfo;
     private readonly ITranslationService _translationService;
     private readonly Dictionary<int, DownloadRow> _downloadRows;
+    private readonly List<int> _downloadOrder = new();
+    private readonly ObservableCollection<DownloadRow> _visibleDownloadRows = new();
     private readonly DispatcherQueueTimer _notificationTimer;
+    private readonly DispatcherQueueTimer _clipboardDebounceTimer;
     private readonly List<RectInt32> _titleBarInputRegions = new(8);
     private bool _titleBarUpdateQueued;
     private bool _isClosed;
+    private readonly TaskCompletionSource<bool> _startupReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly SemaphoreSlim _addDialogGate = new(1, 1);
+    private readonly CancellationTokenSource _windowClosed = new();
     private string? _clipboardSuggestedUrl;
     private string? _clipboardDismissedUrl;
     private NavigationViewItem? _lastDownloadsNavItem;
@@ -63,10 +71,15 @@ public sealed partial class MainWindow : Window
         _appInfo = appInfo;
         _translationService = translationService;
         _downloadRows = new Dictionary<int, DownloadRow>();
+        ListDownloads.ItemsSource = _visibleDownloadRows;
         _notificationTimer = DispatcherQueue.CreateTimer();
         _notificationTimer.Interval = TimeSpan.FromSeconds(5);
         _notificationTimer.IsRepeating = false;
         _notificationTimer.Tick += (_, _) => InfoBar.IsOpen = false;
+        _clipboardDebounceTimer = DispatcherQueue.CreateTimer();
+        _clipboardDebounceTimer.Interval = TimeSpan.FromMilliseconds(150);
+        _clipboardDebounceTimer.IsRepeating = false;
+        _clipboardDebounceTimer.Tick += async (_, _) => await RefreshClipboardSuggestionAsync();
         InfoBar.Closed += (_, _) =>
         {
             _notificationTimer.Stop();
@@ -80,7 +93,9 @@ public sealed partial class MainWindow : Window
         Closed += (_, _) =>
         {
             _isClosed = true;
+            _windowClosed.Cancel();
             _notificationTimer.Stop();
+            _clipboardDebounceTimer.Stop();
             GlassThemeHelper.LayoutModeChanged -= OnLayoutModeChanged;
         };
         GlassThemeHelper.LayoutModeChanged += OnLayoutModeChanged;
@@ -115,7 +130,7 @@ public sealed partial class MainWindow : Window
         eventsService.DownloadStopped += (sender, e) => DispatcherQueue.TryEnqueue(() => Controller_DownloadStopped(sender, e));
         eventsService.DownloadStartedFromQueue += (sender, e) => DispatcherQueue.TryEnqueue(() => Controller_DownloadStartedFromQueue(sender, e));
         eventsService.DownloadRetired += (sender, e) => DispatcherQueue.TryEnqueue(() => Controller_DownloadRetired(sender, e));
-        eventsService.DownloadRequested += async (s, args) => await AddDownloadAsync(args.Url);
+        eventsService.DownloadRequested += (s, args) => DispatcherQueue.TryEnqueue(() => ReceiveExternalUrl(args.Url));
         // Translations
         AppWindow.Title = _appInfo.ShortName;
         LblTitle.Text = _appInfo.ShortName;
@@ -202,7 +217,7 @@ public sealed partial class MainWindow : Window
         {
             if (args.WindowActivationState != WindowActivationState.Deactivated)
             {
-                _ = RefreshClipboardSuggestionAsync();
+                ScheduleClipboardRefresh();
             }
         };
         Clipboard.ContentChanged += Clipboard_ContentChanged;
@@ -275,6 +290,7 @@ public sealed partial class MainWindow : Window
                 await _controller.ClearRecoverableDownloadsAsync();
             }
         }
+        _startupReady.TrySetResult(true);
         if (_controller.UrlFromArgs is not null)
         {
             await AddDownloadAsync(_controller.UrlFromArgs);
@@ -558,7 +574,7 @@ public sealed partial class MainWindow : Window
             {
                 ViewStack.SelectedIndex = (int)Pages.Downloads;
             }
-            _ = RefreshClipboardSuggestionAsync();
+            ScheduleClipboardRefresh();
         }
         else
         {
@@ -576,6 +592,7 @@ public sealed partial class MainWindow : Window
             NavAbout.Visibility = Visibility.Collapsed;
             QuickUrlCard.Visibility = Visibility.Collapsed;
             ModernDownloadsToolbar.Visibility = Visibility.Collapsed;
+            _clipboardDebounceTimer.Stop();
             ClipboardSuggestion.Visibility = Visibility.Collapsed;
             if (!isInitial && ViewStack.SelectedIndex == (int)Pages.Downloads && _downloadRows.Count == 0)
             {
@@ -609,7 +626,13 @@ public sealed partial class MainWindow : Window
         row.StopRequested += DownloadRow_StopRequested;
         row.RetryRequested += DownloadRow_RetryRequested;
         await row.TriggerAddedStateAsync(e);
+        if (_isClosed)
+        {
+            DetachDownloadRowEvents(row);
+            return;
+        }
         _downloadRows[e.Id] = row;
+        _downloadOrder.Add(e.Id);
         UpdateDownloadsList();
         if (ViewStack.SelectedIndex != (int)Pages.Custom)
         {
@@ -655,11 +678,29 @@ public sealed partial class MainWindow : Window
 
     private void Controller_DownloadRetired(object? sender, DownloadEventArgs e)
     {
-        if (_downloadRows.TryGetValue(e.Id, out var row))
+        if (RemoveDownloadRow(e.Id))
         {
-            _downloadRows.Remove(e.Id);
             UpdateDownloadsList();
         }
+    }
+
+    private bool RemoveDownloadRow(int id)
+    {
+        if (!_downloadRows.Remove(id, out var row))
+        {
+            return false;
+        }
+        _downloadOrder.Remove(id);
+        DetachDownloadRowEvents(row);
+        return true;
+    }
+
+    private void DetachDownloadRowEvents(DownloadRow row)
+    {
+        row.PauseRequested -= DownloadRow_PauseRequested;
+        row.ResumeRequested -= DownloadRow_ResumeRequested;
+        row.StopRequested -= DownloadRow_StopRequested;
+        row.RetryRequested -= DownloadRow_RetryRequested;
     }
 
     private void DownloadRow_PauseRequested(object? sender, int id)
@@ -781,7 +822,7 @@ public sealed partial class MainWindow : Window
         addDownloadDialog.WindowId = AppWindow.Id;
         addDownloadDialog.RequestedTheme = MainGrid.ActualTheme;
         addDownloadDialog.XamlRoot = MainGrid.XamlRoot;
-        _ = addDownloadDialog.QuickDownloadAsync(uri);
+        await addDownloadDialog.QuickDownloadAsync(uri);
     }
 
     private async void QuickCustomize_Click(object sender, RoutedEventArgs e)
@@ -791,11 +832,7 @@ public sealed partial class MainWindow : Window
             return;
         }
         TxtQuickUrl.Text = string.Empty;
-        var addDownloadDialog = _serviceProvider.GetRequiredService<AddDownloadDialog>();
-        addDownloadDialog.WindowId = AppWindow.Id;
-        addDownloadDialog.RequestedTheme = MainGrid.ActualTheme;
-        addDownloadDialog.XamlRoot = MainGrid.XamlRoot;
-        await addDownloadDialog.ShowCustomDiscoverAsync(uri);
+        await RunAddDialogAsync(dialog => dialog.ShowCustomDiscoverAsync(uri));
     }
 
     private void FocusUrlAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
@@ -839,9 +876,20 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private void ScheduleClipboardRefresh()
+    {
+        if (_isClosed || !GlassThemeHelper.UseModernLayout)
+        {
+            _clipboardDebounceTimer.Stop();
+            return;
+        }
+        _clipboardDebounceTimer.Stop();
+        _clipboardDebounceTimer.Start();
+    }
+
     private void Clipboard_ContentChanged(object? sender, object e)
     {
-        DispatcherQueue.TryEnqueue(async () => await RefreshClipboardSuggestionAsync());
+        DispatcherQueue.TryEnqueue(ScheduleClipboardRefresh);
     }
 
     private async Task RefreshClipboardSuggestionAsync()
@@ -857,6 +905,11 @@ public sealed partial class MainWindow : Window
             if (content.Contains(StandardDataFormats.Text))
             {
                 var text = (await content.GetTextAsync())?.Trim();
+                if (_isClosed || !GlassThemeHelper.UseModernLayout)
+                {
+                    ClipboardSuggestion.Visibility = Visibility.Collapsed;
+                    return;
+                }
                 if (!string.IsNullOrEmpty(text)
                     && text.TryExtractHttpUri(out var uri))
                 {
@@ -887,11 +940,16 @@ public sealed partial class MainWindow : Window
         _clipboardDismissedUrl = _clipboardSuggestedUrl;
         _clipboardSuggestedUrl = null;
         ClipboardSuggestion.Visibility = Visibility.Collapsed;
-        var addDownloadDialog = _serviceProvider.GetRequiredService<AddDownloadDialog>();
-        addDownloadDialog.WindowId = AppWindow.Id;
-        addDownloadDialog.RequestedTheme = MainGrid.ActualTheme;
-        addDownloadDialog.XamlRoot = MainGrid.XamlRoot;
-        await addDownloadDialog.StartDownloadAsync(uri);
+        var probeDialog = _serviceProvider.GetRequiredService<AddDownloadDialog>();
+        if (probeDialog.IsFastDownload)
+        {
+            probeDialog.WindowId = AppWindow.Id;
+            probeDialog.RequestedTheme = MainGrid.ActualTheme;
+            probeDialog.XamlRoot = MainGrid.XamlRoot;
+            await probeDialog.QuickDownloadAsync(uri);
+            return;
+        }
+        await RunAddDialogAsync(dialog => dialog.ShowCustomDiscoverAsync(uri));
     }
 
     private void ClipboardDismiss_Click(object sender, RoutedEventArgs e)
@@ -1029,7 +1087,7 @@ public sealed partial class MainWindow : Window
     {
         foreach (var id in _controller.ClearCompletedDownloads())
         {
-            _downloadRows.Remove(id);
+            RemoveDownloadRow(id);
         }
         UpdateDownloadsList();
     }
@@ -1038,7 +1096,7 @@ public sealed partial class MainWindow : Window
     {
         foreach (var id in await _controller.ClearQueuedDownloadsAsync())
         {
-            _downloadRows.Remove(id);
+            RemoveDownloadRow(id);
         }
         UpdateDownloadsList();
     }
@@ -1080,19 +1138,86 @@ public sealed partial class MainWindow : Window
         progress.ProgressChanged -= UpdateProgress_Changed;
     }
 
-    private async Task AddDownloadAsync(Uri? uri)
+    public async void ReceiveExternalUrl(Uri uri)
     {
-        var addDownloadDialog = _serviceProvider.GetRequiredService<AddDownloadDialog>();
-        addDownloadDialog.WindowId = AppWindow.Id;
-        addDownloadDialog.RequestedTheme = MainGrid.ActualTheme;
-        addDownloadDialog.XamlRoot = MainGrid.XamlRoot;
-        if (uri is not null)
+        try
         {
-            await addDownloadDialog.ShowAsync(uri);
+            await AddDownloadAsync(uri);
         }
-        else
+        catch (Exception error)
         {
-            await addDownloadDialog.ShowAsync();
+            _serviceProvider.GetRequiredService<INotificationService>().Send(new AppNotification(_translationService._("An error occurred while discovering media"), NotificationSeverity.Error)
+            {
+                Action = "error",
+                ActionParam = error.ToString()
+            });
+        }
+    }
+
+    private static ContentDialog? FindOpenDialog(DependencyObject? root)
+    {
+        if (root is ContentDialog dialog)
+        {
+            return dialog;
+        }
+        if (root is null)
+        {
+            return null;
+        }
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            if (FindOpenDialog(VisualTreeHelper.GetChild(root, i)) is ContentDialog child)
+            {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    private Task AddDownloadAsync(Uri? uri)
+    {
+        return RunAddDialogAsync(dialog => uri is not null ? dialog.ShowAsync(uri) : dialog.ShowAsync());
+    }
+
+    private async Task RunAddDialogAsync(Func<AddDownloadDialog, Task> showDialogAsync)
+    {
+        var acquired = false;
+        try
+        {
+            await _startupReady.Task.WaitAsync(_windowClosed.Token);
+            await _addDialogGate.WaitAsync(_windowClosed.Token);
+            acquired = true;
+            while (VisualTreeHelper.GetOpenPopupsForXamlRoot(MainGrid.XamlRoot)
+                .Select(popup => FindOpenDialog(popup.Child)).FirstOrDefault(dialog => dialog is not null) is ContentDialog open)
+            {
+                var closed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                void OnClosed(ContentDialog sender, ContentDialogClosedEventArgs args) => closed.TrySetResult(true);
+                open.Closed += OnClosed;
+                try
+                {
+                    await closed.Task.WaitAsync(_windowClosed.Token);
+                }
+                finally
+                {
+                    open.Closed -= OnClosed;
+                }
+            }
+            _windowClosed.Token.ThrowIfCancellationRequested();
+            var addDownloadDialog = _serviceProvider.GetRequiredService<AddDownloadDialog>();
+            addDownloadDialog.WindowId = AppWindow.Id;
+            addDownloadDialog.RequestedTheme = MainGrid.ActualTheme;
+            addDownloadDialog.XamlRoot = MainGrid.XamlRoot;
+            await showDialogAsync(addDownloadDialog);
+        }
+        catch (OperationCanceledException) when (_windowClosed.IsCancellationRequested)
+        {
+        }
+        finally
+        {
+            if (acquired)
+            {
+                _addDialogGate.Release();
+            }
         }
     }
 
@@ -1113,10 +1238,11 @@ public sealed partial class MainWindow : Window
             activeFilterItem = _lastDownloadsNavItem ?? NavDownloadsAll;
         }
         var selectedTag = (activeFilterItem.Tag as string) ?? "0";
-        var rows = new List<DownloadRow>(_downloadRows.Count);
-        foreach (var row in _downloadRows.Values)
+        var targetRows = new List<DownloadRow>(_downloadRows.Count);
+        var targetSet = new HashSet<DownloadRow>();
+        for (var i = _downloadOrder.Count - 1; i >= 0; i--)
         {
-            if (selectedTag switch
+            if (_downloadRows.TryGetValue(_downloadOrder[i], out var row) && selectedTag switch
             {
                 "1" => row.Status == DownloadStatus.Running || row.Status == DownloadStatus.Paused,
                 "2" => row.Status == DownloadStatus.Queued,
@@ -1125,20 +1251,48 @@ public sealed partial class MainWindow : Window
                 _ => true
             })
             {
-                rows.Add(row);
+                targetRows.Add(row);
+                targetSet.Add(row);
             }
         }
-        rows.Reverse();
-        ListDownloads.ItemsSource = rows;
-        var downloadsPage = rows.Count > 0 ? 1 : 0;
+        for (var i = _visibleDownloadRows.Count - 1; i >= 0; i--)
+        {
+            if (!targetSet.Contains(_visibleDownloadRows[i]))
+            {
+                _visibleDownloadRows.RemoveAt(i);
+            }
+        }
+        for (var i = 0; i < targetRows.Count; i++)
+        {
+            var desired = targetRows[i];
+            if (i < _visibleDownloadRows.Count && ReferenceEquals(_visibleDownloadRows[i], desired))
+            {
+                continue;
+            }
+            var existingIndex = -1;
+            for (var j = i + 1; j < _visibleDownloadRows.Count; j++)
+            {
+                if (ReferenceEquals(_visibleDownloadRows[j], desired))
+                {
+                    existingIndex = j;
+                    break;
+                }
+            }
+            if (existingIndex >= 0)
+            {
+                _visibleDownloadRows.RemoveAt(existingIndex);
+            }
+            _visibleDownloadRows.Insert(i, desired);
+        }
+        var downloadsPage = targetRows.Count > 0 ? 1 : 0;
         if (ViewStackDownloads.SelectedIndex != downloadsPage)
         {
             ViewStackDownloads.SelectedIndex = downloadsPage;
         }
         if (GlassThemeHelper.UseModernLayout)
         {
-            LblModernSectionTitle.Text = activeFilterItem?.Content as string ?? _translationService._("All");
-            LblModernSectionCount.Text = rows.Count > 0 ? $"· {rows.Count}" : string.Empty;
+            LblModernSectionTitle.Text = activeFilterItem.Content as string ?? _translationService._("All");
+            LblModernSectionCount.Text = targetRows.Count > 0 ? $"· {targetRows.Count}" : string.Empty;
             BtnClassicNoneAdd.Visibility = Visibility.Collapsed;
 
             if (_downloadRows.Count == 0)

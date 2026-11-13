@@ -428,6 +428,13 @@ public static class IConfigurationServiceExtensions
             set => configurationService.Set("UseAria", value);
         }
 
+        public bool UseModernLayout
+        {
+            get => configurationService.Get("UseModernLayout", true);
+
+            set => configurationService.Set("UseModernLayout", value);
+        }
+
         public bool UsePartFiles
         {
             get => configurationService.Get("UsePartFiles", true);

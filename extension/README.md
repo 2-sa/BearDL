@@ -21,3 +21,19 @@ extension. For BearDL application status, see [CURRENT_TASK.md](../docs/CURRENT_
 
 ##### Firefox
 [![get-the-addon](resources/firefox.png)](https://addons.mozilla.org/en-US/firefox/addon/parabolic/)
+
+## Local handoff changes (1.5)
+
+The extension sends the URL to the clicked tab explicitly, even if the active tab
+changes while settings load. Chrome and Firefox use Promise-based extension APIs.
+Only HTTP(S) pages are forwarded. Browser approval to open an external application
+is still required when the browser prompts for it.
+
+The accompanying Windows source change redirects new launches to the running
+instance and queues URL dialogs until startup and existing dialogs finish. This
+requires an application build containing that change; release 2026.5.147 does not
+contain it. Reload an unpacked Chrome extension after updating its folder. Editing
+this repository does not update the upstream Firefox store listing.
+
+Run `node --test tests/extension/handoff.test.cjs` for the mocked API checks.
+These checks do not replace testing native protocol activation in a browser.

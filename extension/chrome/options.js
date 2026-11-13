@@ -1,22 +1,28 @@
 // Load saved settings when options opens
-document.addEventListener('DOMContentLoaded', () => {
-  chrome.storage.sync.get(['trimPlaylist', 'showContextMenu'], (result) => {
-    if (chrome.runtime.lastError) {
-      console.error('Storage error:', chrome.runtime.lastError);
-      return;
-    }
-    document.getElementById('trimPlaylist').checked = (result && result.trimPlaylist) || false;
-    document.getElementById('contextMenuToggle').checked = (result && (typeof result.showContextMenu !== 'undefined' ? result.showContextMenu : true));
-  });
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const result = await chrome.storage.sync.get(['trimPlaylist', 'showContextMenu']);
+    document.getElementById('trimPlaylist').checked = Boolean(result && result.trimPlaylist);
+    document.getElementById('contextMenuToggle').checked = result && typeof result.showContextMenu !== 'undefined' ? result.showContextMenu : true;
+  } catch (error) {
+    console.error('Storage error:', error);
+  }
 });
 
 // Save/show Trim Playlist setting
-document.getElementById('trimPlaylist').addEventListener('change', (e) => {
-  chrome.storage.sync.set({ trimPlaylist: e.target.checked });
+document.getElementById('trimPlaylist').addEventListener('change', async (e) => {
+  try {
+    await chrome.storage.sync.set({ trimPlaylist: e.target.checked });
+  } catch (error) {
+    console.error('Storage error:', error);
+  }
 });
 
 // Save/show context menu setting
-document.getElementById('contextMenuToggle').addEventListener('change', (e) => {
-  chrome.storage.sync.set({ showContextMenu: e.target.checked });
+document.getElementById('contextMenuToggle').addEventListener('change', async (e) => {
+  try {
+    await chrome.storage.sync.set({ showContextMenu: e.target.checked });
+  } catch (error) {
+    console.error('Storage error:', error);
+  }
 });
-

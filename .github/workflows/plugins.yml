@@ -10,6 +10,8 @@ on:
       - 'tests/plugins/**'
       - 'tests/duplicates/**'
       - 'tests/engine/**'
+      - 'tests/extension/**'
+      - 'extension/**'
       - 'Nickvision.Parabolic.Shared/**'
       - 'tests/windows/Clipboard*'
       - 'Nickvision.Parabolic.WinUI/Helpers/FileClipboard.cs'
@@ -23,6 +25,16 @@ permissions:
   contents: read
 
 jobs:
+  extension:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check browser extension handoff
+        run: node --test tests/extension/handoff.test.cjs
+
   engine:
     strategy:
       fail-fast: false

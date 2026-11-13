@@ -130,7 +130,6 @@ public class YtdlpExecutableService : DependencyExecutableService, IYtdlpExecuta
         {
             downloadOptions.Url.ToString(),
             "--ignore-config",
-            "--verbose",
             "--no-warnings",
             "--progress",
             "--newline",

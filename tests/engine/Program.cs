@@ -18,6 +18,19 @@ if (args.Length > 0 && args[0] == "--child")
         return;
     }
     var path = args[2];
+    if (args[1] == "progress")
+    {
+        Console.WriteLine("[Parabolic] Progress;downloading;50;200;NA;100.0;2.0");
+        Console.WriteLine("[Parabolic] Progress;finished;200;200;NA;NA;NA");
+        Console.WriteLine("[Parabolic] Progress;broken");
+        for (var i = 0; i < 40; i++)
+        {
+            Console.WriteLine("[info] burst line " + i);
+        }
+        await File.WriteAllTextAsync(path, "media");
+        Console.WriteLine("__BEARDL_FILE__" + path);
+        return;
+    }
     await File.WriteAllTextAsync(path, "media");
     // Exercise concurrent stderr and stdout, followed by the final output marker.
     await Task.WhenAll(Task.Run(() =>

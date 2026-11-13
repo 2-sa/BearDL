@@ -1,8 +1,10 @@
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Nickvision.Desktop.Application;
 using Nickvision.Desktop.Globalization;
 using Nickvision.Parabolic.Shared.Controllers;
+using Nickvision.Parabolic.Shared.Helpers;
 using System;
 using System.IO;
 
@@ -13,7 +15,8 @@ namespace Nickvision.Parabolic.WinUI.Helpers;
 /// </summary>
 public static class GlassThemeHelper
 {
-    private static bool? _useModernLayout;
+    private static IConfigurationService? _configurationService;
+    private static bool _fallbackUseModernLayout = true;
 
     public static event EventHandler<bool>? LayoutModeChanged;
 
@@ -23,51 +26,43 @@ public static class GlassThemeHelper
         "Parabolic",
         "ui-layout-mode.txt");
 
-    public static bool UseModernLayout
+    public static void Initialize(IConfigurationService configurationService, bool isPortable)
     {
-        get
+        _configurationService = configurationService;
+        if (!isPortable && File.Exists(LayoutModeConfigPath))
         {
-            if (_useModernLayout.HasValue)
-            {
-                return _useModernLayout.Value;
-            }
             try
             {
-                if (File.Exists(LayoutModeConfigPath))
+                var hasSavedValue = configurationService.Get("UseModernLayout", true) == configurationService.Get("UseModernLayout", false);
+                if (!hasSavedValue)
                 {
                     var text = File.ReadAllText(LayoutModeConfigPath).Trim();
-                    _useModernLayout = string.Equals(text, "modern", StringComparison.OrdinalIgnoreCase);
-                    return _useModernLayout.Value;
+                    configurationService.UseModernLayout = !string.Equals(text, "classic", StringComparison.OrdinalIgnoreCase);
                 }
+                File.Delete(LayoutModeConfigPath);
             }
             catch
             {
-                // Ignore read errors and fall back to Classic (false)
+                // Ignore migration errors and use configured/default Modern layout.
             }
-            _useModernLayout = false;
-            return false;
         }
+        _fallbackUseModernLayout = configurationService.UseModernLayout;
     }
+
+    public static bool UseModernLayout => _configurationService is not null
+        ? _configurationService.UseModernLayout
+        : _fallbackUseModernLayout;
 
     public static void SetUseModernLayout(bool useModern)
     {
-        if (_useModernLayout == useModern)
+        if (UseModernLayout == useModern)
         {
             return;
         }
-        _useModernLayout = useModern;
-        try
+        _fallbackUseModernLayout = useModern;
+        if (_configurationService is not null)
         {
-            var dir = Path.GetDirectoryName(LayoutModeConfigPath);
-            if (!string.IsNullOrEmpty(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-            File.WriteAllText(LayoutModeConfigPath, useModern ? "modern" : "classic");
-        }
-        catch
-        {
-            // Ignore write errors
+            _configurationService.UseModernLayout = useModern;
         }
         LayoutModeChanged?.Invoke(null, useModern);
     }

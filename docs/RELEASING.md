@@ -61,7 +61,7 @@ The focused checks include `tests/engine/EngineChecks.csproj` on Windows, Linux,
 and macOS. It exercises the Shared download lifecycle with local child processes
 and fake persistence/extractor dependencies, including queue advancement, recovery
 failure, final paths, and concurrent submissions. It does not replace frontend
-builds or real downloads. New local tests have no CI result until their commit runs.
+builds or real downloads. Additional checks cover bounded diagnostic storage, cached log reads, partial batch failures, cancellation, malformed and cyclic playlists, and real SQLite recovery rollback and reopening. The SQLite checks use a uniquely named temporary application database and do not access the user database. New local tests have no CI result until their commit runs.
 
 Windows bundles include runtime and media tools. macOS ZIPs preserve executable
 permissions and contain the app and dependencies; builds target macOS 15 or later.

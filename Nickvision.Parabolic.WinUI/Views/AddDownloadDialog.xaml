@@ -20,7 +20,7 @@
     <!-- Bound the content as well as its viewport: an RTL child with a long
          title or format can otherwise arrange beyond the clipped dialog.
          Each stage selects its own width; configuration tabs share one size. -->
-    <ScrollViewer x:Name="DownloadScrollViewer" Width="420" MaxWidth="500" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
+    <ScrollViewer x:Name="DownloadScrollViewer" Width="420" MaxWidth="500" FlowDirection="LeftToRight" Padding="0,0,16,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
         <nickvision:ViewStack x:Name="ViewStack" Width="400" MaxWidth="400" FlowDirection="{Binding FlowDirection, ElementName=DialogRoot}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <nickvision:ViewStack.Pages>
                 <Border Style="{StaticResource PageSurfaceStyle}">
@@ -163,33 +163,46 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     
-                                    <Image FlowDirection="LeftToRight" x:Name="ImgSingleThumbnail" Grid.Column="0" Width="96" Height="64" Stretch="UniformToFill"/>
+                                    <Border Grid.Column="0" Width="96" Height="54" CornerRadius="8"
+                                            Background="{ThemeResource BearThumbnailBgBrush}"
+                                            BorderBrush="{ThemeResource BearCardBorderBrush}" BorderThickness="1">
+                                        <Image FlowDirection="LeftToRight" x:Name="ImgSingleThumbnail" Stretch="UniformToFill"/>
+                                    </Border>
 
-                                    <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="6">
+                                    <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="6" VerticalAlignment="Center">
                                         <TextBlock x:Name="LblSingleTitle" FontWeight="SemiBold" TextWrapping="Wrap" MaxLines="3" TextTrimming="CharacterEllipsis"/>
 
                                         <TextBlock x:Name="LblSingleUrl" FlowDirection="LeftToRight" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
                                 </Grid>
                                 
-                                <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtSingleSaveFilename" Grid.Row="1" Grid.Column="0"/>
-
-                                <Button Style="{StaticResource IconActionStyle}" x:Name="BtnSingleRevertFilename" Grid.Row="1" Grid.Column="1" Margin="0,28,0,0" Click="BtnSingleRevertFilename_Click">
-                                    <Button.Content>
-                                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE7A7;" FontSize="18"/>
-                                    </Button.Content>
-                                </Button>
-
-                                <StackPanel Grid.Row="2" Grid.Column="0" Spacing="6">
-                                    <TextBlock x:Name="LblSingleSaveFolder"/>
-                                    <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtSingleSaveFolder" FlowDirection="LeftToRight" IsReadOnly="True" AutomationProperties.LabeledBy="{Binding ElementName=LblSingleSaveFolder}"/>
+                                <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Spacing="6">
+                                    <TextBlock x:Name="LblSingleSaveFilename"/>
+                                    <Grid ColumnSpacing="6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtSingleSaveFilename" Grid.Column="0" AutomationProperties.LabeledBy="{Binding ElementName=LblSingleSaveFilename}"/>
+                                        <Button Style="{StaticResource IconActionStyle}" x:Name="BtnSingleRevertFilename" Grid.Column="1" Click="BtnSingleRevertFilename_Click">
+                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE7A7;" FontSize="16"/>
+                                        </Button>
+                                    </Grid>
                                 </StackPanel>
 
-                                <Button Style="{StaticResource IconActionStyle}" x:Name="BtnSingleSelectSaveFolder" Grid.Row="2" Grid.Column="1" Margin="0,28,0,0" Click="BtnSingleSelectSaveFolder_Click">
-                                    <Button.Content>
-                                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B7;" FontSize="18"/>
-                                    </Button.Content>
-                                </Button>
+                                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Spacing="6">
+                                    <TextBlock x:Name="LblSingleSaveFolder"/>
+                                    <Grid ColumnSpacing="6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtSingleSaveFolder" Grid.Column="0" FlowDirection="LeftToRight" IsReadOnly="True" AutomationProperties.LabeledBy="{Binding ElementName=LblSingleSaveFolder}"/>
+                                        <Button Style="{StaticResource IconActionStyle}" x:Name="BtnSingleSelectSaveFolder" Grid.Column="1" Click="BtnSingleSelectSaveFolder_Click">
+                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B7;" FontSize="16"/>
+                                        </Button>
+                                    </Grid>
+                                </StackPanel>
 
                                 <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbSingleFileType" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" SelectionChanged="CmbSingleFileType_SelectionChanged">
                                     <ComboBox.ItemTemplate>
@@ -368,25 +381,32 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <Image FlowDirection="LeftToRight" x:Name="ImgPlaylistThumbnail" Grid.Column="0" Width="96" Height="64" Stretch="UniformToFill"/>
+                                    <Border Grid.Column="0" Width="96" Height="54" CornerRadius="8"
+                                            Background="{ThemeResource BearThumbnailBgBrush}"
+                                            BorderBrush="{ThemeResource BearCardBorderBrush}" BorderThickness="1">
+                                        <Image FlowDirection="LeftToRight" x:Name="ImgPlaylistThumbnail" Stretch="UniformToFill"/>
+                                    </Border>
 
-                                    <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="6">
+                                    <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="6" VerticalAlignment="Center">
                                         <TextBlock x:Name="LblPlaylistTitle" FontWeight="SemiBold" TextWrapping="Wrap" MaxLines="3" TextTrimming="CharacterEllipsis"/>
 
                                         <TextBlock x:Name="LblPlaylistUrl" FlowDirection="LeftToRight" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
                                 </Grid>
 
-                                <StackPanel Grid.Row="1" Grid.Column="0" Spacing="6">
+                                <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Spacing="6">
                                     <TextBlock x:Name="LblPlaylistSaveFolder"/>
-                                    <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtPlaylistSaveFolder" FlowDirection="LeftToRight" IsReadOnly="True" AutomationProperties.LabeledBy="{Binding ElementName=LblPlaylistSaveFolder}"/>
+                                    <Grid ColumnSpacing="6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Style="{StaticResource PageTextBoxStyle}" x:Name="TxtPlaylistSaveFolder" Grid.Column="0" FlowDirection="LeftToRight" IsReadOnly="True" AutomationProperties.LabeledBy="{Binding ElementName=LblPlaylistSaveFolder}"/>
+                                        <Button Style="{StaticResource IconActionStyle}" x:Name="BtnPlaylistSelectSaveFolder" Grid.Column="1" Click="BtnPlaylistSelectSaveFolder_Click">
+                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B7;" FontSize="16"/>
+                                        </Button>
+                                    </Grid>
                                 </StackPanel>
-
-                                <Button Style="{StaticResource IconActionStyle}" x:Name="BtnPlaylistSelectSaveFolder" Grid.Row="1" Grid.Column="1" Margin="0,28,0,0" Click="BtnPlaylistSelectSaveFolder_Click">
-                                    <Button.Content>
-                                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B7;" FontSize="18"/>
-                                    </Button.Content>
-                                </Button>
 
                                 <ComboBox Style="{StaticResource PageComboBoxStyle}" x:Name="CmbPlaylistFileType" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" SelectionChanged="CmbPlaylistFileType_SelectionChanged">
                                     <ComboBox.ItemTemplate>
@@ -483,16 +503,12 @@
 
                                                 <TextBox Style="{StaticResource PageTextBoxStyle}" Grid.Column="0" Text="{x:Bind Filename, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-                                                <Button Style="{StaticResource PageActionStyle}" Grid.Column="1" Click="BtnPlaylistRevertFilename_Click" Tag="{x:Bind Value}">
-                                                    <Button.Content>
-                                                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE7A7;" FontSize="18"/>
-                                                    </Button.Content>
+                                                <Button Style="{StaticResource IconActionStyle}" Grid.Column="1" Click="BtnPlaylistRevertFilename_Click" Tag="{x:Bind Value}">
+                                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE7A7;" FontSize="16"/>
                                                 </Button>
 
-                                                <Button Style="{StaticResource PageActionStyle}" Grid.Column="2">
-                                                    <Button.Content>
-                                                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE712;" FontSize="18"/>
-                                                    </Button.Content>
+                                                <Button Style="{StaticResource IconActionStyle}" Grid.Column="2">
+                                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE712;" FontSize="16"/>
 
                                                     <Button.Flyout>
                                                         <Flyout Placement="Bottom">

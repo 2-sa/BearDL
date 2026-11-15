@@ -9,9 +9,11 @@ using Nickvision.Parabolic.Shared.Controllers;
 using Nickvision.Parabolic.Shared.Models;
 using Nickvision.Parabolic.WinUI.Helpers;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using DispatcherQueueTimer = Microsoft.UI.Dispatching.DispatcherQueueTimer;
 
 namespace Nickvision.Parabolic.WinUI.Views;
 
@@ -19,7 +21,11 @@ public sealed partial class SettingsPage : Page
 {
     private readonly PreferencesViewController _controller;
     private readonly ITranslationService _translationService;
+    private readonly DispatcherQueueTimer _textDebounceTimer;
     private bool _constructing;
+    private bool _pendingProxyTextSave;
+    private bool _pendingDiscoveryArgsTextSave;
+    private bool _pendingDownloadArgsTextSave;
 
     public WindowId? WindowId { get; set; }
 
@@ -54,6 +60,15 @@ public sealed partial class SettingsPage : Page
         _controller = controller;
         _translationService = translationService;
         _constructing = true;
+        _textDebounceTimer = DispatcherQueue.CreateTimer();
+        _textDebounceTimer.Interval = TimeSpan.FromMilliseconds(350);
+        _textDebounceTimer.IsRepeating = false;
+        _textDebounceTimer.Tick += (_, _) => FlushPendingTextChanges();
+        Unloaded += (_, _) =>
+        {
+            _textDebounceTimer.Stop();
+            FlushPendingTextChanges();
+        };
         // Translations
         NavigationView.PaneTitle = _translationService._("Settings");
         LblSettingsTitle.Text = _translationService._("Settings");
@@ -246,7 +261,8 @@ public sealed partial class SettingsPage : Page
         string? error = null;
         do
         {
-            if ((await DlgPostprocessingArgument.ShowAsync()) == ContentDialogResult.Primary)
+            error = null;
+            if ((await DialogQueueHelper.ShowQueuedAsync(DlgPostprocessingArgument, XamlRoot)) == ContentDialogResult.Primary)
             {
                 error = await _controller.AddPostprocessingArgumentAsync(TxtPostprocessingArgumentName.Text,
                     (CmbPostprocessingArgumentPostProcessor.SelectedItem as BindableSelectionItem)!.ToSelectionItem<PostProcessor>()!,
@@ -264,33 +280,32 @@ public sealed partial class SettingsPage : Page
                         XamlRoot = XamlRoot,
                         RequestedTheme = ActualTheme
                     };
-                    await errorDialog.ShowAsync();
+                    await DialogQueueHelper.ShowQueuedAsync(errorDialog, XamlRoot);
                 }
             }
         } while (error is not null);
     }
 
-    private async void ClearCookiesFile(object? sender, RoutedEventArgs e)
+    private void ClearCookiesFile(object? sender, RoutedEventArgs e)
     {
         LblCookiesFile.Text = _translationService._("No file selected");
-        await ApplyChangesAsync();
+        if (!string.IsNullOrEmpty(_controller.CookiesPath))
+        {
+            _controller.CookiesPath = string.Empty;
+        }
     }
 
     private async void DeletePostprocessingArgument(object? sender, RoutedEventArgs e)
     {
         var tag = ((sender as Button)!.Tag as string)!;
-        var confirmDialog = new ContentDialog()
-        {
-            Title = _translationService._("Delete Argument?"),
-            Content = _translationService._("Are you sure you want to delete this post-processor argument? This action is irreversible"),
-            PrimaryButtonText = _translationService._("Yes"),
-            CloseButtonText = _translationService._("No"),
-            DefaultButton = ContentDialogButton.Close,
-            FlowDirection = this.FlowDirection,
-            XamlRoot = XamlRoot,
-            RequestedTheme = ActualTheme
-        };
-        if ((await confirmDialog.ShowAsync()) == ContentDialogResult.Primary)
+        if (await DialogQueueHelper.ShowConfirmAsync(
+                XamlRoot,
+                _translationService._("Delete Argument?"),
+                _translationService._("Are you sure you want to delete this post-processor argument? This action is irreversible"),
+                _translationService._("Yes"),
+                _translationService._("No"),
+                FlowDirection,
+                ActualTheme))
         {
             await _controller.DeletePostprocessingArgumentAsync(tag);
         }
@@ -302,8 +317,10 @@ public sealed partial class SettingsPage : Page
         var argument = _controller.PostprocessingArguments.First(x => x.Name == tag);
         TxtPostprocessingArgumentName.Text = tag;
         TxtPostprocessingArgumentName.IsReadOnly = true;
-        CmbPostprocessingArgumentPostProcessor.SelectedItem = _controller.PostProcessors.First(x => x.Value == argument.PostProcessor);
-        CmbPostprocessingArgumentExecutable.SelectedItem = _controller.Executables.First(x => x.Value == argument.Executable);
+        CmbPostprocessingArgumentPostProcessor.SelectedItem = (CmbPostprocessingArgumentPostProcessor.ItemsSource as IEnumerable<BindableSelectionItem>)
+            ?.FirstOrDefault(x => x.ToSelectionItem<PostProcessor>()?.Value == argument.PostProcessor);
+        CmbPostprocessingArgumentExecutable.SelectedItem = (CmbPostprocessingArgumentExecutable.ItemsSource as IEnumerable<BindableSelectionItem>)
+            ?.FirstOrDefault(x => x.ToSelectionItem<Executable>()?.Value == argument.Executable);
         TxtPostprocessingArgumentArgs.Text = argument.Args;
         DlgPostprocessingArgument.PrimaryButtonText = _translationService._("Update");
         DlgPostprocessingArgument.FlowDirection = FlowDirection;
@@ -312,7 +329,8 @@ public sealed partial class SettingsPage : Page
         string? error = null;
         do
         {
-            if ((await DlgPostprocessingArgument.ShowAsync()) == ContentDialogResult.Primary)
+            error = null;
+            if ((await DialogQueueHelper.ShowQueuedAsync(DlgPostprocessingArgument, XamlRoot)) == ContentDialogResult.Primary)
             {
                 error = await _controller.UpdatePostprocessingArgumentAsync(TxtPostprocessingArgumentName.Text,
                     (CmbPostprocessingArgumentPostProcessor.SelectedItem as BindableSelectionItem)!.ToSelectionItem<PostProcessor>()!,
@@ -330,7 +348,7 @@ public sealed partial class SettingsPage : Page
                         XamlRoot = XamlRoot,
                         RequestedTheme = ActualTheme
                     };
-                    await errorDialog.ShowAsync();
+                    await DialogQueueHelper.ShowQueuedAsync(errorDialog, XamlRoot);
                 }
             }
         } while (error is not null);
@@ -347,64 +365,245 @@ public sealed partial class SettingsPage : Page
         if (file is not null)
         {
             LblCookiesFile.Text = file.Path;
-            await ApplyChangesAsync();
+            if (_controller.CookiesPath != file.Path)
+            {
+                _controller.CookiesPath = file.Path;
+            }
         }
     }
 
-    private void SelectorBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+    private void Cmb_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        var index = sender.Items.IndexOf(sender.SelectedItem);
-        ViewStack.SelectedIndex = index == -1 ? 0 : index;
+        if (_constructing || sender is not ComboBox comboBox || comboBox.SelectedItem is not BindableSelectionItem selected)
+        {
+            return;
+        }
+        if (ReferenceEquals(comboBox, CmbTheme))
+        {
+            _controller.Theme = selected.ToSelectionItem<Theme>()!;
+        }
+        else if (ReferenceEquals(comboBox, CmbTranslationLanguage))
+        {
+            _controller.TranslationLanguage = selected.ToSelectionItem<string>()!;
+        }
+        else if (ReferenceEquals(comboBox, CmbHistoryLength))
+        {
+            _controller.HistoryLength = selected.ToSelectionItem<HistoryLength>()!;
+        }
+        else if (ReferenceEquals(comboBox, CmbPreferredVideoCodec))
+        {
+            _controller.PreferredVideoCodec = selected.ToSelectionItem<VideoCodec>()!;
+        }
+        else if (ReferenceEquals(comboBox, CmbPreferredAudioCodec))
+        {
+            _controller.PreferredAudioCodec = selected.ToSelectionItem<AudioCodec>()!;
+        }
+        else if (ReferenceEquals(comboBox, CmbPreferredSubtitleFormat))
+        {
+            _controller.PreferredSubtitleFormat = selected.ToSelectionItem<SubtitleFormat>()!;
+        }
+        else if (ReferenceEquals(comboBox, CmbPreferredFrameRate))
+        {
+            _controller.PreferredFrameRate = selected.ToSelectionItem<FrameRate>()!;
+        }
+        else if (ReferenceEquals(comboBox, CmbCookiesBrowser))
+        {
+            _controller.CookiesBrowser = selected.ToSelectionItem<Browser>()!;
+        }
     }
 
-    private async void Cmb_SelectionChanged(object? sender, SelectionChangedEventArgs e) => await ApplyChangesAsync();
+    private void Num_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+    {
+        if (_constructing || double.IsNaN(sender.Value))
+        {
+            return;
+        }
+        if (ReferenceEquals(sender, NumActiveDownloads))
+        {
+            var val = (int)Math.Clamp(Math.Round(sender.Value), 1, 10);
+            if (_controller.MaxNumberOfActiveDownloads != val)
+            {
+                _controller.MaxNumberOfActiveDownloads = val;
+            }
+        }
+        else if (ReferenceEquals(sender, NumSpeedLimit))
+        {
+            if (TglLimitSpeed.IsOn)
+            {
+                var val = (int)Math.Clamp(Math.Round(sender.Value), 512, 10240);
+                if (_controller.SpeedLimit != val)
+                {
+                    _controller.SpeedLimit = val;
+                }
+            }
+        }
+        else if (ReferenceEquals(sender, NumMaxConnectionsPerServer))
+        {
+            var val = (int)Math.Clamp(Math.Round(sender.Value), 1, 16);
+            if (_controller.AriaMaxConnectionsPerServer != val)
+            {
+                _controller.AriaMaxConnectionsPerServer = val;
+            }
+        }
+        else if (ReferenceEquals(sender, NumMinimumSplitSize))
+        {
+            var val = (int)Math.Clamp(Math.Round(sender.Value), 1, 1024);
+            if (_controller.AriaMinSplitSize != val)
+            {
+                _controller.AriaMinSplitSize = val;
+            }
+        }
+        else if (ReferenceEquals(sender, NumFfmpegThreads))
+        {
+            var val = (int)Math.Clamp(Math.Round(sender.Value), 1, Environment.ProcessorCount);
+            if (_controller.PostprocessingThreads != val)
+            {
+                _controller.PostprocessingThreads = val;
+            }
+        }
+    }
 
-    private async void Num_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args) => await ApplyChangesAsync();
+    private void Tgl_Toggled(object? sender, RoutedEventArgs e)
+    {
+        if (_constructing || sender is not ToggleSwitch toggle)
+        {
+            return;
+        }
+        if (ReferenceEquals(toggle, TglPreviewUpdates) && _controller.AllowPreviewUpdates != toggle.IsOn)
+        {
+            _controller.AllowPreviewUpdates = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglFastDownload) && _controller.FastDownload != toggle.IsOn)
+        {
+            _controller.FastDownload = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglWarnBeforeDuplicateDownload) && _controller.WarnBeforeDuplicateDownload != toggle.IsOn)
+        {
+            _controller.WarnBeforeDuplicateDownload = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglPreventSuspend) && _controller.PreventSuspend != toggle.IsOn)
+        {
+            _controller.PreventSuspend = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglOverwriteFiles) && _controller.OverwriteExistingFiles != toggle.IsOn)
+        {
+            _controller.OverwriteExistingFiles = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglIncludeMediaId) && _controller.IncludeMediaIdInTitle != toggle.IsOn)
+        {
+            _controller.IncludeMediaIdInTitle = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglIncludeAutoSubtitles) && _controller.IncludeAutoGeneratedSubtitles != toggle.IsOn)
+        {
+            _controller.IncludeAutoGeneratedSubtitles = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglIncludeSuperResolutions) && _controller.IncludeSuperResolutions != toggle.IsOn)
+        {
+            _controller.IncludeSuperResolutions = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglUsePartFiles) && _controller.UsePartFiles != toggle.IsOn)
+        {
+            _controller.UsePartFiles = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglUseSponsorBlock) && _controller.YouTubeSponsorBlock != toggle.IsOn)
+        {
+            _controller.YouTubeSponsorBlock = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglLimitSpeed))
+        {
+            int? desired = toggle.IsOn
+                ? (double.IsNaN(NumSpeedLimit.Value) ? (_controller.SpeedLimit ?? 1024) : (int)Math.Clamp(Math.Round(NumSpeedLimit.Value), 512, 10240))
+                : null;
+            if (_controller.SpeedLimit != desired)
+            {
+                _controller.SpeedLimit = desired;
+            }
+        }
+        else if (ReferenceEquals(toggle, TglUseAria) && _controller.UseAria != toggle.IsOn)
+        {
+            _controller.UseAria = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglTranslateMetadataAndChapters) && _controller.TranslateMetadataAndChapters != toggle.IsOn)
+        {
+            _controller.TranslateMetadataAndChapters = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglEmbedMetadata) && _controller.EmbedMetadata != toggle.IsOn)
+        {
+            _controller.EmbedMetadata = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglRemoveSourceData) && _controller.RemoveSourceData != toggle.IsOn)
+        {
+            _controller.RemoveSourceData = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglEmbedThumbnails) && _controller.EmbedThumbnails != toggle.IsOn)
+        {
+            _controller.EmbedThumbnails = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglCropAudioThumbnails) && _controller.CropAudioThumbnails != toggle.IsOn)
+        {
+            _controller.CropAudioThumbnails = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglEmbedChapters) && _controller.EmbedChapters != toggle.IsOn)
+        {
+            _controller.EmbedChapters = toggle.IsOn;
+        }
+        else if (ReferenceEquals(toggle, TglEmbedSubtitles) && _controller.EmbedSubtitles != toggle.IsOn)
+        {
+            _controller.EmbedSubtitles = toggle.IsOn;
+        }
+    }
 
-    private async void Tgl_Toggled(object? sender, RoutedEventArgs e) => await ApplyChangesAsync();
-
-    private async void Txt_TextChanged(object? sender, TextChangedEventArgs e) => await ApplyChangesAsync();
-
-    private async Task ApplyChangesAsync()
+    private void Txt_TextChanged(object? sender, TextChangedEventArgs e)
     {
         if (_constructing)
         {
             return;
         }
-        _controller.Theme = (CmbTheme.SelectedItem as BindableSelectionItem)!.ToSelectionItem<Theme>()!;
-        _controller.TranslationLanguage = (CmbTranslationLanguage.SelectedItem as BindableSelectionItem)!.ToSelectionItem<string>()!;
-        _controller.AllowPreviewUpdates = TglPreviewUpdates.IsOn;
-        _controller.FastDownload = TglFastDownload.IsOn;
-        _controller.WarnBeforeDuplicateDownload = TglWarnBeforeDuplicateDownload.IsOn;
-        _controller.PreventSuspend = TglPreventSuspend.IsOn;
-        _controller.HistoryLength = (CmbHistoryLength.SelectedItem as BindableSelectionItem)!.ToSelectionItem<HistoryLength>()!;
-        _controller.MaxNumberOfActiveDownloads = (int)NumActiveDownloads.Value;
-        _controller.OverwriteExistingFiles = TglOverwriteFiles.IsOn;
-        _controller.IncludeMediaIdInTitle = TglIncludeMediaId.IsOn;
-        _controller.IncludeAutoGeneratedSubtitles = TglIncludeAutoSubtitles.IsOn;
-        _controller.IncludeSuperResolutions = TglIncludeSuperResolutions.IsOn;
-        _controller.PreferredVideoCodec = (CmbPreferredVideoCodec.SelectedItem as BindableSelectionItem)!.ToSelectionItem<VideoCodec>()!;
-        _controller.PreferredAudioCodec = (CmbPreferredAudioCodec.SelectedItem as BindableSelectionItem)!.ToSelectionItem<AudioCodec>()!;
-        _controller.PreferredSubtitleFormat = (CmbPreferredSubtitleFormat.SelectedItem as BindableSelectionItem)!.ToSelectionItem<SubtitleFormat>()!;
-        _controller.PreferredFrameRate = (CmbPreferredFrameRate.SelectedItem as BindableSelectionItem)!.ToSelectionItem<FrameRate>()!;
-        _controller.UsePartFiles = TglUsePartFiles.IsOn;
-        _controller.YouTubeSponsorBlock = TglUseSponsorBlock.IsOn;
-        _controller.SpeedLimit = TglLimitSpeed.IsOn ? (int)NumSpeedLimit.Value : null;
-        _controller.ProxyUrl = TxtProxyUrl.Text;
-        _controller.CookiesPath = File.Exists(LblCookiesFile.Text) ? LblCookiesFile.Text : string.Empty;
-        _controller.CookiesBrowser = (CmbCookiesBrowser.SelectedItem as BindableSelectionItem)!.ToSelectionItem<Browser>()!;
-        _controller.UseAria = TglUseAria.IsOn;
-        _controller.AriaMaxConnectionsPerServer = (int)NumMaxConnectionsPerServer.Value;
-        _controller.AriaMinSplitSize = (int)NumMinimumSplitSize.Value;
-        _controller.YtdlpDiscoveryArgs = TxtYtdlpDiscoveryArgs.Text;
-        _controller.YtdlpDownloadArgs = TxtYtdlpDownloadArgs.Text;
-        _controller.TranslateMetadataAndChapters = TglTranslateMetadataAndChapters.IsOn;
-        _controller.EmbedMetadata = TglEmbedMetadata.IsOn;
-        _controller.RemoveSourceData = TglRemoveSourceData.IsOn;
-        _controller.EmbedThumbnails = TglEmbedThumbnails.IsOn;
-        _controller.CropAudioThumbnails = TglCropAudioThumbnails.IsOn;
-        _controller.EmbedChapters = TglEmbedChapters.IsOn;
-        _controller.EmbedSubtitles = TglEmbedSubtitles.IsOn;
-        _controller.PostprocessingThreads = (int)NumFfmpegThreads.Value;
+        if (ReferenceEquals(sender, TxtProxyUrl))
+        {
+            _pendingProxyTextSave = true;
+        }
+        else if (ReferenceEquals(sender, TxtYtdlpDiscoveryArgs))
+        {
+            _pendingDiscoveryArgsTextSave = true;
+        }
+        else if (ReferenceEquals(sender, TxtYtdlpDownloadArgs))
+        {
+            _pendingDownloadArgsTextSave = true;
+        }
+        _textDebounceTimer.Stop();
+        _textDebounceTimer.Start();
+    }
+
+    private void FlushPendingTextChanges()
+    {
+        if (_constructing)
+        {
+            return;
+        }
+        if (_pendingProxyTextSave)
+        {
+            _pendingProxyTextSave = false;
+            if (_controller.ProxyUrl != TxtProxyUrl.Text)
+            {
+                _controller.ProxyUrl = TxtProxyUrl.Text;
+            }
+        }
+        if (_pendingDiscoveryArgsTextSave)
+        {
+            _pendingDiscoveryArgsTextSave = false;
+            if (_controller.YtdlpDiscoveryArgs != TxtYtdlpDiscoveryArgs.Text)
+            {
+                _controller.YtdlpDiscoveryArgs = TxtYtdlpDiscoveryArgs.Text;
+            }
+        }
+        if (_pendingDownloadArgsTextSave)
+        {
+            _pendingDownloadArgsTextSave = false;
+            if (_controller.YtdlpDownloadArgs != TxtYtdlpDownloadArgs.Text)
+            {
+                _controller.YtdlpDownloadArgs = TxtYtdlpDownloadArgs.Text;
+            }
+        }
     }
 }

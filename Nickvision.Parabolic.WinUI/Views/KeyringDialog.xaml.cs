@@ -70,6 +70,7 @@ public sealed partial class KeyringDialog : ContentDialog
         var result = await base.ShowAsync();
         while (result != ContentDialogResult.Primary && (_needsCredentialDialog || _needsDeleteDialog))
         {
+            await DialogQueueHelper.WaitForOpenDialogsAsync(XamlRoot);
             if (_needsCredentialDialog)
             {
                 var dialog = new ContentDialog()
@@ -184,6 +185,7 @@ public sealed partial class KeyringDialog : ContentDialog
                 _needsDeleteDialog = false;
                 _selectedCredential = null;
             }
+            await DialogQueueHelper.WaitForOpenDialogsAsync(XamlRoot);
             result = await base.ShowAsync();
         }
         return result;
@@ -212,8 +214,11 @@ public sealed partial class KeyringDialog : ContentDialog
             }
             else
             {
-                var search = sender.Text.ToLower();
-                var filtered = _credentials.Where(x => x.Label.ToLower().Contains(search) || x.Value.Username.ToLower().Contains(search) || x.Value.Url.ToString().ToLower().Contains(search)).ToList();
+                var search = sender.Text;
+                var filtered = _credentials.Where(x =>
+                    x.Label.Contains(search, StringComparison.OrdinalIgnoreCase)
+                    || x.Value.Username.Contains(search, StringComparison.OrdinalIgnoreCase)
+                    || x.Value.Url.ToString().Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
                 ListCredentials.ItemsSource = filtered;
                 ViewStack.SelectedIndex = filtered.Any() ? (int)Pages.Keyring : (int)Pages.NoneSearch;
             }

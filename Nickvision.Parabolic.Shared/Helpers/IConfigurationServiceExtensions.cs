@@ -444,7 +444,20 @@ public static class IConfigurationServiceExtensions
 
         public WindowGeometry WindowGeometry
         {
-            get => configurationService.Get("WindowGeometry", new WindowGeometry(), ApplicationJsonContext.Default.WindowGeometry);
+            get
+            {
+                var geometry = configurationService.Get("WindowGeometry", new WindowGeometry(800, 600, false), ApplicationJsonContext.Default.WindowGeometry);
+                if (!configurationService.Get("CompactWindowGeometryApplied", false))
+                {
+                    configurationService.Set("CompactWindowGeometryApplied", true);
+                    if (!geometry.IsMaximized && ((geometry.Width == 900 && geometry.Height == 700) || geometry.Width <= 0 || geometry.Height <= 0))
+                    {
+                        geometry = new WindowGeometry(800, 600, geometry.IsMaximized, geometry.X, geometry.Y);
+                        configurationService.Set("WindowGeometry", geometry, ApplicationJsonContext.Default.WindowGeometry);
+                    }
+                }
+                return geometry;
+            }
 
             set => configurationService.Set("WindowGeometry", value, ApplicationJsonContext.Default.WindowGeometry);
         }

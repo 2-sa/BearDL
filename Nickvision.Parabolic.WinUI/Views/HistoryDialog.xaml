@@ -13,7 +13,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Border Style="{StaticResource InsetSurfaceStyle}" Margin="0,0,20,0" parabolic:ScrollViewportHelper.ReserveScrollbarRight="20">
+        <Border Style="{StaticResource InsetSurfaceStyle}" Margin="0,0,16,0" parabolic:ScrollViewportHelper.ReserveScrollbarRight="16">
             <Grid RowSpacing="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -46,7 +46,7 @@
                 </Grid>
             </Grid>
         </Border>
-        <ScrollViewer Grid.Row="1" MaxHeight="420" MinHeight="180" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
+        <ScrollViewer Grid.Row="1" MaxHeight="420" MinHeight="180" FlowDirection="LeftToRight" Padding="0,0,16,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
             <nickvision:ViewStack x:Name="ViewStack" FlowDirection="{Binding FlowDirection, ElementName=DialogRoot}">
                 <nickvision:ViewStack.Pages>
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" Margin="0,24"><ProgressRing IsActive="True" Width="32" Height="32"/><TextBlock x:Name="LblLoading" Style="{StaticResource SupportingTextStyle}"/></StackPanel>

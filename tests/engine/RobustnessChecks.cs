@@ -35,7 +35,7 @@ internal static class RobustnessChecks
         {
             if (method.Name == "Get")
             {
-                return configStore.TryGetValue(values[0]!.ToString()!, out var existing) ? existing : values[^1];
+                return configStore.TryGetValue(values[0]!.ToString()!, out var existing) ? existing : values[1];
             }
             if (method.Name == "Set")
             {
@@ -45,6 +45,7 @@ internal static class RobustnessChecks
             throw new NotSupportedException(method.Name);
         });
         Require(writableConfig.UseModernLayout, "UseModernLayout defaults to true");
+        Require(!writableConfig.EmbedThumbnails, "EmbedThumbnails defaults to false");
         writableConfig.UseModernLayout = false;
         Require(!writableConfig.UseModernLayout, "UseModernLayout persists false");
         writableConfig.UseModernLayout = true;
@@ -85,6 +86,53 @@ internal static class RobustnessChecks
         _ = await thumbnailService.GetImageBytesAsync(newestThumb);
         _ = await thumbnailService.GetImageBytesAsync(evictedThumb);
         Require(handler.Counts[newestThumb] == 1 && handler.Counts[evictedThumb] == 2, "ThumbnailService bounds cache via LRU eviction");
+
+        var denoStub = Proxy.Create<IDenoExecutableService>((method, _) =>
+            method.Name == "get_ExecutablePath" ? null : throw new NotSupportedException(method.Name));
+        var ytdlpService = new YtdlpExecutableService(
+            NullLogger<YtdlpExecutableService>.Instance,
+            NullLogger<Nickvision.Desktop.Network.UpdaterService>.Instance,
+            writableConfig,
+            denoStub,
+            httpFactory);
+        using (var defaultMp4 = ytdlpService.GetDownloadProcess(new DownloadOptions(new Uri("https://example.com/v"))
+        {
+            SaveFolder = root,
+            SaveFilename = "thumb-default",
+            FileType = MediaFileType.MP4
+        }))
+        {
+            Require(!defaultMp4.StartInfo.ArgumentList.Contains("--write-thumbnail")
+                && !defaultMp4.StartInfo.ArgumentList.Contains("--embed-thumbnail")
+                && !defaultMp4.StartInfo.ArgumentList.Contains("--convert-thumbnails"),
+                "Default video download does not download or write thumbnail images");
+        }
+        writableConfig.EmbedThumbnails = true;
+        using (var genericVideo = ytdlpService.GetDownloadProcess(new DownloadOptions(new Uri("https://example.com/v"))
+        {
+            SaveFolder = root,
+            SaveFilename = "thumb-generic",
+            FileType = MediaFileType.Video
+        }))
+        {
+            Require(!genericVideo.StartInfo.ArgumentList.Contains("--write-thumbnail")
+                && !genericVideo.StartInfo.ArgumentList.Contains("--embed-thumbnail")
+                && !genericVideo.StartInfo.ArgumentList.Contains("--convert-thumbnails"),
+                "Unsupported video types never fall back to saving separate thumbnail files");
+        }
+        using (var embeddedMp4 = ytdlpService.GetDownloadProcess(new DownloadOptions(new Uri("https://example.com/v"))
+        {
+            SaveFolder = root,
+            SaveFilename = "thumb-mp4",
+            FileType = MediaFileType.MP4
+        }))
+        {
+            Require(embeddedMp4.StartInfo.ArgumentList.Contains("--embed-thumbnail")
+                && embeddedMp4.StartInfo.ArgumentList.Contains("--convert-thumbnails")
+                && !embeddedMp4.StartInfo.ArgumentList.Contains("--write-thumbnail"),
+                "Supported types embed thumbnails without writing separate image files when enabled");
+        }
+        writableConfig.EmbedThumbnails = false;
 
         var calls = 0;
         var executable = Proxy.Create<IYtdlpExecutableService>((method, values) =>

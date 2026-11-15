@@ -305,16 +305,9 @@ public class YtdlpExecutableService : DependencyExecutableService, IYtdlpExecuta
                 arguments.Add($"Metadata+ffmpeg:-metadata track={downloadOptions.PlaylistPosition}");
             }
         }
-        if (_configurationService.EmbedThumbnails)
+        if (_configurationService.EmbedThumbnails && downloadOptions.FileType.SupportsThumbnails)
         {
-            if (downloadOptions.FileType.SupportsThumbnails)
-            {
-                arguments.Add("--embed-thumbnail");
-            }
-            else
-            {
-                arguments.Add("--write-thumbnail");
-            }
+            arguments.Add("--embed-thumbnail");
             arguments.Add("--convert-thumbnails");
             arguments.Add("jpg");
             if (_configurationService.CropAudioThumbnails && downloadOptions.FileType.IsAudio)

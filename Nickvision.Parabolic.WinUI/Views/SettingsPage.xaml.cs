@@ -148,7 +148,7 @@ public sealed partial class SettingsPage : Page
         RowRemoveSourceData.Description = _translationService._("Clear metadata fields containing identifying download information");
         AutomationProperties.SetName(TglRemoveSourceData, (string)RowRemoveSourceData.Header);
         RowEmbedThumbnails.Header = _translationService._("Embed Thumbnails");
-        RowEmbedThumbnails.Description = _translationService._("If the file type does not support embedding, the thumbnail will be written to a separate image file");
+        RowEmbedThumbnails.Description = _translationService._("Embed thumbnails in supported file types without saving separate image files");
         AutomationProperties.SetName(TglEmbedThumbnails, (string)RowEmbedThumbnails.Header);
         RowCropAudioThumbnails.Header = _translationService._("Crop Audio Thumbnails");
         RowCropAudioThumbnails.Description = _translationService._("Crop thumbnails of audio files to squares");

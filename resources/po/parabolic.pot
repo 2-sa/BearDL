@@ -831,8 +831,7 @@ msgstr ""
 #: Nickvision.Parabolic.GNOME/Blueprints/PreferencesDialog.blp:388
 #: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs:130
 msgid ""
-"If the file type does not support embedding, the thumbnail will be written to "
-"a separate image file"
+"Embed thumbnails in supported file types without saving separate image files"
 msgstr ""
 
 #: Nickvision.Parabolic.GNOME/Blueprints/PreferencesDialog.blp:398

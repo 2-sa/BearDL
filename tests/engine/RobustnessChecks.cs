@@ -91,7 +91,7 @@ internal static class RobustnessChecks
             method.Name == "get_ExecutablePath" ? null : throw new NotSupportedException(method.Name));
         var ytdlpService = new YtdlpExecutableService(
             NullLogger<YtdlpExecutableService>.Instance,
-            NullLogger<Nickvision.Desktop.Network.UpdaterService>.Instance,
+            NullLogger<UpdaterService>.Instance,
             writableConfig,
             denoStub,
             httpFactory);

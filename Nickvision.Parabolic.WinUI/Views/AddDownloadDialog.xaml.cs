@@ -20,6 +20,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
 using Windows.Graphics.Imaging;
 
 namespace Nickvision.Parabolic.WinUI.Views;
@@ -109,7 +110,7 @@ public sealed partial class AddDownloadDialog : ContentDialog
         NavViewItemSingleGeneral.Text = _translationService._("General");
         NavViewItemSingleSubtitles.Text = _translationService._("Subtitles");
         NavViewItemSingleAdvanced.Text = _translationService._("Advanced");
-        TxtSingleSaveFilename.Header = _translationService._("File Name");
+        LblSingleSaveFilename.Text = _translationService._("File Name");
         ToolTipService.SetToolTip(BtnSingleRevertFilename, _translationService._("Revert to Title"));
         LblSingleSaveFolder.Text = _translationService._("Save Folder");
         ToolTipService.SetToolTip(BtnSingleSelectSaveFolder, _translationService._("Select Save Folder"));
@@ -216,8 +217,15 @@ public sealed partial class AddDownloadDialog : ContentDialog
         DefaultButton = ContentDialogButton.None;
         ViewStack.SelectedIndex = (int)Pages.Loading;
         SetViewport(320);
-        DispatcherQueue.TryEnqueue(async () => await DiscoverMediaAsync(cancellationToken.Token));
+        TypedEventHandler<ContentDialog, ContentDialogOpenedEventArgs>? onOpened = null;
+        onOpened = async (_, _) =>
+        {
+            Opened -= onOpened;
+            await DiscoverMediaAsync(cancellationToken.Token);
+        };
+        Opened += onOpened;
         result = await base.ShowAsync();
+        Opened -= onOpened;
         if (result == ContentDialogResult.Primary)
         {
             if (_discoveryContext is not null && _discoveryContext.Items.Count > 1)
@@ -272,8 +280,15 @@ public sealed partial class AddDownloadDialog : ContentDialog
         DefaultButton = ContentDialogButton.None;
         ViewStack.SelectedIndex = (int)Pages.Loading;
         SetViewport(320);
-        DispatcherQueue.TryEnqueue(async () => await DiscoverMediaAsync(cancellationToken.Token));
+        TypedEventHandler<ContentDialog, ContentDialogOpenedEventArgs>? onOpened = null;
+        onOpened = async (_, _) =>
+        {
+            Opened -= onOpened;
+            await DiscoverMediaAsync(cancellationToken.Token);
+        };
+        Opened += onOpened;
         var result = await base.ShowAsync();
+        Opened -= onOpened;
         if (result == ContentDialogResult.Primary)
         {
             if (_discoveryContext is not null && _discoveryContext.Items.Count > 1)
@@ -333,9 +348,16 @@ public sealed partial class AddDownloadDialog : ContentDialog
         _controller.PreviousDownloadImmediatelyAsVideo = TglDownloadImmediatelyAsVideo.IsOn;
         _controller.PreviousDownloadImmediatelyAsAudio = TglDownloadImmediatelyAsAudio.IsOn;
         _discoveryContext = await _controller.DiscoverAsync(ParseInputUrl(TxtUrl.Text), credential, cancellationToken);
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
         if (_discoveryContext is null)
         {
-            Hide();
+            if (_isOpen)
+            {
+                Hide();
+            }
             return;
         }
         SoftwareBitmapSource? thumbnailSource = null;
@@ -435,67 +457,16 @@ public sealed partial class AddDownloadDialog : ContentDialog
             void OnClosed(ContentDialog sender, ContentDialogClosedEventArgs args) => closed.TrySetResult(true);
             Closed += OnClosed;
             Hide();
-            await closed.Task;
-            Closed -= OnClosed;
-        }
-        // Fast discovery can finish while a different app dialog is open.
-        // Wait for that dialog instead of opening two ContentDialogs at once.
-        while (VisualTreeHelper.GetOpenPopupsForXamlRoot(XamlRoot)
-            .Select(popup => FindContentDialog(popup.Child))
-            .FirstOrDefault(item => item is not null) is ContentDialog openDialog)
-        {
-            var closed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            void OnClosed(ContentDialog sender, ContentDialogClosedEventArgs args) => closed.TrySetResult(true);
-            openDialog.Closed += OnClosed;
-            await closed.Task;
-            openDialog.Closed -= OnClosed;
-        }
-        var dialog = new ContentDialog
-        {
-            Title = _translationService._("Duplicate Download"),
-            Content = new ScrollViewer
+            try
             {
-                FlowDirection = FlowDirection.LeftToRight,
-                Padding = new Thickness(0, 0, 20, 0),
-                MaxHeight = 320,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                Content = new TextBlock
-                {
-                    Text = message,
-                    FlowDirection = FlowDirection,
-                    TextWrapping = TextWrapping.Wrap
-                }
-            },
-            PrimaryButtonText = _translationService._("Download Again"),
-            CloseButtonText = _translationService._("Cancel"),
-            DefaultButton = ContentDialogButton.Close,
-            FlowDirection = FlowDirection,
-            RequestedTheme = RequestedTheme,
-            XamlRoot = XamlRoot
-        };
-        return await dialog.ShowAsync() == ContentDialogResult.Primary;
-    }
-
-    private static ContentDialog? FindContentDialog(DependencyObject? element)
-    {
-        if (element is ContentDialog dialog)
-        {
-            return dialog;
-        }
-        if (element is null)
-        {
-            return null;
-        }
-        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
-        {
-            var childDialog = FindContentDialog(VisualTreeHelper.GetChild(element, i));
-            if (childDialog is not null)
+                await closed.Task;
+            }
+            finally
             {
-                return childDialog;
+                Closed -= OnClosed;
             }
         }
-        return null;
+        return await DialogQueueHelper.ConfirmDuplicateDownloadAsync(XamlRoot, message, _translationService, FlowDirection, RequestedTheme);
     }
 
     private Task DownloadSingleAsync() => _controller.AddSingleDownloadAsync(_discoveryContext!,
@@ -591,9 +562,9 @@ public sealed partial class AddDownloadDialog : ContentDialog
 
     private void BtnSingleRevertFilename_Click(object? sender, RoutedEventArgs e) => TxtSingleSaveFilename.Text = _discoveryContext!.Items[0].Label;
 
-    private async void BtnFastSelectSaveFolder_Click(object? sender, RoutedEventArgs e)
+    private async Task PickSaveFolderAsync(Button triggerButton, TextBox targetTextBox)
     {
-        BtnFastSelectSaveFolder.IsEnabled = false;
+        triggerButton.IsEnabled = false;
         try
         {
             var picker = new FolderPicker(WindowId!.Value)
@@ -604,36 +575,18 @@ public sealed partial class AddDownloadDialog : ContentDialog
             var folder = await picker.PickSingleFolderAsync();
             if (folder is not null)
             {
-                TxtFastSaveFolder.Text = folder.Path;
+                targetTextBox.Text = folder.Path;
             }
         }
         finally
         {
-            BtnFastSelectSaveFolder.IsEnabled = true;
+            triggerButton.IsEnabled = true;
         }
     }
 
-    private async void BtnSingleSelectSaveFolder_Click(object? sender, RoutedEventArgs e)
-    {
-        BtnSingleSelectSaveFolder.IsEnabled = false;
-        try
-        {
-            var picker = new FolderPicker(WindowId!.Value)
-            {
-                SuggestedStartLocation = PickerLocationId.Downloads
-            };
-            await Task.Yield();
-            var folder = await picker.PickSingleFolderAsync();
-            if (folder is not null)
-            {
-                TxtSingleSaveFolder.Text = folder.Path;
-            }
-        }
-        finally
-        {
-            BtnSingleSelectSaveFolder.IsEnabled = true;
-        }
-    }
+    private async void BtnFastSelectSaveFolder_Click(object? sender, RoutedEventArgs e) => await PickSaveFolderAsync(BtnFastSelectSaveFolder, TxtFastSaveFolder);
+
+    private async void BtnSingleSelectSaveFolder_Click(object? sender, RoutedEventArgs e) => await PickSaveFolderAsync(BtnSingleSelectSaveFolder, TxtSingleSaveFolder);
 
     private void CmbSingleFileType_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
@@ -658,27 +611,7 @@ public sealed partial class AddDownloadDialog : ContentDialog
         };
     }
 
-    private async void BtnPlaylistSelectSaveFolder_Click(object? sender, RoutedEventArgs e)
-    {
-        BtnPlaylistSelectSaveFolder.IsEnabled = false;
-        try
-        {
-            var picker = new FolderPicker(WindowId!.Value)
-            {
-                SuggestedStartLocation = PickerLocationId.Downloads
-            };
-            await Task.Yield();
-            var folder = await picker.PickSingleFolderAsync();
-            if (folder is not null)
-            {
-                TxtPlaylistSaveFolder.Text = folder.Path;
-            }
-        }
-        finally
-        {
-            BtnPlaylistSelectSaveFolder.IsEnabled = true;
-        }
-    }
+    private async void BtnPlaylistSelectSaveFolder_Click(object? sender, RoutedEventArgs e) => await PickSaveFolderAsync(BtnPlaylistSelectSaveFolder, TxtPlaylistSaveFolder);
 
     private void CmbPlaylistFileType_SelectionChanged(object? sender, SelectionChangedEventArgs e) => TeachPlaylistFileType.IsOpen = _controller.GetShouldShowFileTypeTeach(_discoveryContext!, (CmbPlaylistFileType.SelectedItem as BindableSelectionItem)!.ToSelectionItem<MediaFileType>()!);
 
@@ -711,31 +644,24 @@ public sealed partial class AddDownloadDialog : ContentDialog
 
     private void BtnPlaylistDeselectAllSubtitles_Click(object? sender, RoutedEventArgs e) => ListPlaylistSubtitles.DeselectAll();
 
-    private void TxtSingleSubtitlesSearch_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs e)
+    private void FilterSubtitles(AutoSuggestBox searchBox, ListView listView)
     {
         if (_discoveryContext is null)
         {
             return;
         }
-        var searchText = TxtSingleSubtitlesSearch.Text.Trim();
+        var searchText = searchBox.Text.Trim();
         _isUpdatingSubtitleSelection = true;
-        ListSingleSubtitles.ItemsSource = string.IsNullOrEmpty(searchText) ? _discoveryContext.SubtitleLanguages.ToBindableSelectonItems() : _discoveryContext.SubtitleLanguages.Where(x => x.Value.Language.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToBindableSelectonItems();
-        ListSingleSubtitles.SelectSelectionItems();
+        listView.ItemsSource = string.IsNullOrEmpty(searchText)
+            ? _discoveryContext.SubtitleLanguages.ToBindableSelectonItems()
+            : _discoveryContext.SubtitleLanguages.Where(x => x.Value.Language.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToBindableSelectonItems();
+        listView.SelectSelectionItems();
         _isUpdatingSubtitleSelection = false;
     }
 
-    private void TxtPlaylistSubtitlesSearch_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs e)
-    {
-        if (_discoveryContext is null)
-        {
-            return;
-        }
-        var searchText = TxtPlaylistSubtitlesSearch.Text.Trim();
-        _isUpdatingSubtitleSelection = true;
-        ListPlaylistSubtitles.ItemsSource = string.IsNullOrEmpty(searchText) ? _discoveryContext.SubtitleLanguages.ToBindableSelectonItems() : _discoveryContext.SubtitleLanguages.Where(x => x.Value.Language.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToBindableSelectonItems();
-        ListPlaylistSubtitles.SelectSelectionItems();
-        _isUpdatingSubtitleSelection = false;
-    }
+    private void TxtSingleSubtitlesSearch_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs e) => FilterSubtitles(TxtSingleSubtitlesSearch, ListSingleSubtitles);
+
+    private void TxtPlaylistSubtitlesSearch_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs e) => FilterSubtitles(TxtPlaylistSubtitlesSearch, ListPlaylistSubtitles);
 
     private void ListSubtitles_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {

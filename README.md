@@ -1,5 +1,7 @@
 <div dir="rtl" align="right">
 
+![BearDL](resources/banner.png)
+
 # بير دي إل
 
 واجهة لتنزيل الوسائط بواسطة [yt-dlp](https://github.com/yt-dlp/yt-dlp)، مشتقة من [Parabolic](https://github.com/NickvisionApps/Parabolic)، مع تحسينات للعربية واتجاه RTL وحزم لويندوز وماك ولينكس.

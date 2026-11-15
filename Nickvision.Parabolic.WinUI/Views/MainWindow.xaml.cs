@@ -4,6 +4,7 @@ using DispatcherQueueTimer = Microsoft.UI.Dispatching.DispatcherQueueTimer;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
@@ -22,6 +23,7 @@ using Nickvision.Parabolic.WinUI.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
@@ -53,6 +55,7 @@ public sealed partial class MainWindow : Window
     private readonly List<RectInt32> _titleBarInputRegions = new(8);
     private bool _titleBarUpdateQueued;
     private bool _isClosed;
+    private bool _isClosingConfirmOpen;
     private readonly TaskCompletionSource<bool> _startupReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly SemaphoreSlim _addDialogGate = new(1, 1);
     private readonly CancellationTokenSource _windowClosed = new();
@@ -170,6 +173,10 @@ public sealed partial class MainWindow : Window
         NavSettings.Content = _translationService._("Settings");
         NavAbout.Content = _translationService._("Help");
         TxtQuickUrl.PlaceholderText = _translationService._("Paste a video, audio, or playlist URL");
+        ToolTipService.SetToolTip(BtnQuickPaste, _translationService._("Paste"));
+        AutomationProperties.SetName(BtnQuickPaste, _translationService._("Paste"));
+        ToolTipService.SetToolTip(BtnQuickClear, _translationService._("Clear"));
+        AutomationProperties.SetName(BtnQuickClear, _translationService._("Clear"));
         LblQuickDownload.Text = _translationService._("Download");
         ToolTipService.SetToolTip(BtnQuickDownload, _translationService._("Quick Download"));
         LblQuickCustomize.Text = _translationService._("Customize");
@@ -182,14 +189,16 @@ public sealed partial class MainWindow : Window
         LblHintPaste.Text = _translationService._("Paste anywhere");
         LblHintDrag.Text = _translationService._("Drag a link onto the window");
         LblHintEnter.Text = _translationService._("Quick download at best quality");
+        LblModernEmptyAddDownload.Text = _translationService._("Add Download");
+        UpdateSaveFolderCue();
         BtnStopAllRemaining.Label = _translationService._("Stop All Remaining");
         BtnRetryAllFailed.Label = _translationService._("Retry All Failed");
         BtnClearAllQueued.Label = _translationService._("Clear All Queued");
         BtnClearAllCompleted.Label = _translationService._("Clear All Completed");
-        LblModernStopAllRemaining.Text = _translationService._("Stop All Remaining");
-        LblModernRetryAllFailed.Text = _translationService._("Retry All Failed");
-        LblModernClearAllQueued.Text = _translationService._("Clear All Queued");
-        LblModernClearAllCompleted.Text = _translationService._("Clear All Completed");
+        BtnModernStopAllRemaining.Label = _translationService._("Stop All Remaining");
+        BtnModernRetryAllFailed.Label = _translationService._("Retry All Failed");
+        BtnModernClearAllQueued.Label = _translationService._("Clear All Queued");
+        BtnModernClearAllCompleted.Label = _translationService._("Clear All Completed");
         LblDownloadsAddDownload.Text = _translationService._("Add");
         NavDownloadsAll.Content = _translationService._("All");
         NavDownloadsRunning.Content = _translationService._("Running");
@@ -228,6 +237,7 @@ public sealed partial class MainWindow : Window
 
     private async void Window_Loaded(object? sender, RoutedEventArgs e)
     {
+        DialogQueueHelper.RegisterDispatcher(MainGrid.XamlRoot, DispatcherQueue);
         ViewStack.SelectedIndex = GlassThemeHelper.UseModernLayout ? (int)Pages.Downloads : (int)Pages.Home;
         ViewStackDownloads.SelectedIndex = 0;
         MenuCheckForUpdates.IsEnabled = false;
@@ -262,7 +272,7 @@ public sealed partial class MainWindow : Window
                 FlowDirection = MainGrid.FlowDirection,
                 XamlRoot = MainGrid.XamlRoot
             };
-            await disclaimerDialog.ShowAsync();
+            await DialogQueueHelper.ShowQueuedAsync(disclaimerDialog, MainGrid.XamlRoot, _windowClosed.Token);
             if (checkBox.IsChecked ?? false)
             {
                 _controller.ShowDisclaimerOnStartup = false;
@@ -270,18 +280,16 @@ public sealed partial class MainWindow : Window
         }
         if (_controller.RecoverableDownloadsCount > 0)
         {
-            var recoverDialog = new ContentDialog()
-            {
-                Title = _translationService._("Recover Downloads?"),
-                Content = _translationService._("There are downloads available to recover from when BearDL crashed. Would you like to download them again?"),
-                PrimaryButtonText = _translationService._("Yes"),
-                CloseButtonText = _translationService._("No"),
-                DefaultButton = ContentDialogButton.Primary,
-                RequestedTheme = MainGrid.ActualTheme,
-                FlowDirection = MainGrid.FlowDirection,
-                XamlRoot = MainGrid.XamlRoot
-            };
-            if ((await recoverDialog.ShowAsync()) == ContentDialogResult.Primary)
+            if (await DialogQueueHelper.ShowConfirmAsync(
+                    MainGrid.XamlRoot,
+                    _translationService._("Recover Downloads?"),
+                    _translationService._("There are downloads available to recover from when BearDL crashed. Would you like to download them again?"),
+                    _translationService._("Yes"),
+                    _translationService._("No"),
+                    MainGrid.FlowDirection,
+                    MainGrid.ActualTheme,
+                    ContentDialogButton.Primary,
+                    _windowClosed.Token))
             {
                 await _controller.RecoverAllDownloadsAsync();
             }
@@ -295,33 +303,52 @@ public sealed partial class MainWindow : Window
         {
             await AddDownloadAsync(_controller.UrlFromArgs);
         }
-        await updatesTask;
-        MenuCheckForUpdates.IsEnabled = true;
-        MenuPopupCheckForUpdates.IsEnabled = true;
+        try
+        {
+            await updatesTask;
+        }
+        finally
+        {
+            MenuCheckForUpdates.IsEnabled = true;
+            MenuPopupCheckForUpdates.IsEnabled = true;
+        }
     }
 
     private async void Window_Closing(AppWindow sender, AppWindowClosingEventArgs e)
     {
         if (!_controller.CanShutdown)
         {
-            e?.Cancel = true;
-            var confirmDialog = new ContentDialog()
+            if (e is not null)
             {
-                Title = _appInfo.ShortName,
-                Content = _translationService._("There are downloads still in progress. Would you like to stop them and exit?"),
-                PrimaryButtonText = _translationService._("Yes"),
-                CloseButtonText = _translationService._("No"),
-                DefaultButton = ContentDialogButton.Close,
-                RequestedTheme = MainGrid.ActualTheme,
-                FlowDirection = MainGrid.FlowDirection,
-                XamlRoot = MainGrid.XamlRoot
-            };
-            if ((await confirmDialog.ShowAsync()) == ContentDialogResult.Primary)
+                e.Cancel = true;
+            }
+            if (_isClosingConfirmOpen)
             {
-                _controller.WindowGeometry = this.Geometry;
-                await _controller.StopAllDownloadsAsync();
-                Close();
-                _serviceProvider.GetRequiredService<IHostApplicationLifetime>().StopApplication();
+                return;
+            }
+            _isClosingConfirmOpen = true;
+            try
+            {
+                if (await DialogQueueHelper.ShowConfirmAsync(
+                        MainGrid.XamlRoot,
+                        _appInfo.ShortName ?? "BearDL",
+                        _translationService._("There are downloads still in progress. Would you like to stop them and exit?"),
+                        _translationService._("Yes"),
+                        _translationService._("No"),
+                        MainGrid.FlowDirection,
+                        MainGrid.ActualTheme,
+                        ContentDialogButton.Close,
+                        _windowClosed.Token))
+                {
+                    _controller.WindowGeometry = this.Geometry;
+                    await _controller.StopAllDownloadsAsync();
+                    Close();
+                    _serviceProvider.GetRequiredService<IHostApplicationLifetime>().StopApplication();
+                }
+            }
+            finally
+            {
+                _isClosingConfirmOpen = false;
             }
             return;
         }
@@ -375,7 +402,7 @@ public sealed partial class MainWindow : Window
                     Content = new ScrollViewer()
                     {
                         FlowDirection = FlowDirection.LeftToRight,
-                        Padding = new Thickness(0, 0, 20, 0),
+                        Padding = new Thickness(0, 0, 16, 0),
                         HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
                         VerticalScrollBarVisibility = ScrollBarVisibility.Visible,
                         Content = new TextBlock()
@@ -390,7 +417,7 @@ public sealed partial class MainWindow : Window
                     FlowDirection = MainGrid.FlowDirection,
                     XamlRoot = MainGrid.XamlRoot
                 };
-                await errorDialog.ShowAsync();
+                await DialogQueueHelper.ShowQueuedAsync(errorDialog, MainGrid.XamlRoot, _windowClosed.Token);
             };
             BtnInfoBar.Click += _notificationClickHandler;
         }
@@ -403,7 +430,11 @@ public sealed partial class MainWindow : Window
     {
         if (args.ChangedPropertyName == "Theme")
         {
-            ApplyTheme();
+            DispatcherQueue.TryEnqueue(ApplyTheme);
+        }
+        if (string.IsNullOrEmpty(args.ChangedPropertyName) || args.ChangedPropertyName == "SaveFolder")
+        {
+            DispatcherQueue.TryEnqueue(UpdateSaveFolderCue);
         }
     }
 
@@ -564,12 +595,13 @@ public sealed partial class MainWindow : Window
             ClassicDownloadsToolbar.Visibility = Visibility.Collapsed;
             ClassicDownloadsSeparator.Visibility = Visibility.Collapsed;
             NavFooterSeparator.Visibility = Visibility.Visible;
+            NavSaveFolder.Visibility = Visibility.Visible;
             NavHistory.Visibility = Visibility.Visible;
             NavKeyring.Visibility = Visibility.Visible;
             NavSettings.Visibility = Visibility.Visible;
             NavAbout.Visibility = Visibility.Visible;
             QuickUrlCard.Visibility = Visibility.Visible;
-            ModernDownloadsToolbar.Visibility = Visibility.Visible;
+            UpdateSaveFolderCue();
             if (!isInitial && ViewStack.SelectedIndex == (int)Pages.Home)
             {
                 ViewStack.SelectedIndex = (int)Pages.Downloads;
@@ -586,6 +618,7 @@ public sealed partial class MainWindow : Window
             ClassicDownloadsToolbar.Visibility = Visibility.Visible;
             ClassicDownloadsSeparator.Visibility = Visibility.Visible;
             NavFooterSeparator.Visibility = Visibility.Collapsed;
+            NavSaveFolder.Visibility = Visibility.Collapsed;
             NavHistory.Visibility = Visibility.Collapsed;
             NavKeyring.Visibility = Visibility.Collapsed;
             NavSettings.Visibility = Visibility.Collapsed;
@@ -601,6 +634,25 @@ public sealed partial class MainWindow : Window
         }
         UpdateDownloadsList();
         QueueTitleBarInputRegionUpdate();
+    }
+
+    private void UpdateSaveFolderCue()
+    {
+        var folder = _controller.SaveFolder;
+        var trimmed = folder.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var displayName = Path.GetFileName(trimmed);
+        if (string.IsNullOrEmpty(displayName))
+        {
+            displayName = trimmed;
+        }
+        NavSaveFolder.Content = string.IsNullOrEmpty(displayName)
+            ? _translationService._("Save Folder")
+            : displayName;
+        var tooltip = string.IsNullOrEmpty(folder)
+            ? _translationService._("Save Folder")
+            : $"{_translationService._("Save Folder")}: {folder}";
+        ToolTipService.SetToolTip(NavSaveFolder, tooltip);
+        AutomationProperties.SetName(NavSaveFolder, tooltip);
     }
 
     private void TitleBar_BackRequested(TitleBar sender, object args)
@@ -751,10 +803,18 @@ public sealed partial class MainWindow : Window
         });
     }
 
-    private void NavViewDownloads_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+    private async void NavViewDownloads_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
         var tag = args.InvokedItemContainer?.Tag as string;
-        if (tag == "History")
+        if (tag == "SaveFolder")
+        {
+            var folder = _controller.SaveFolder;
+            if (!string.IsNullOrEmpty(folder) && Directory.Exists(folder))
+            {
+                await Launcher.LaunchFolderPathAsync(folder);
+            }
+        }
+        else if (tag == "History")
         {
             History(sender, new RoutedEventArgs());
         }
@@ -781,7 +841,9 @@ public sealed partial class MainWindow : Window
 
     private void TxtQuickUrl_TextChanged(object sender, TextChangedEventArgs e)
     {
-        var isValid = TxtQuickUrl.Text.TryExtractHttpUri(out _);
+        var text = TxtQuickUrl.Text;
+        BtnQuickClear.Visibility = string.IsNullOrEmpty(text) ? Visibility.Collapsed : Visibility.Visible;
+        var isValid = text.TryExtractHttpUri(out _);
         BtnQuickDownload.IsEnabled = isValid;
         BtnQuickCustomize.IsEnabled = isValid;
     }
@@ -795,17 +857,30 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private void QuickClear_Click(object sender, RoutedEventArgs e)
+    {
+        TxtQuickUrl.Text = string.Empty;
+        TxtQuickUrl.Focus(FocusState.Programmatic);
+    }
+
     private async void QuickPaste_Click(object sender, RoutedEventArgs e)
     {
-        if (Clipboard.GetContent().Contains(StandardDataFormats.Text))
+        try
         {
-            var text = (await Clipboard.GetContent().GetTextAsync())?.Trim();
-            if (!string.IsNullOrEmpty(text))
+            var content = Clipboard.GetContent();
+            if (content.Contains(StandardDataFormats.Text))
             {
-                TxtQuickUrl.Text = text.TryExtractHttpUri(out var uri) ? uri.ToString() : text;
-                TxtQuickUrl.Focus(FocusState.Programmatic);
-                TxtQuickUrl.SelectAll();
+                var text = (await content.GetTextAsync())?.Trim();
+                if (!string.IsNullOrEmpty(text))
+                {
+                    TxtQuickUrl.Text = text.TryExtractHttpUri(out var uri) ? uri.ToString() : text;
+                    TxtQuickUrl.Focus(FocusState.Programmatic);
+                    TxtQuickUrl.SelectAll();
+                }
             }
+        }
+        catch
+        {
         }
     }
 
@@ -818,11 +893,24 @@ public sealed partial class MainWindow : Window
             return;
         }
         TxtQuickUrl.Text = string.Empty;
-        var addDownloadDialog = _serviceProvider.GetRequiredService<AddDownloadDialog>();
-        addDownloadDialog.WindowId = AppWindow.Id;
-        addDownloadDialog.RequestedTheme = MainGrid.ActualTheme;
-        addDownloadDialog.XamlRoot = MainGrid.XamlRoot;
-        await addDownloadDialog.QuickDownloadAsync(uri);
+        await StartHeadlessFastDownloadAsync(uri);
+    }
+
+    private async Task StartHeadlessFastDownloadAsync(Uri uri)
+    {
+        var controller = _serviceProvider.GetRequiredService<AddDownloadDialogController>();
+        var xamlRoot = MainGrid.XamlRoot;
+        var flowDirection = MainGrid.FlowDirection;
+        var requestedTheme = MainGrid.ActualTheme;
+        DialogQueueHelper.RegisterDispatcher(xamlRoot, DispatcherQueue);
+        controller.ConfirmDuplicateDownloadAsync = msg => DialogQueueHelper.ConfirmDuplicateDownloadAsync(
+            xamlRoot,
+            msg,
+            _translationService,
+            flowDirection,
+            requestedTheme,
+            _windowClosed.Token);
+        await controller.AddFastDownloadsAsync(uri, null, _controller.SaveFolder);
     }
 
     private async void QuickCustomize_Click(object sender, RoutedEventArgs e)
@@ -940,13 +1028,10 @@ public sealed partial class MainWindow : Window
         _clipboardDismissedUrl = _clipboardSuggestedUrl;
         _clipboardSuggestedUrl = null;
         ClipboardSuggestion.Visibility = Visibility.Collapsed;
-        var probeDialog = _serviceProvider.GetRequiredService<AddDownloadDialog>();
-        if (probeDialog.IsFastDownload)
+        var probeController = _serviceProvider.GetRequiredService<AddDownloadDialogController>();
+        if (probeController.FastDownload)
         {
-            probeDialog.WindowId = AppWindow.Id;
-            probeDialog.RequestedTheme = MainGrid.ActualTheme;
-            probeDialog.XamlRoot = MainGrid.XamlRoot;
-            await probeDialog.QuickDownloadAsync(uri);
+            await StartHeadlessFastDownloadAsync(uri);
             return;
         }
         await RunAddDialogAsync(dialog => dialog.ShowCustomDiscoverAsync(uri));
@@ -1023,24 +1108,52 @@ public sealed partial class MainWindow : Window
 
     private async void About(object? sender, RoutedEventArgs e)
     {
-        var progressDialog = new ContentDialog()
+        await DialogQueueHelper.RunQueuedAsync(async () =>
         {
-            Title = _translationService._("About {0}", _appInfo.ShortName!),
-            Content = new ProgressRing()
+            var progressDialog = new ContentDialog()
             {
-                IsActive = true,
-            },
-            RequestedTheme = MainGrid.ActualTheme,
-            FlowDirection = MainGrid.FlowDirection,
-            XamlRoot = MainGrid.XamlRoot
-        };
-        DispatcherQueue.TryEnqueue(async () => await progressDialog.ShowAsync());
-        var aboutDialog = _serviceProvider.GetRequiredService<AboutDialog>();
-        aboutDialog.DebugInformation = await _controller.GetDebugInformationAsync();
-        aboutDialog.RequestedTheme = MainGrid.ActualTheme;
-        aboutDialog.XamlRoot = MainGrid.XamlRoot;
-        progressDialog.Hide();
-        await aboutDialog.ShowAsync();
+                Title = _translationService._("About {0}", _appInfo.ShortName!),
+                Content = new ProgressRing()
+                {
+                    IsActive = true,
+                },
+                RequestedTheme = MainGrid.ActualTheme,
+                FlowDirection = MainGrid.FlowDirection,
+                XamlRoot = MainGrid.XamlRoot
+            };
+            var debugTask = _controller.GetDebugInformationAsync();
+            var isProgressOpen = false;
+            void OnProgressOpened(ContentDialog senderDialog, ContentDialogOpenedEventArgs args)
+            {
+                isProgressOpen = true;
+                if (debugTask.IsCompleted)
+                {
+                    senderDialog.Hide();
+                }
+            }
+            progressDialog.Opened += OnProgressOpened;
+            _ = debugTask.ContinueWith(_ => DispatcherQueue.TryEnqueue(() =>
+            {
+                if (isProgressOpen)
+                {
+                    progressDialog.Hide();
+                }
+            }), TaskScheduler.Default);
+            var progressShowTask = progressDialog.ShowAsync().AsTask();
+            var debugInfo = await debugTask;
+            if (isProgressOpen)
+            {
+                progressDialog.Hide();
+            }
+            await progressShowTask;
+            progressDialog.Opened -= OnProgressOpened;
+            var aboutDialog = _serviceProvider.GetRequiredService<AboutDialog>();
+            aboutDialog.DebugInformation = debugInfo;
+            aboutDialog.RequestedTheme = MainGrid.ActualTheme;
+            aboutDialog.XamlRoot = MainGrid.XamlRoot;
+            await DialogQueueHelper.WaitForOpenDialogsAsync(MainGrid.XamlRoot, _windowClosed.Token);
+            await aboutDialog.ShowAsync();
+        }, MainGrid.XamlRoot, _windowClosed.Token);
     }
 
     private async void AddDownload(object? sender, RoutedEventArgs e) => await AddDownloadAsync(null);
@@ -1052,7 +1165,7 @@ public sealed partial class MainWindow : Window
         var keyringDialog = _serviceProvider.GetRequiredService<KeyringDialog>();
         keyringDialog.RequestedTheme = MainGrid.ActualTheme;
         keyringDialog.XamlRoot = MainGrid.XamlRoot;
-        await keyringDialog.ShowAsync();
+        await DialogQueueHelper.ShowQueuedAsync(() => keyringDialog.ShowAsync(), MainGrid.XamlRoot, _windowClosed.Token);
     }
 
     private void Settings(object sender, RoutedEventArgs args) => OpenSettingsView();
@@ -1071,16 +1184,22 @@ public sealed partial class MainWindow : Window
         var historyDialog = _serviceProvider.GetRequiredService<HistoryDialog>();
         historyDialog.RequestedTheme = MainGrid.ActualTheme;
         historyDialog.XamlRoot = MainGrid.XamlRoot;
-        await historyDialog.ShowAsync();
+        await DialogQueueHelper.ShowQueuedAsync(() => historyDialog.ShowAsync(), MainGrid.XamlRoot, _windowClosed.Token);
     }
 
     private async void CheckForUpdates(object? sender, RoutedEventArgs e)
     {
         MenuCheckForUpdates.IsEnabled = false;
         MenuPopupCheckForUpdates.IsEnabled = false;
-        await _controller.CheckForUpdatesAsync(true);
-        MenuCheckForUpdates.IsEnabled = true;
-        MenuPopupCheckForUpdates.IsEnabled = true;
+        try
+        {
+            await _controller.CheckForUpdatesAsync(true);
+        }
+        finally
+        {
+            MenuCheckForUpdates.IsEnabled = true;
+            MenuPopupCheckForUpdates.IsEnabled = true;
+        }
     }
 
     private void ClearAllCompleted(object? sender, RoutedEventArgs e)
@@ -1154,26 +1273,6 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private static ContentDialog? FindOpenDialog(DependencyObject? root)
-    {
-        if (root is ContentDialog dialog)
-        {
-            return dialog;
-        }
-        if (root is null)
-        {
-            return null;
-        }
-        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
-        {
-            if (FindOpenDialog(VisualTreeHelper.GetChild(root, i)) is ContentDialog child)
-            {
-                return child;
-            }
-        }
-        return null;
-    }
-
     private Task AddDownloadAsync(Uri? uri)
     {
         return RunAddDialogAsync(dialog => uri is not null ? dialog.ShowAsync(uri) : dialog.ShowAsync());
@@ -1187,21 +1286,7 @@ public sealed partial class MainWindow : Window
             await _startupReady.Task.WaitAsync(_windowClosed.Token);
             await _addDialogGate.WaitAsync(_windowClosed.Token);
             acquired = true;
-            while (VisualTreeHelper.GetOpenPopupsForXamlRoot(MainGrid.XamlRoot)
-                .Select(popup => FindOpenDialog(popup.Child)).FirstOrDefault(dialog => dialog is not null) is ContentDialog open)
-            {
-                var closed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                void OnClosed(ContentDialog sender, ContentDialogClosedEventArgs args) => closed.TrySetResult(true);
-                open.Closed += OnClosed;
-                try
-                {
-                    await closed.Task.WaitAsync(_windowClosed.Token);
-                }
-                finally
-                {
-                    open.Closed -= OnClosed;
-                }
-            }
+            await DialogQueueHelper.WaitForOpenDialogsAsync(MainGrid.XamlRoot, _windowClosed.Token);
             _windowClosed.Token.ThrowIfCancellationRequested();
             var addDownloadDialog = _serviceProvider.GetRequiredService<AddDownloadDialog>();
             addDownloadDialog.WindowId = AppWindow.Id;
@@ -1297,11 +1382,13 @@ public sealed partial class MainWindow : Window
 
             if (_downloadRows.Count == 0)
             {
+                ModernDownloadsToolbar.Visibility = Visibility.Collapsed;
                 ModernEmptyState.Visibility = Visibility.Visible;
                 ScrollDownloads.Visibility = Visibility.Collapsed;
             }
             else
             {
+                ModernDownloadsToolbar.Visibility = Visibility.Visible;
                 ModernEmptyState.Visibility = Visibility.Collapsed;
                 ScrollDownloads.Visibility = Visibility.Visible;
                 StatusNoneDownloads.Description = _translationService._("There are no downloads of this type");
@@ -1316,6 +1403,12 @@ public sealed partial class MainWindow : Window
             BtnModernRetryAllFailed.IsEnabled = _controller.FailedDownloadsCount > 0;
             BtnModernClearAllQueued.IsEnabled = _controller.QueuedDownloadsCount > 0;
             BtnModernClearAllCompleted.IsEnabled = _controller.CompletedDownloadsCount > 0;
+
+            var hasModernBatchAction = BtnModernStopAllRemaining.Visibility == Visibility.Visible
+                || BtnModernRetryAllFailed.Visibility == Visibility.Visible
+                || BtnModernClearAllQueued.Visibility == Visibility.Visible
+                || BtnModernClearAllCompleted.Visibility == Visibility.Visible;
+            CmdBarModernActions.Visibility = hasModernBatchAction ? Visibility.Visible : Visibility.Collapsed;
         }
         else
         {

@@ -91,3 +91,21 @@
 - Distribution builds run on explicit manual/release triggers where separated from verification. Existing tests remain automatic; site/container deployment and platform-managed delivery retain their existing purpose. Publishing requires its existing release trigger or an explicit manual publishing choice.
 - Verification: policy behavior and workflow checks run on GitHub-hosted Ubuntu for this source commit; see the **Artifact storage policy** Actions run attached to the commit for its actual result. No application tests, builds, downloads, or installations were run on the user's device. Application packaging/updater behavior was not exercised by a policy-only check.
 - Operational note: GitHub may take 6–12 hours to recalculate storage after deletions. Existing artifacts do not receive shorter expiry retroactively; scheduled maintenance applies the same policy to them. Quota recovery and a future authorized release/upload must be observed separately. Scheduled workflows can be delayed or disabled by GitHub after inactivity; one-day upload retention remains the primary limit.
+
+## [TEAM & OWNERSHIP]
+
+- **Pod 1 (Core):** Contract: `DialogQueueHelper` (`ShowQueuedAsync`, `WaitForOpenDialogsAsync`, `ConfirmDuplicateDownloadAsync`), `ScrollViewportHelper` (symmetrical `16px` gutter + `ConstrainContentWidth`), `MainWindowController.SaveFolder` + safe `GetDebugInformationAsync`
+  - `architect-scout` (`07d63a83067fe6e696967db70e925511`) — Scope: Codebase audit, RTL/layout & AOT constraints
+  - `backend-core` (`0ebf5f3ebb4a28363c99c00c343e9e65`) — Owns: `Nickvision.Parabolic.Shared/Controllers/MainWindowController.cs`, `Nickvision.Parabolic.WinUI/Helpers/{ScrollViewportHelper.cs,DialogQueueHelper.cs,GlassThemeHelper.cs}`, `resources/po/{POTFILES,parabolic.pot,ar.po}`
+- **Pod 2 (Delivery):** UI/QA coordination for WinUI 3 Dark/Light + RTL/LTR + Classic/Modern parity
+  - `frontend-ui` (`7708dba8d5cdbe5bf6d9614be7814bff`) — Owns: `Nickvision.Parabolic.WinUI/{App.xaml,Styles/InterfaceStyles.xaml}`, `Views/{MainWindow,SettingsPage,AddDownloadDialog,HistoryDialog,KeyringDialog}.xaml*`, `Controls/{DownloadRow,AboutDialog}.xaml*`
+  - `qa-reviewer` (`cdbd163891e3a2f49e9109abab44ce03`) — Owns: XML/XAML integrity, C# symbol/event parity, NativeAOT & RTL check, PO/POT validation, `tests/extension/handoff.test.cjs`
+
+## [ORPHANS & PENDING]
+
+- [x] **Rebranding (BearDL Anime Mascot & Banner):** Anime bear mascot `.ico`/`.png`, `resources/banner.png`, `AboutDialog`, `README.md`, `inno/setup.iss` (`3cecb1d8`)
+- [x] **M1 — Design Tokens, RTL Gutter Symmetry & Stability Helpers:** `InterfaceStyles.xaml`, `App.xaml`, `ScrollViewportHelper.cs`, `DialogQueueHelper.cs`, `MainWindowController.cs`
+- [x] **M2 — MainWindow Redesign (TitleBar, Responsive NavView, Hero URL Bar, Refined Clipboard & Empty State)**
+- [x] **M3 — DownloadRow Card Upgrade (Rounded 16:9 Thumbnails, Semantic Status Pills, Tabular Telemetry, Stop Log Fix)**
+- [x] **M4 — Sub-Pages/Dialogs Bugfixes & Polish (`SettingsPage` Edit/NaN fixes, `AddDownloadDialog` Playlist/Layout, PO/POT Sync & QA)**
+- **Blockers:** Local machine lacks `.NET SDK` (`dotnet --list-sdks` empty); WinUI NativeAOT compilation runs on GitHub Actions after verified local static/XML/PO/extension QA.

@@ -1927,3 +1927,144 @@ msgstr ""
 
 msgid "Some links could not be processed. Available media will still be shown."
 msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Minimize"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Maximize"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Restore"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs
+msgid "Classic"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs
+msgid "Modern"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs
+msgid "Interface Layout"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Helpers/GlassThemeHelper.cs
+msgid "Choose between the classic or modern interface layout"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs
+msgid "Fast Download"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs
+msgid "Download links and entire playlists at the best quality to the last save folder, without configuration dialogs."
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs
+msgid "Warn Before Duplicate Downloads"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/SettingsPage.xaml.cs
+msgid "Ask before adding a link that is already downloading or has a saved file."
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Helpers/DialogQueueHelper.cs
+msgid "Duplicate Download"
+msgstr ""
+
+#: Nickvision.Parabolic.Shared/Controllers/AddDownloadDialogController.cs
+msgid "This link is already downloading or waiting to download."
+msgstr ""
+
+#: Nickvision.Parabolic.Shared/Controllers/AddDownloadDialogController.cs
+msgid "This link was downloaded before and its file still exists."
+msgstr ""
+
+#: Nickvision.Parabolic.Shared/Controllers/AddDownloadDialogController.cs
+msgid "This link appears more than once in this request."
+msgstr ""
+
+#: Nickvision.Parabolic.Shared/Controllers/AddDownloadDialogController.cs
+msgid "There are more duplicate links in this request."
+msgstr ""
+
+#: Nickvision.Parabolic.Shared/Controllers/AddDownloadDialogController.cs
+msgid "Do you want to download again?"
+msgstr ""
+
+#: Nickvision.Parabolic.Shared/Controllers/AddDownloadDialogController.cs
+msgid "Preparing downloads in the background"
+msgstr ""
+
+#: Nickvision.Parabolic.Shared/Controllers/AddDownloadDialogController.cs
+msgid "An error occurred while preparing fast downloads"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Controls/DownloadRow.xaml.cs
+msgid "Copy"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Controls/DownloadRow.xaml.cs
+msgid "Copied"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Controls/DownloadRow.xaml.cs
+#, csharp-format
+msgid "Could not copy the file ({0})"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Controls/DownloadRow.xaml.cs
+msgid "File not found"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Controls/DownloadRow.xaml.cs
+msgid "Copy the file to paste it into another app"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Paste"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Quick Download"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Customize"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Paste a video, audio, or playlist URL"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Link in clipboard:"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Dismiss"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Start by pasting a link"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Supports videos, audio, and entire playlists"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Paste anywhere"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Drag a link onto the window"
+msgstr ""
+
+#: Nickvision.Parabolic.WinUI/Views/MainWindow.xaml.cs
+msgid "Quick download at best quality"
+msgstr ""

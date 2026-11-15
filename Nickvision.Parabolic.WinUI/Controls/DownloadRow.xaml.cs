@@ -41,6 +41,7 @@ public sealed partial class DownloadRow : UserControl
     private bool _logDirty;
     private long _lastLogUiUpdateTicks;
     private bool _isPaused;
+    private string _currentVisualState = "StatusRunningState";
 
     public event EventHandler<int>? PauseRequested;
     public event EventHandler<int>? ResumeRequested;
@@ -72,6 +73,7 @@ public sealed partial class DownloadRow : UserControl
                 FlushLogToUi();
             }
         };
+        Loaded += (_, _) => VisualStateManager.GoToState(this, _currentVisualState, false);
         BtnShowLog.Text = _translator._("Log");
         ActionsFlyout.MenuFlyoutPresenterStyle = new Style(typeof(MenuFlyoutPresenter))
         {
@@ -94,13 +96,55 @@ public sealed partial class DownloadRow : UserControl
         ToolTipService.SetToolTip(button, text);
     }
 
+    private void SetVisualState(string stateName)
+    {
+        _currentVisualState = stateName;
+        VisualStateManager.GoToState(this, stateName, false);
+    }
+
+    private static string FormatCompletedFileInfo(string path)
+    {
+        var ext = Path.GetExtension(path).TrimStart('.').ToUpperInvariant();
+        string? sizeText = null;
+        try
+        {
+            if (!string.IsNullOrEmpty(path) && File.Exists(path))
+            {
+                sizeText = FormatFileSize(new FileInfo(path).Length);
+            }
+        }
+        catch
+        {
+        }
+        if (!string.IsNullOrEmpty(ext) && !string.IsNullOrEmpty(sizeText))
+        {
+            return $"{ext} • {sizeText}";
+        }
+        return !string.IsNullOrEmpty(ext) ? ext : (sizeText ?? string.Empty);
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        string[] units = ["B", "KB", "MB", "GB", "TB"];
+        double size = Math.Max(0, bytes);
+        var unitIndex = 0;
+        while (size >= 1024.0 && unitIndex < units.Length - 1)
+        {
+            size /= 1024.0;
+            unitIndex++;
+        }
+        return unitIndex == 0
+            ? $"{size:0} {units[unitIndex]}"
+            : $"{size:0.0} {units[unitIndex]}";
+    }
+
     public async Task TriggerAddedStateAsync(DownloadAddedEventArgs args)
     {
         SoftwareBitmapSource? thumbnailSource = null;
         try
         {
-            const uint maxThumbnailWidth = 150;
-            const uint maxThumbnailHeight = 100;
+            const uint maxThumbnailWidth = 192;
+            const uint maxThumbnailHeight = 108;
             using var thumbnailMemoryStream = await _thumbnailService.GetImageStreamAsync(args.Url);
             using var thumbnailStream = thumbnailMemoryStream.AsRandomAccessStream();
             var thumbnailDecoder = await BitmapDecoder.CreateAsync(thumbnailStream);
@@ -130,27 +174,37 @@ public sealed partial class DownloadRow : UserControl
         }
         _id = args.Id;
         _path = args.Path;
-        IcnStatus.Glyph = "\uE896";
         ImgThumbnail.Source = thumbnailSource;
+        IcnThumbnailFallback.Visibility = thumbnailSource is null ? Visibility.Visible : Visibility.Collapsed;
         LblTitle.Text = Path.GetFileName(_path);
         ToolTipService.SetToolTip(LblTitle, LblTitle.Text);
+        ProgBar.Visibility = Visibility.Visible;
         ProgBar.Value = 0.0;
+        GridFileInfo.Visibility = Visibility.Collapsed;
+        LblStatus.Text = string.Empty;
+        LblStatus.Visibility = Visibility.Collapsed;
         if (args.Status == DownloadStatus.Queued)
         {
             Status = DownloadStatus.Queued;
-            LblStatus.Text = _translator._("Queued");
+            SetVisualState("StatusWarningState");
+            IcnStatus.Glyph = "\uE917";
+            LblStatusBadge.Text = _translator._("Queued");
             ProgBar.IsIndeterminate = false;
         }
         else if (args.Status == DownloadStatus.Running)
         {
             Status = DownloadStatus.Running;
-            LblStatus.Text = _translator._("Running");
+            SetVisualState("StatusRunningState");
+            IcnStatus.Glyph = "\uE896";
+            LblStatusBadge.Text = _translator._("Running");
             ProgBar.IsIndeterminate = true;
         }
         else
         {
             Status = DownloadStatus.Running;
-            LblStatus.Text = _translator._("Processing");
+            SetVisualState("StatusRunningState");
+            IcnStatus.Glyph = "\uE896";
+            LblStatusBadge.Text = _translator._("Processing");
             ProgBar.IsIndeterminate = true;
         }
         ViewStackButtons.SelectedIndex = (int)ButtonsPage.Running;
@@ -174,18 +228,28 @@ public sealed partial class DownloadRow : UserControl
         }
         ProgBar.Value = 1.0;
         ProgBar.IsIndeterminate = false;
+        LblStatus.Text = string.Empty;
+        LblStatus.Visibility = Visibility.Collapsed;
         if (args.Status == DownloadStatus.Error)
         {
             Status = DownloadStatus.Error;
+            SetVisualState("StatusErrorState");
             IcnStatus.Glyph = "\uEA39";
-            LblStatus.Text = _translator._("Error");
+            LblStatusBadge.Text = _translator._("Error");
+            ProgBar.Visibility = Visibility.Visible;
+            GridFileInfo.Visibility = Visibility.Collapsed;
             ViewStackButtons.SelectedIndex = (int)ButtonsPage.Error;
         }
         else if (args.Status == DownloadStatus.Success)
         {
             Status = DownloadStatus.Success;
+            SetVisualState("StatusSuccessState");
             IcnStatus.Glyph = "\uE930";
-            LblStatus.Text = _translator._("Success");
+            LblStatusBadge.Text = _translator._("Success");
+            ProgBar.Visibility = Visibility.Collapsed;
+            var fileInfoText = FormatCompletedFileInfo(_path);
+            LblFileInfo.Text = fileInfoText;
+            GridFileInfo.Visibility = string.IsNullOrEmpty(fileInfoText) ? Visibility.Collapsed : Visibility.Visible;
             ViewStackButtons.SelectedIndex = (int)ButtonsPage.Done;
         }
     }
@@ -193,8 +257,9 @@ public sealed partial class DownloadRow : UserControl
     public void TriggerPausedState()
     {
         Status = DownloadStatus.Paused;
+        SetVisualState("StatusWarningState");
         IcnStatus.Glyph = "\uE769";
-        LblStatus.Text = _translator._("Paused");
+        LblStatusBadge.Text = _translator._("Paused");
         ProgBar.IsIndeterminate = false;
         FntPauseResume.Glyph = "\uE768";
         SetActionLabel(BtnPauseResume, _translator._("Resume"));
@@ -203,7 +268,11 @@ public sealed partial class DownloadRow : UserControl
 
     public void TriggerProgressState(DownloadProgressChangedEventArgs args)
     {
+        SetVisualState("StatusRunningState");
         IcnStatus.Glyph = "\uE896";
+        LblStatusBadge.Text = _translator._("Running");
+        ProgBar.Visibility = Visibility.Visible;
+        GridFileInfo.Visibility = Visibility.Collapsed;
         if (args.LogChunk.Length > 0)
         {
             _log.Enqueue(args.LogChunk.ToString());
@@ -225,12 +294,14 @@ public sealed partial class DownloadRow : UserControl
         if (double.IsNaN(args.Progress))
         {
             LblStatus.Text = _translator._("Processing");
+            LblStatus.Visibility = Visibility.Visible;
             ProgBar.Value = 0.0;
             ProgBar.IsIndeterminate = true;
         }
         else if (double.IsNegativeInfinity(args.Progress))
         {
             LblStatus.Text = _translator._("Sleeping for {0}", TimeSpan.FromSeconds(args.Speed).ToString("g"));
+            LblStatus.Visibility = Visibility.Visible;
             ProgBar.Value = 0.0;
             ProgBar.IsIndeterminate = true;
         }
@@ -240,6 +311,7 @@ public sealed partial class DownloadRow : UserControl
                 Math.Round(args.Progress * 100, 2),
                 args.Speed > 0 ? args.SpeedString : _translator._("Unknown"),
                 args.Eta > 0 ? args.EtaString : _translator._("Unknown"));
+            LblStatus.Visibility = Visibility.Visible;
             ProgBar.Value = args.Progress;
             ProgBar.IsIndeterminate = false;
         }
@@ -248,6 +320,9 @@ public sealed partial class DownloadRow : UserControl
     public void TriggerResumedState()
     {
         Status = DownloadStatus.Running;
+        SetVisualState("StatusRunningState");
+        IcnStatus.Glyph = "\uE896";
+        LblStatusBadge.Text = _translator._("Running");
         FntPauseResume.Glyph = "\uE769";
         SetActionLabel(BtnPauseResume, _translator._("Pause"));
         _isPaused = false;
@@ -256,7 +331,13 @@ public sealed partial class DownloadRow : UserControl
     public void TriggerStartedFromQueueState()
     {
         Status = DownloadStatus.Running;
-        LblStatus.Text = _translator._("Running");
+        SetVisualState("StatusRunningState");
+        IcnStatus.Glyph = "\uE896";
+        LblStatusBadge.Text = _translator._("Running");
+        LblStatus.Text = string.Empty;
+        LblStatus.Visibility = Visibility.Collapsed;
+        ProgBar.Visibility = Visibility.Visible;
+        GridFileInfo.Visibility = Visibility.Collapsed;
         ProgBar.Value = 0.0;
         ProgBar.IsIndeterminate = true;
     }
@@ -264,8 +345,18 @@ public sealed partial class DownloadRow : UserControl
     public void TriggerStoppedState()
     {
         Status = DownloadStatus.Stopped;
+        _logRefreshTimer.Stop();
+        if (GridLog.Visibility == Visibility.Visible)
+        {
+            FlushLogToUi();
+        }
+        SetVisualState("StatusErrorState");
         IcnStatus.Glyph = "\uE783";
-        LblStatus.Text = _translator._("Stopped");
+        LblStatusBadge.Text = _translator._("Stopped");
+        LblStatus.Text = string.Empty;
+        LblStatus.Visibility = Visibility.Collapsed;
+        ProgBar.Visibility = Visibility.Visible;
+        GridFileInfo.Visibility = Visibility.Collapsed;
         ProgBar.Value = 1.0;
         ProgBar.IsIndeterminate = false;
         ViewStackButtons.SelectedIndex = (int)ButtonsPage.Error;

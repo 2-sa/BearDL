@@ -8,7 +8,7 @@
 #ifndef MyAppVersion
   #define MyAppVersion "2026.5.0"
 #endif
-#define MyAppPublisher       "Nickvision"
+#define MyAppPublisher       "BearDL"
 #define MyAppURL             "https://github.com/2-sa/BearDL"
 #define MyAppExeName         "Nickvision.Parabolic.WinUI.exe"
 #define StartYearCopyright   "2021"

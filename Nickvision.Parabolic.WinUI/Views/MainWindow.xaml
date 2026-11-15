@@ -48,7 +48,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <ImageIcon Grid.Column="0" VerticalAlignment="Center" Height="18" Source="/Assets/org.nickvision.tubeconverter.ico"/>
+                            <Image Grid.Column="0" FlowDirection="LeftToRight" VerticalAlignment="Center" Width="20" Height="20" Source="/Assets/BearDL-Logo.png"/>
 
                             <TextBlock x:Name="LblTitle" Grid.Column="1" Margin="12,0,6,0" VerticalAlignment="Center" Style="{ThemeResource CaptionTextBlockStyle}"/>
 
@@ -254,13 +254,13 @@
                 <nickvision:ViewStack x:Name="ViewStack" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <nickvision:ViewStack.Pages>
                         <StackPanel Margin="48,48,48,48" HorizontalAlignment="Stretch" Orientation="Vertical" Spacing="12">
-                            <Image FlowDirection="LeftToRight" HorizontalAlignment="Left" Width="64" Height="64" Source="/Assets/org.nickvision.tubeconverter.ico"/>
+                            <Image FlowDirection="LeftToRight" HorizontalAlignment="Left" Width="64" Height="64" Source="/Assets/BearDL-Logo.png"/>
 
-                            <TextBlock x:Name="LblHomeTitle" HorizontalAlignment="Left" Style="{ThemeResource TitleTextBlockStyle}"/>
+                            <TextBlock x:Name="LblHomeTitle" HorizontalAlignment="Left" Style="{StaticResource PageHeadingStyle}"/>
 
-                            <TextBlock x:Name="LblHomeDescription" HorizontalAlignment="Left" Foreground="Gray"/>
+                            <TextBlock x:Name="LblHomeDescription" HorizontalAlignment="Left" Style="{StaticResource SupportingTextStyle}"/>
 
-                            <HyperlinkButton Margin="0,24,0,0" Click="AddDownload">
+                            <HyperlinkButton Margin="0,20,0,0" Click="AddDownload">
                                 <HyperlinkButton.Content>
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE710;"/>
@@ -299,14 +299,14 @@
                             </Grid.RowDefinitions>
 
                             <!-- Classic Downloads Toolbar (Row 0) -->
-                            <Grid x:Name="ClassicDownloadsToolbar" Grid.Row="0" Margin="12,0,0,0">
+                            <Grid x:Name="ClassicDownloadsToolbar" Grid.Row="0" Margin="16,8,16,8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <Button Grid.Column="1" Style="{ThemeResource AccentButtonStyle}" Click="AddDownload">
+                                <Button Grid.Column="0" Style="{StaticResource BearPrimaryActionButtonStyle}" Click="AddDownload">
                                     <Button.Content>
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE710;"/>
@@ -352,7 +352,7 @@
                             <MenuFlyoutSeparator x:Name="ClassicDownloadsSeparator" Grid.Row="1" HorizontalAlignment="Stretch"/>
 
                             <NavigationView x:Name="NavViewDownloads" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                            IsPaneToggleButtonVisible="False" IsBackButtonVisible="Collapsed" IsSettingsVisible="False"
+                                            IsPaneToggleButtonVisible="True" IsBackButtonVisible="Collapsed" IsSettingsVisible="False"
                                             PaneDisplayMode="Left" OpenPaneLength="240"
                                             SelectionChanged="NavViewDownloads_SelectionChanged"
                                             ItemInvoked="NavViewDownloads_ItemInvoked">
@@ -378,7 +378,7 @@
                                         </NavigationViewItem.Icon>
 
                                         <NavigationViewItem.InfoBadge>
-                                            <InfoBadge x:Name="InfoBadgeDownloadsRunning" Style="{StaticResource AttentionValueInfoBadgeStyle}" Visibility="Collapsed"/>
+                                            <InfoBadge x:Name="InfoBadgeDownloadsRunning" Style="{StaticResource InformationalValueInfoBadgeStyle}" Visibility="Collapsed"/>
                                         </NavigationViewItem.InfoBadge>
                                     </NavigationViewItem>
 
@@ -398,7 +398,7 @@
                                         </NavigationViewItem.Icon>
 
                                         <NavigationViewItem.InfoBadge>
-                                            <InfoBadge x:Name="InfoBadgeDownloadsCompleted" Style="{StaticResource AttentionValueInfoBadgeStyle}" Visibility="Collapsed"/>
+                                            <InfoBadge x:Name="InfoBadgeDownloadsCompleted" Style="{StaticResource SuccessValueInfoBadgeStyle}" Visibility="Collapsed"/>
                                         </NavigationViewItem.InfoBadge>
                                     </NavigationViewItem>
 
@@ -408,12 +408,18 @@
                                         </NavigationViewItem.Icon>
 
                                         <NavigationViewItem.InfoBadge>
-                                            <InfoBadge x:Name="InfoBadgeDownloadsFailed" Style="{StaticResource AttentionValueInfoBadgeStyle}" Visibility="Collapsed"/>
+                                            <InfoBadge x:Name="InfoBadgeDownloadsFailed" Style="{StaticResource CriticalValueInfoBadgeStyle}" Visibility="Collapsed"/>
                                         </NavigationViewItem.InfoBadge>
                                     </NavigationViewItem>
                                 </NavigationView.MenuItems>
 
                                 <NavigationView.FooterMenuItems>
+                                    <NavigationViewItem x:Name="NavSaveFolder" Tag="SaveFolder" SelectsOnInvoked="False" Visibility="Collapsed">
+                                        <NavigationViewItem.Icon>
+                                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B7;"/>
+                                        </NavigationViewItem.Icon>
+                                    </NavigationViewItem>
+
                                     <NavigationViewItemSeparator x:Name="NavFooterSeparator" Visibility="Collapsed"/>
 
                                     <NavigationViewItem x:Name="NavHistory" Tag="History" SelectsOnInvoked="False" Visibility="Collapsed">
@@ -488,24 +494,33 @@
                                     </Grid.RowDefinitions>
 
                                     <!-- Single Modern URL Command Bar (Modern Layout Only) -->
-                                    <Border x:Name="QuickUrlCard" Grid.Row="0" Margin="12,8,32,4" Padding="6,6" CornerRadius="12" Visibility="Collapsed"
-                                            parabolic:ScrollViewportHelper.ReserveScrollbarRight="20"
-                                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                                        <Grid ColumnSpacing="8">
+                                    <Border x:Name="QuickUrlCard" Grid.Row="0" Margin="16,10,16,4" Padding="8" CornerRadius="12" Visibility="Collapsed"
+                                            Background="{ThemeResource BearCardBrush}"
+                                            BorderBrush="{ThemeResource BearCardBorderBrush}" BorderThickness="1">
+                                        <Grid ColumnSpacing="6">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <FontIcon Grid.Column="0" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE71B;" FontSize="15" Margin="8,0,0,0" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                                            <FontIcon Grid.Column="0" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE71B;" FontSize="15" Margin="8,0,2,0" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
 
                                             <TextBox x:Name="TxtQuickUrl" Grid.Column="1" FlowDirection="LeftToRight" Height="36" VerticalContentAlignment="Center" CornerRadius="8" BorderThickness="0" Background="Transparent"
                                                      TextChanged="TxtQuickUrl_TextChanged" KeyDown="TxtQuickUrl_KeyDown"/>
 
-                                            <Button x:Name="BtnQuickCustomize" Grid.Column="2" Height="36" Padding="14,0" CornerRadius="8"
+                                            <Button x:Name="BtnQuickClear" Grid.Column="2" Style="{StaticResource IconActionStyle}" Background="Transparent" BorderThickness="0" Visibility="Collapsed" Click="QuickClear_Click">
+                                                <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="14" Glyph="&#xE711;"/>
+                                            </Button>
+
+                                            <Button x:Name="BtnQuickPaste" Grid.Column="3" Style="{StaticResource IconActionStyle}" Background="Transparent" BorderThickness="0" Click="QuickPaste_Click">
+                                                <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="15" Glyph="&#xE77F;"/>
+                                            </Button>
+
+                                            <Button x:Name="BtnQuickCustomize" Grid.Column="4" Style="{StaticResource PageActionStyle}"
                                                     IsEnabled="False" Click="QuickCustomize_Click">
                                                 <Button.Content>
                                                     <StackPanel Orientation="Horizontal" Spacing="6">
@@ -515,8 +530,8 @@
                                                 </Button.Content>
                                             </Button>
 
-                                            <Button x:Name="BtnQuickDownload" Grid.Column="3" Height="36" Padding="16,0" CornerRadius="8"
-                                                    Style="{ThemeResource AccentButtonStyle}" IsEnabled="False" Click="QuickDownload_Click">
+                                            <Button x:Name="BtnQuickDownload" Grid.Column="5"
+                                                    Style="{StaticResource BearPrimaryActionButtonStyle}" IsEnabled="False" Click="QuickDownload_Click">
                                                 <Button.Content>
                                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                                         <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE896;"/>
@@ -528,9 +543,9 @@
                                     </Border>
 
                                     <!-- Clipboard link suggestion (Modern Layout Only, shown when the clipboard holds a URL) -->
-                                    <Border x:Name="ClipboardSuggestion" Grid.Row="1" Margin="12,2,32,4" Padding="12,6" CornerRadius="10" Visibility="Collapsed"
-                                            parabolic:ScrollViewportHelper.ReserveScrollbarRight="20"
-                                            Background="{ThemeResource AccentFillColorTertiaryBrush}">
+                                    <Border x:Name="ClipboardSuggestion" Grid.Row="1" Margin="16,4,16,4" Padding="12,8" CornerRadius="12" Visibility="Collapsed"
+                                            Background="{ThemeResource BearAccentSubtleBrush}"
+                                            BorderBrush="{ThemeResource BearAccentSubtleBorderBrush}" BorderThickness="1">
                                         <Grid ColumnSpacing="10">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -540,73 +555,71 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <FontIcon Grid.Column="0" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE77F;" FontSize="14" VerticalAlignment="Center" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"/>
+                                            <FontIcon Grid.Column="0" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE77F;" FontSize="14" VerticalAlignment="Center" Foreground="{ThemeResource BearAccentForegroundBrush}"/>
 
-                                            <TextBlock x:Name="LblClipboardPrompt" Grid.Column="1" VerticalAlignment="Center" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"/>
+                                            <TextBlock x:Name="LblClipboardPrompt" Grid.Column="1" VerticalAlignment="Center"/>
 
-                                            <TextBlock x:Name="LblClipboardUrl" Grid.Column="2" FlowDirection="LeftToRight" TextAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold"
-                                                       TextTrimming="CharacterEllipsis" MaxLines="1" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"/>
+                                            <TextBlock x:Name="LblClipboardUrl" Grid.Column="2" FlowDirection="LeftToRight" HorizontalAlignment="Left" VerticalAlignment="Center" FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis" MaxLines="1" Foreground="{ThemeResource BearAccentForegroundBrush}"/>
 
-                                            <Button x:Name="BtnClipboardUse" Grid.Column="3" Padding="12,4" CornerRadius="6" Click="ClipboardUse_Click">
+                                            <Button x:Name="BtnClipboardUse" Grid.Column="3" Style="{StaticResource BearPrimaryActionButtonStyle}" MinHeight="30" Padding="12,4" Click="ClipboardUse_Click">
                                                 <TextBlock x:Name="LblClipboardUse" FontWeight="SemiBold"/>
                                             </Button>
 
-                                            <Button x:Name="BtnClipboardDismiss" Grid.Column="4" Padding="8,4" CornerRadius="6" Background="Transparent" BorderThickness="0" Click="ClipboardDismiss_Click">
-                                                <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE711;" FontSize="12" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"/>
+                                            <Button x:Name="BtnClipboardDismiss" Grid.Column="4" Style="{StaticResource IconActionStyle}" Background="Transparent" BorderThickness="0" Click="ClipboardDismiss_Click">
+                                                <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE711;" FontSize="12"/>
                                             </Button>
                                         </Grid>
                                     </Border>
 
                                     <!-- Section header: current filter + count, batch actions only when they apply (Modern Layout Only) -->
-                                    <Grid x:Name="ModernDownloadsToolbar" Grid.Row="2" Margin="12,6,32,4" ColumnSpacing="8" Visibility="Collapsed"
-                                          parabolic:ScrollViewportHelper.ReserveScrollbarRight="20">
+                                    <Grid x:Name="ModernDownloadsToolbar" Grid.Row="2" Margin="16,8,16,4" ColumnSpacing="8" Visibility="Collapsed">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
 
                                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                             <TextBlock x:Name="LblModernSectionTitle" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                            <TextBlock x:Name="LblModernSectionCount" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="LblModernSectionCount" Style="{StaticResource BearTabularTextStyle}" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                                         </StackPanel>
 
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-                                            <Button x:Name="BtnModernStopAllRemaining" Padding="10,5" Background="Transparent" BorderThickness="0" Visibility="Collapsed" Click="StopAllRemaining">
-                                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE71A;"/>
-                                                    <TextBlock VerticalAlignment="Center" x:Name="LblModernStopAllRemaining"/>
-                                                </StackPanel>
-                                            </Button>
+                                        <CommandBar x:Name="CmdBarModernActions" Grid.Column="1" DefaultLabelPosition="Right" IsDynamicOverflowEnabled="True"
+                                                    Background="Transparent" HorizontalAlignment="Right" VerticalAlignment="Center" Visibility="Collapsed">
+                                            <CommandBar.PrimaryCommands>
+                                                <AppBarButton x:Name="BtnModernStopAllRemaining" Visibility="Collapsed" Click="StopAllRemaining">
+                                                    <AppBarButton.Icon>
+                                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE71A;"/>
+                                                    </AppBarButton.Icon>
+                                                </AppBarButton>
 
-                                            <Button x:Name="BtnModernRetryAllFailed" Padding="10,5" Background="Transparent" BorderThickness="0" Visibility="Collapsed" Click="RetryAllFailed">
-                                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE72C;"/>
-                                                    <TextBlock VerticalAlignment="Center" x:Name="LblModernRetryAllFailed"/>
-                                                </StackPanel>
-                                            </Button>
+                                                <AppBarButton x:Name="BtnModernRetryAllFailed" Visibility="Collapsed" Click="RetryAllFailed">
+                                                    <AppBarButton.Icon>
+                                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE72C;"/>
+                                                    </AppBarButton.Icon>
+                                                </AppBarButton>
 
-                                            <Button x:Name="BtnModernClearAllQueued" Padding="10,5" Background="Transparent" BorderThickness="0" Visibility="Collapsed" Click="ClearAllQueued">
-                                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE894;"/>
-                                                    <TextBlock VerticalAlignment="Center" x:Name="LblModernClearAllQueued"/>
-                                                </StackPanel>
-                                            </Button>
+                                                <AppBarButton x:Name="BtnModernClearAllQueued" Visibility="Collapsed" Click="ClearAllQueued">
+                                                    <AppBarButton.Icon>
+                                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE894;"/>
+                                                    </AppBarButton.Icon>
+                                                </AppBarButton>
 
-                                            <Button x:Name="BtnModernClearAllCompleted" Padding="10,5" Background="Transparent" BorderThickness="0" Visibility="Collapsed" Click="ClearAllCompleted">
-                                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="13" Glyph="&#xE74D;"/>
-                                                    <TextBlock VerticalAlignment="Center" x:Name="LblModernClearAllCompleted"/>
-                                                </StackPanel>
-                                            </Button>
-                                        </StackPanel>
+                                                <AppBarButton x:Name="BtnModernClearAllCompleted" Visibility="Collapsed" Click="ClearAllCompleted">
+                                                    <AppBarButton.Icon>
+                                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE74D;"/>
+                                                    </AppBarButton.Icon>
+                                                </AppBarButton>
+                                            </CommandBar.PrimaryCommands>
+                                        </CommandBar>
                                     </Grid>
 
-                                    <ScrollViewer x:Name="ScrollDownloads" Grid.Row="3" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
+                                    <ScrollViewer x:Name="ScrollDownloads" Grid.Row="3" FlowDirection="LeftToRight" Padding="0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
                                         <nickvision:ViewStack x:Name="ViewStackDownloads" FlowDirection="{Binding FlowDirection, ElementName=MainGrid}">
                                             <nickvision:ViewStack.Pages>
                                                 <nickvision:StatusPage x:Name="StatusNoneDownloads" Glyph="&#xE896;">
                                                     <nickvision:StatusPage.Child>
-                                                        <Button x:Name="BtnClassicNoneAdd" Click="AddDownload">
+                                                        <Button x:Name="BtnClassicNoneAdd" Style="{StaticResource BearPrimaryActionButtonStyle}" HorizontalAlignment="Center" Click="AddDownload">
                                                             <Button.Content>
                                                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                                                     <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE710;"/>
@@ -618,9 +631,9 @@
                                                     </nickvision:StatusPage.Child>
                                                 </nickvision:StatusPage>
 
-                                                <ItemsRepeater x:Name="ListDownloads" Margin="12,6,12,0">
+                                                <ItemsRepeater x:Name="ListDownloads" Margin="16,4,16,12">
                                                     <ItemsRepeater.Layout>
-                                                        <StackLayout Spacing="6"/>
+                                                        <StackLayout Spacing="8"/>
                                                     </ItemsRepeater.Layout>
                                                 </ItemsRepeater>
                                             </nickvision:ViewStack.Pages>
@@ -628,49 +641,63 @@
                                     </ScrollViewer>
 
                                     <!-- Empty state with start hints (Modern Layout Only, shown when there are no downloads at all) -->
-                                    <Grid x:Name="ModernEmptyState" Grid.Row="3" Margin="12,8,32,16" Visibility="Collapsed"
-                                          parabolic:ScrollViewportHelper.ReserveScrollbarRight="20">
-                                        <Rectangle RadiusX="16" RadiusY="16" StrokeThickness="1.5" StrokeDashArray="5,4"
-                                                   Stroke="{ThemeResource ControlStrongStrokeColorDefaultBrush}" Opacity="0.6"/>
-
-                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="560" Margin="24" Spacing="6">
-                                            <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE896;" FontSize="44" HorizontalAlignment="Center"/>
-                                            <TextBlock x:Name="LblEmptyTitle" Margin="0,10,0,0" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center" TextAlignment="Center"/>
-                                            <TextBlock x:Name="LblEmptySubtitle" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="WrapWholeWords"/>
-
-                                            <Grid Margin="0,18,0,0" ColumnSpacing="10">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
-
-                                                <Border Grid.Column="0" Padding="12" CornerRadius="10" BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
-                                                    <StackPanel Spacing="8">
-                                                        <Border HorizontalAlignment="Center" Padding="8,2" CornerRadius="5" BorderThickness="1,1,1,2" BorderBrush="{ThemeResource ControlStrongStrokeColorDefaultBrush}">
-                                                            <TextBlock Text="Ctrl+V" FontFamily="Consolas" FlowDirection="LeftToRight"/>
-                                                        </Border>
-                                                        <TextBlock x:Name="LblHintPaste" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="WrapWholeWords"/>
-                                                    </StackPanel>
+                                    <Grid x:Name="ModernEmptyState" Grid.Row="3" Margin="16,8,16,16" Visibility="Collapsed">
+                                        <Border Style="{StaticResource PageSurfaceStyle}" CornerRadius="16" Padding="28,24" MaxWidth="600" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <StackPanel HorizontalAlignment="Center" Spacing="8">
+                                                <Border HorizontalAlignment="Center" Padding="14" CornerRadius="16"
+                                                        Background="{ThemeResource BearAccentSubtleBrush}"
+                                                        BorderBrush="{ThemeResource BearAccentSubtleBorderBrush}" BorderThickness="1">
+                                                    <Image Source="/Assets/BearDL-Logo.png" Width="52" Height="52" FlowDirection="LeftToRight"/>
                                                 </Border>
 
-                                                <Border Grid.Column="1" Padding="12" CornerRadius="10" BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
-                                                    <StackPanel Spacing="8">
-                                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE7C9;" FontSize="20" HorizontalAlignment="Center"/>
-                                                        <TextBlock x:Name="LblHintDrag" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="WrapWholeWords"/>
-                                                    </StackPanel>
-                                                </Border>
+                                                <TextBlock x:Name="LblEmptyTitle" Margin="0,6,0,0" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center" TextAlignment="Center"/>
+                                                <TextBlock x:Name="LblEmptySubtitle" Style="{StaticResource SupportingTextStyle}" HorizontalAlignment="Center" TextAlignment="Center"/>
 
-                                                <Border Grid.Column="2" Padding="12" CornerRadius="10" BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
-                                                    <StackPanel Spacing="8">
-                                                        <Border HorizontalAlignment="Center" Padding="8,2" CornerRadius="5" BorderThickness="1,1,1,2" BorderBrush="{ThemeResource ControlStrongStrokeColorDefaultBrush}">
-                                                            <TextBlock Text="Enter" FontFamily="Consolas" FlowDirection="LeftToRight"/>
-                                                        </Border>
-                                                        <TextBlock x:Name="LblHintEnter" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="WrapWholeWords"/>
+                                                <Grid Margin="0,14,0,0" ColumnSpacing="10">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Border Grid.Column="0" Style="{StaticResource InsetSurfaceStyle}" CornerRadius="10" Padding="12">
+                                                        <StackPanel Spacing="8">
+                                                            <Border HorizontalAlignment="Center" Padding="8,2" CornerRadius="6"
+                                                                    Background="{ThemeResource BearAccentSubtleBrush}"
+                                                                    BorderBrush="{ThemeResource BearAccentSubtleBorderBrush}" BorderThickness="1">
+                                                                <TextBlock Text="Ctrl+V" FontFamily="Consolas" FontWeight="SemiBold" FlowDirection="LeftToRight" Foreground="{ThemeResource BearAccentForegroundBrush}"/>
+                                                            </Border>
+                                                            <TextBlock x:Name="LblHintPaste" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="WrapWholeWords"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <Border Grid.Column="1" Style="{StaticResource InsetSurfaceStyle}" CornerRadius="10" Padding="12">
+                                                        <StackPanel Spacing="8">
+                                                            <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE7C9;" FontSize="20" HorizontalAlignment="Center" Foreground="{ThemeResource BearAccentForegroundBrush}"/>
+                                                            <TextBlock x:Name="LblHintDrag" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="WrapWholeWords"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <Border Grid.Column="2" Style="{StaticResource InsetSurfaceStyle}" CornerRadius="10" Padding="12">
+                                                        <StackPanel Spacing="8">
+                                                            <Border HorizontalAlignment="Center" Padding="8,2" CornerRadius="6"
+                                                                    Background="{ThemeResource BearAccentSubtleBrush}"
+                                                                    BorderBrush="{ThemeResource BearAccentSubtleBorderBrush}" BorderThickness="1">
+                                                                <TextBlock Text="Enter" FontFamily="Consolas" FontWeight="SemiBold" FlowDirection="LeftToRight" Foreground="{ThemeResource BearAccentForegroundBrush}"/>
+                                                            </Border>
+                                                            <TextBlock x:Name="LblHintEnter" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="WrapWholeWords"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </Grid>
+
+                                                <Button x:Name="BtnModernEmptyAdd" Style="{StaticResource PageActionStyle}" HorizontalAlignment="Center" Margin="0,12,0,0" Click="AddDownload">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <FontIcon VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="14" Glyph="&#xE710;"/>
+                                                        <TextBlock VerticalAlignment="Center" x:Name="LblModernEmptyAddDownload"/>
                                                     </StackPanel>
-                                                </Border>
-                                            </Grid>
-                                        </StackPanel>
+                                                </Button>
+                                            </StackPanel>
+                                        </Border>
                                     </Grid>
                                 </Grid>
                             </NavigationView>

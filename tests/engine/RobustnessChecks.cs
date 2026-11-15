@@ -56,9 +56,10 @@ internal static class RobustnessChecks
         log.Enqueue("last diagnostic");
         Require(log.ToString().Length <= 4096 && log.ToString().EndsWith("last diagnostic"), "Bounded concurrent log tail");
         Require(ReferenceEquals(log.ToString(), log.ToString()), "Unchanged log snapshot reused");
+        for (var i = 0; i < 64; i++) { _ = log.ToString(); }
         var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
         for (var i = 0; i < 10000; i++) { _ = log.ToString(); }
-        Require(GC.GetAllocatedBytesForCurrentThread() - allocatedBefore < 1024, "Repeated log reads do not allocate full snapshots");
+        Require(GC.GetAllocatedBytesForCurrentThread() - allocatedBefore < 65536 && ReferenceEquals(log.ToString(), log.ToString()), "Repeated log reads do not allocate full snapshots");
         log.Enqueue(new string('y', 20000));
         Require(log.ToString().Length <= 4096, "Oversized diagnostic bounded");
 

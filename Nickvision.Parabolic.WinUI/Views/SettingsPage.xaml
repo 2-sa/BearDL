@@ -12,18 +12,18 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" Loaded="Page_Loaded">
 
-    <Grid RowSpacing="16" Padding="20,16,20,0">
+    <Grid RowSpacing="16" Padding="16,16,16,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Border Style="{StaticResource PageSurfaceStyle}" Margin="0,0,20,0" parabolic:ScrollViewportHelper.ReserveScrollbarRight="20">
+        <Border Style="{StaticResource PageSurfaceStyle}">
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE713;" FontSize="28" VerticalAlignment="Center" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE713;" FontSize="28" VerticalAlignment="Center" Foreground="{ThemeResource BearAccentForegroundBrush}"/>
                 <StackPanel Grid.Column="1" Spacing="4">
                     <TextBlock x:Name="LblSettingsTitle" Style="{StaticResource PageHeadingStyle}"/>
                     <TextBlock x:Name="LblSettingsSection" Style="{StaticResource SupportingTextStyle}"/>
@@ -64,8 +64,8 @@
                 </NavigationViewItem>
             </NavigationView.MenuItems>
 
-            <ScrollViewer FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
-                <nickvision:ViewStack x:Name="ViewStack" FlowDirection="{Binding FlowDirection, ElementName=PageRoot}" Margin="0,12,0,20">
+            <ScrollViewer FlowDirection="LeftToRight" Padding="0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
+                <nickvision:ViewStack x:Name="ViewStack" FlowDirection="{Binding FlowDirection, ElementName=PageRoot}" Margin="0,12,0,16">
                     <nickvision:ViewStack.Pages>
                         <StackPanel x:Name="PanelUserInterface" Spacing="10">
                             <StackPanel.Transitions>
@@ -166,6 +166,9 @@
                                     <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
                                     <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
                                 </community:SettingsCard.Resources>
+                                <community:SettingsCard.HeaderIcon>
+                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE7BA;"/>
+                                </community:SettingsCard.HeaderIcon>
                                 <ToggleSwitch x:Name="TglWarnBeforeDuplicateDownload" FlowDirection="LeftToRight" MinWidth="0" OnContent="" OffContent="" Toggled="Tgl_Toggled"/>
                             </community:SettingsCard>
 

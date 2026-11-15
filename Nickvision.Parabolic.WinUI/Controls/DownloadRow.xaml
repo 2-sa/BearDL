@@ -11,14 +11,47 @@
         <Style x:Key="DownloadActionButtonStyle" TargetType="Button" BasedOn="{StaticResource IconActionStyle}"/>
     </UserControl.Resources>
 
-    <Grid HorizontalAlignment="Stretch" RowSpacing="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-          CornerRadius="{ThemeResource ControlCornerRadius}" BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" Padding="12">
+    <Grid x:Name="RootGrid" HorizontalAlignment="Stretch" RowSpacing="12" Background="{ThemeResource BearCardBrush}"
+          CornerRadius="12" BorderThickness="1" BorderBrush="{ThemeResource BearCardBorderBrush}" Padding="12">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="StatusStates">
+                <VisualState x:Name="StatusRunningState">
+                    <VisualState.Setters>
+                        <Setter Target="PillStatus.Background" Value="{ThemeResource BearStatusRunningBgBrush}"/>
+                        <Setter Target="IcnStatus.Foreground" Value="{ThemeResource BearStatusRunningFgBrush}"/>
+                        <Setter Target="LblStatusBadge.Foreground" Value="{ThemeResource BearStatusRunningFgBrush}"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="StatusWarningState">
+                    <VisualState.Setters>
+                        <Setter Target="PillStatus.Background" Value="{ThemeResource BearStatusWarningBgBrush}"/>
+                        <Setter Target="IcnStatus.Foreground" Value="{ThemeResource BearStatusWarningFgBrush}"/>
+                        <Setter Target="LblStatusBadge.Foreground" Value="{ThemeResource BearStatusWarningFgBrush}"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="StatusSuccessState">
+                    <VisualState.Setters>
+                        <Setter Target="PillStatus.Background" Value="{ThemeResource BearStatusSuccessBgBrush}"/>
+                        <Setter Target="IcnStatus.Foreground" Value="{ThemeResource BearStatusSuccessFgBrush}"/>
+                        <Setter Target="LblStatusBadge.Foreground" Value="{ThemeResource BearStatusSuccessFgBrush}"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="StatusErrorState">
+                    <VisualState.Setters>
+                        <Setter Target="PillStatus.Background" Value="{ThemeResource BearStatusErrorBgBrush}"/>
+                        <Setter Target="IcnStatus.Foreground" Value="{ThemeResource BearStatusErrorFgBrush}"/>
+                        <Setter Target="LblStatusBadge.Foreground" Value="{ThemeResource BearStatusErrorFgBrush}"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" HorizontalAlignment="Stretch" ColumnSpacing="6">
+        <Grid Grid.Row="0" HorizontalAlignment="Stretch" ColumnSpacing="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -26,21 +59,58 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <Image FlowDirection="LeftToRight" x:Name="ImgThumbnail" Grid.Column="0" Width="75" Height="50" Stretch="Uniform"/>
+            <Border Grid.Column="0" Width="96" Height="54" CornerRadius="8"
+                    Background="{ThemeResource BearThumbnailBgBrush}"
+                    BorderBrush="{ThemeResource BearCardBorderBrush}" BorderThickness="1"
+                    VerticalAlignment="Center">
+                <Grid>
+                    <FontIcon x:Name="IcnThumbnailFallback" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                              Glyph="&#xE714;" FontSize="20"
+                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Image FlowDirection="LeftToRight" x:Name="ImgThumbnail" Stretch="UniformToFill"/>
+                </Grid>
+            </Border>
 
-            <StackPanel Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="12,0" Orientation="Vertical" Spacing="6">
-                <TextBlock x:Name="LblTitle" TextWrapping="WrapWholeWords" TextTrimming="CharacterEllipsis" MaxLines="2"/>
+            <StackPanel Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="2,0" Orientation="Vertical" Spacing="6">
+                <TextBlock x:Name="LblTitle" FontWeight="SemiBold" TextWrapping="WrapWholeWords" TextTrimming="CharacterEllipsis" MaxLines="2"/>
 
-                <Grid ColumnSpacing="6">
+                <Grid ColumnSpacing="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <FontIcon x:Name="IcnStatus" VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16"/>
-                    <TextBlock x:Name="LblStatus" Grid.Column="1" VerticalAlignment="Center" FontSize="12" TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+
+                    <Border x:Name="PillStatus" Grid.Column="0" CornerRadius="10" Padding="8,2" VerticalAlignment="Center"
+                            Background="{ThemeResource BearStatusRunningBgBrush}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <FontIcon x:Name="IcnStatus" VerticalAlignment="Center" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="12"
+                                      Foreground="{ThemeResource BearStatusRunningFgBrush}"/>
+                            <TextBlock x:Name="LblStatusBadge" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{ThemeResource BearStatusRunningFgBrush}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock x:Name="LblStatus" Grid.Column="1" VerticalAlignment="Center" FontSize="12"
+                               Style="{StaticResource BearTabularTextStyle}"
+                               TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Visibility="Collapsed"/>
                 </Grid>
 
-                <ProgressBar x:Name="ProgBar" HorizontalAlignment="Stretch" Minimum="0" Maximum="1"/>
+                <ProgressBar x:Name="ProgBar" HorizontalAlignment="Stretch" Minimum="0" Maximum="1"
+                             Foreground="{ThemeResource BearAccentBrush}"/>
+
+                <Grid x:Name="GridFileInfo" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="LblFileInfo" Grid.Column="0" FontSize="12"
+                               Style="{StaticResource BearTabularTextStyle}"
+                               FlowDirection="LeftToRight"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               TextTrimming="CharacterEllipsis"/>
+                </Grid>
             </StackPanel>
 
             <nickvision:ViewStack x:Name="ViewStackButtons" Grid.Column="2" VerticalAlignment="Center">
@@ -95,7 +165,7 @@
 
             <MenuFlyoutSeparator Grid.Row="0" HorizontalAlignment="Stretch"/>
 
-            <ScrollViewer x:Name="ScrollLog" Grid.Row="1" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <ScrollViewer x:Name="ScrollLog" Grid.Row="1" FlowDirection="LeftToRight" Padding="0,0,16,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                 <TextBlock x:Name="LblLog" FlowDirection="LeftToRight" Margin="0,0,12,0" IsTextSelectionEnabled="True"/>
             </ScrollViewer>
         </Grid>

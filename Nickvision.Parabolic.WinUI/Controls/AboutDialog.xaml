@@ -12,7 +12,7 @@
     Loaded="Dialog_Loaded">
 
     <!-- Keep the scrollbar on the right; reserve its overlay area and localize the content. -->
-    <ScrollViewer Width="498" MaxWidth="498" FlowDirection="LeftToRight" Padding="0,0,20,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
+    <ScrollViewer Width="498" MaxWidth="498" FlowDirection="LeftToRight" Padding="0,0,16,0" HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible" parabolic:ScrollViewportHelper.ConstrainContentWidth="True">
         <Grid x:Name="AboutContent" RowSpacing="16" FlowDirection="{Binding FlowDirection, ElementName=DialogRoot}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -57,7 +57,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <ImageIcon Width="64" Height="64" Source="/Assets/org.nickvision.tubeconverter.ico"/>
+                                <Image Width="64" Height="64" FlowDirection="LeftToRight" Source="/Assets/BearDL-Logo.png"/>
                                 <StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center">
                                     <TextBlock x:Name="LblAppName" Style="{StaticResource PageHeadingStyle}"/>
                                     <Border Style="{StaticResource InsetSurfaceStyle}" Padding="8,4" HorizontalAlignment="Left">

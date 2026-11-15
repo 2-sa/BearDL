@@ -12,6 +12,9 @@ public static class ScrollViewportHelper
     public static readonly DependencyProperty ReserveScrollbarRightProperty = DependencyProperty.RegisterAttached(
         "ReserveScrollbarRight", typeof(double), typeof(ScrollViewportHelper), new PropertyMetadata(0.0, OnReserveScrollbarRightChanged));
 
+    private static readonly DependencyProperty FlowDirectionCallbackTokenProperty = DependencyProperty.RegisterAttached(
+        "FlowDirectionCallbackToken", typeof(long?), typeof(ScrollViewportHelper), new PropertyMetadata(null));
+
     public static bool GetConstrainContentWidth(DependencyObject element) => (bool)element.GetValue(ConstrainContentWidthProperty);
 
     public static void SetConstrainContentWidth(DependencyObject element, bool value) => element.SetValue(ConstrainContentWidthProperty, value);
@@ -27,9 +30,16 @@ public static class ScrollViewportHelper
             return;
         }
         element.Loaded -= OnReserveLoaded;
-        element.Loaded += OnReserveLoaded;
-        element.RegisterPropertyChangedCallback(FrameworkElement.FlowDirectionProperty, (_, _) => UpdateReservedMargin(element));
-        UpdateReservedMargin(element);
+        if ((double)args.NewValue > 0)
+        {
+            element.Loaded += OnReserveLoaded;
+            if (element.GetValue(FlowDirectionCallbackTokenProperty) is null)
+            {
+                var token = element.RegisterPropertyChangedCallback(FrameworkElement.FlowDirectionProperty, (_, _) => UpdateReservedMargin(element));
+                element.SetValue(FlowDirectionCallbackTokenProperty, token);
+            }
+            UpdateReservedMargin(element);
+        }
     }
 
     private static void OnReserveLoaded(object sender, RoutedEventArgs args) => UpdateReservedMargin((FrameworkElement)sender);
@@ -58,16 +68,13 @@ public static class ScrollViewportHelper
         {
             return;
         }
+        scrollViewer.Loaded -= OnLoaded;
+        scrollViewer.SizeChanged -= OnSizeChanged;
         if ((bool)args.NewValue)
         {
             scrollViewer.Loaded += OnLoaded;
             scrollViewer.SizeChanged += OnSizeChanged;
             UpdateWidth(scrollViewer);
-        }
-        else
-        {
-            scrollViewer.Loaded -= OnLoaded;
-            scrollViewer.SizeChanged -= OnSizeChanged;
         }
     }
 

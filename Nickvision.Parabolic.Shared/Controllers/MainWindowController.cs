@@ -10,8 +10,10 @@ using Nickvision.Parabolic.Shared.Models;
 using Nickvision.Parabolic.Shared.Services;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Nickvision.Parabolic.Shared.Controllers;
@@ -83,6 +85,13 @@ public class MainWindowController
     public int RemainingDownloadsCount => _downloadService.RemainingCount;
 
     public int RunningDownloadsCount => _downloadService.DownloadingCount;
+
+    public string SaveFolder
+    {
+        get => _configurationService.PreviousSaveFolder;
+
+        set => _configurationService.PreviousSaveFolder = value;
+    }
 
     public bool ShowDisclaimerOnStartup
     {
@@ -296,14 +305,16 @@ public class MainWindowController
     {
         var ytdlpVersion = await _ytdlpExecutableService.GetExecutableVersionAsync();
         var denoVersion = await _denoExecutableService.GetExecutableVersionAsync();
-        var ffmpegVersion = await ExecuteAsync("ffmpeg", "-version");
-        var ariaVersion = await ExecuteAsync("aria2c", "--version");
+        var ffmpegOutput = await ExecuteAsync("ffmpeg", "-version");
+        var ariaOutput = await ExecuteAsync("aria2c", "--version");
+        var ffmpegVersion = ParseToolVersion(ffmpegOutput, "ffmpeg version ", "Copyright");
+        var ariaVersion = ParseToolVersion(ariaOutput, "aria2 version ", null);
         extraInformation += string.IsNullOrEmpty(extraInformation) ? string.Empty : "\n";
         extraInformation += $"Database encrypted: {_databaseService.IsEncrypted}\nLog path: {(_appInfo.IsPortable ? "app.log" : Path.Combine(UserDirectories.LocalData, _appInfo.Name, "app.log"))}";
         extraInformation += $"\n\nyt-dlp: {(ytdlpVersion is not null ? ytdlpVersion.ToString() : "not found")}";
         extraInformation += $"\ndeno: {(denoVersion is not null ? denoVersion.ToString() : "not found")}";
-        extraInformation += $"\nffmpeg: {(!string.IsNullOrEmpty(ffmpegVersion) ? ffmpegVersion.Substring(ffmpegVersion.IndexOf("ffmpeg version") + 15, ffmpegVersion.IndexOf("Copyright") - 15) : "not found")}";
-        extraInformation += $"\naria2: {(!string.IsNullOrEmpty(ariaVersion) ? ariaVersion.Substring(ariaVersion.IndexOf("aria2 version") + 14, ariaVersion.IndexOf('\n') - 14) : "not found")}";
+        extraInformation += $"\nffmpeg: {ffmpegVersion}";
+        extraInformation += $"\naria2: {ariaVersion}";
         extraInformation += $"\n\n{await _configurationService.ToStringAsync()}";
         return Desktop.System.Environment.GetDebugInformation(_appInfo, extraInformation);
     }
@@ -457,22 +468,95 @@ public class MainWindowController
         }
     }
 
+    private static string ParseToolVersion(string output, string prefix, string? endMarker)
+    {
+        if (string.IsNullOrWhiteSpace(output))
+        {
+            return "not found";
+        }
+        var prefixIndex = output.IndexOf(prefix, StringComparison.Ordinal);
+        if (prefixIndex >= 0)
+        {
+            var valueStart = prefixIndex + prefix.Length;
+            var lineEnd = output.IndexOfAny(['\r', '\n'], valueStart);
+            var markerIndex = endMarker is not null ? output.IndexOf(endMarker, valueStart, StringComparison.Ordinal) : -1;
+            var valueEnd = -1;
+            if (markerIndex > valueStart && lineEnd > valueStart)
+            {
+                valueEnd = Math.Min(markerIndex, lineEnd);
+            }
+            else if (markerIndex > valueStart)
+            {
+                valueEnd = markerIndex;
+            }
+            else if (lineEnd > valueStart)
+            {
+                valueEnd = lineEnd;
+            }
+            var parsed = (valueEnd > valueStart ? output[valueStart..valueEnd] : output[valueStart..]).Trim();
+            if (!string.IsNullOrEmpty(parsed))
+            {
+                return parsed;
+            }
+        }
+        var firstLineEnd = output.IndexOfAny(['\r', '\n']);
+        var firstLine = (firstLineEnd >= 0 ? output[..firstLineEnd] : output).Trim();
+        return string.IsNullOrEmpty(firstLine) ? "not found" : firstLine;
+    }
+
     private async Task<string> ExecuteAsync(string executable, string arguments)
     {
-        using var process = new Process()
+        try
         {
-            StartInfo = new ProcessStartInfo(executable, arguments)
+            using var process = new Process()
             {
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
+                StartInfo = new ProcessStartInfo(executable, arguments)
+                {
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                }
+            };
+            if (!process.Start())
+            {
+                return string.Empty;
             }
-        };
-        process.Start();
-        var outputTask = process.StandardOutput.ReadToEndAsync();
-        await process.WaitForExitAsync();
-        var output = await outputTask;
-        return process.ExitCode == 0 ? output : string.Empty;
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            try
+            {
+                var outputTask = process.StandardOutput.ReadToEndAsync(cts.Token);
+                await process.WaitForExitAsync(cts.Token);
+                var output = await outputTask;
+                return process.ExitCode == 0 ? output : string.Empty;
+            }
+            catch (OperationCanceledException)
+            {
+                try
+                {
+                    if (!process.HasExited)
+                    {
+                        process.Kill(entireProcessTree: true);
+                    }
+                }
+                catch
+                {
+                }
+                return string.Empty;
+            }
+        }
+        catch (Win32Exception)
+        {
+            return string.Empty;
+        }
+        catch (FileNotFoundException)
+        {
+            return string.Empty;
+        }
+        catch (Exception e)
+        {
+            _logger.LogDebug($"Failed to execute '{executable} {arguments}': {e.Message}");
+            return string.Empty;
+        }
     }
 
     private async void ConfigurationService_Saved(object? sender, ConfigurationSavedEventArgs e)

@@ -56,6 +56,7 @@ public sealed partial class HistoryDialog : ContentDialog
         var result = await base.ShowAsync();
         while (result != ContentDialogResult.Primary && _needsClearAllDialog)
         {
+            await DialogQueueHelper.WaitForOpenDialogsAsync(XamlRoot);
             var confirmDialog = new ContentDialog()
             {
                 Title = _translationService._("Clear All History?"),
@@ -72,6 +73,7 @@ public sealed partial class HistoryDialog : ContentDialog
                 await _controller.ClearAllAsync();
             }
             _needsClearAllDialog = false;
+            await DialogQueueHelper.WaitForOpenDialogsAsync(XamlRoot);
             result = await base.ShowAsync();
         }
         return result;
@@ -119,7 +121,7 @@ public sealed partial class HistoryDialog : ContentDialog
             }
             else
             {
-                var filtered = _historicDownloads.Where(x => x.Label.ToLower().Contains(sender.Text.ToLower())).ToList();
+                var filtered = _historicDownloads.Where(x => x.Label.Contains(sender.Text, StringComparison.OrdinalIgnoreCase)).ToList();
                 ListDownloads.ItemsSource = filtered;
                 ViewStack.SelectedIndex = filtered.Any() ? (int)Pages.History : (int)Pages.NoneSearch;
             }
@@ -132,7 +134,7 @@ public sealed partial class HistoryDialog : ContentDialog
         await LoadDownloadsAsync();
     }
 
-    private async void ClearAll(object sender, RoutedEventArgs e)
+    private void ClearAll(object sender, RoutedEventArgs e)
     {
         _needsClearAllDialog = true;
         Hide();

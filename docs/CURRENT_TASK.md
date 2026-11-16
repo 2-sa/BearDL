@@ -1,10 +1,41 @@
 # الحالة الحالية وخطوات الاستمرار
 
-آخر تحديث: 2026-11-13، بتوقيت الرياض. هذه الوثيقة هي المرجع الموحد للحالة والتسليم؛ دُمجت فيها تفاصيل وثيقة التسليم المؤرخة لتجنب تكرار المعلومات وتناقض حالتها.
+آخر تحديث: 2026-11-16، بتوقيت الرياض. هذه الوثيقة هي المرجع الموحد للحالة والتسليم؛ دُمجت فيها تفاصيل وثيقة التسليم المؤرخة لتجنب تكرار المعلومات وتناقض حالتها.
 
-## الطلب الحالي: تحسين الأداء، استقرار التشغيل بنسخة واحدة، واستقبال روابط الإضافة
+## الطلب الحالي: إيقاف إنشاء ملفات `.description` تلقائيًا مع التنزيلات (macOS والمشترك)
 
-- أذن المستخدم بإجراء commit وpush للتعديلات الحالية على `main` لتشغيل فحوص Actions (دون تثبيت أدوات محلية أو تشغيل إصدار تلقائي).
+- **الإذن والحالة:** أذن المستخدم برفع التعديلات إلى `origin/main` لتشغيل فحوص CI وبناء تحديث لنسخة الماك (دون تثبيت أدوات محلية).
+- **السبب الجذري المشخّص:**
+  1. **خلل في واجهة macOS/GTK ([`AddDownloadDialog.cs`](../Nickvision.Parabolic.GNOME/Views/AddDownloadDialog.cs#L294-L298)):** في `DownloadPlaylistAsync` كان المعامل `exportDescription` يمرّر `_playlistExportM3URow!.Active` خطأً بدل `_playlistExportDescriptionRow!.Active`، فكان تفعيل تصدير قائمة M3U يفعل `ExportDescription` قسرًا ويتجاهل مفتاح «تصدير الوصف إلى ملف».
+  2. **التذكّر التلقائي والتنزيل السريع ([`AddDownloadDialogController.cs`](../Nickvision.Parabolic.Shared/Controllers/AddDownloadDialogController.cs)):** كان المُتحكّم يحفظ `PreviousExportDescription` في الإعدادات (`"ExportDescription"`) ويعيد قراءته في كل نافذة تنزيل جديدة وفي `AddFastDownloadsAsync` (الذي لا يعرض خيارًا لتعطيله)، فيستمر تمرير `--write-description` لـ`yt-dlp` مع كل تنزيل لاحق.
+- **التعديلات المنفّذة:**
+  - [`Nickvision.Parabolic.GNOME/Views/AddDownloadDialog.cs`](../Nickvision.Parabolic.GNOME/Views/AddDownloadDialog.cs#L296): تصحيح المعامل الثاني عشر في `DownloadPlaylistAsync` إلى `_playlistExportDescriptionRow!.Active`.
+  - [`Nickvision.Parabolic.Shared/Controllers/AddDownloadDialogController.cs`](../Nickvision.Parabolic.Shared/Controllers/AddDownloadDialogController.cs#L36): ضبط `PreviousExportDescription => false;` (تجاهل أي قيمة قديمة عالقة في الإعدادات مثل `"ExportDescription": true`)، وضبط `ExportDescription = false` في `AddFastDownloadsAsync`، وإلغاء حفظ `PreviousExportDescription` في `AddPlaylistDownloadsAsync` و`AddSingleDownloadAsync` مع إبقاء التصدير يعمل لمرة واحدة عند تفعيله صراحةً في نافذة التنزيل، والإبقاء على خاصية `IConfigurationServiceExtensions.PreviousExportDescription` للتوافق.
+  - [`tests/engine/RobustnessChecks.cs`](../tests/engine/RobustnessChecks.cs#L283-L443): إضافة اختبارات انحدار تغطي `PreviousExportDescription` و`AddFastDownloadsAsync` و`AddSingleDownloadAsync` و`AddPlaylistDownloadsAsync` وتمرير `--write-description` في `YtdlpExecutableService`.
+- **التحقق وحدوده:**
+  - محليًا: مراجعة متقاطعة عبر الأدوار (`architect-scout` و`backend-core` و`frontend-ui` و`qa-reviewer`) ومطابقة توقيعات واجهات `Nickvision.Desktop` (`2026.5.3`) ونجاح `git diff --check`؛ لم يُشغَّل بناء `.NET` أو `EngineChecks` محليًا لعدم تثبيت `.NET SDK` على الجهاز.
+  - على CI والتجربة الفعلية: بانتظار نتائج فحوص CI وبناء حزمة macOS والتحقق الفعلي على جهاز المستخدم.
+
+## طلب سابق مكتمل: إعادة الهوية، تحديث واجهة Windows، وإصلاح انهيار التشغيل (`2026.5.156`)
+
+- **إذن التسليم والنتيجة:** أذن المستخدم بتطبيق تصميم الواجهة وإعادة الهوية، وتقليص حجم النافذة الافتراضية والشريط الجانبي، ورفع الإصلاح في كوميت واحد نظيف على `main` (`be151cd7d03fb17bf255fa199b0ddb09b613e59e`)، ونُشر الإصدار [BearDL 2026.5.156](https://github.com/2-sa/BearDL/releases/tag/2026.5.156) بنجاح عبر [البناء 43777610767](https://github.com/2-sa/BearDL/actions/runs/43777610767) بجميع ملفات المنصات العشرة وبصمات `SHA256SUMS.txt`.
+- **ما نُفّذ في الكوميت `be151cd7`:**
+  - **إعادة الهوية البصرية:** تحديث شعار BearDL والبانر (`resources/banner.png`, `extension/resources/banner.png`) وأيقونات WinUI (`Assets/BearDL-Logo.png`, `.ico`) وإضافة المتصفح (`extension/{chrome,firefox}/icons/`) وشاشة «عن البرنامج» (`AboutDialog.xaml`) وملف المثبت (`inno/setup.iss`) و[`README.md`](../README.md).
+  - **إعادة تصميم واجهة WinUI 3 (`M1`–`M4`) وتصغير النافذة والشريط:**
+    - توحيد موارد الألوان والبطاقات والأزرار والأرقام الجدولية (`BearAccentBrush`, `BearCardBrush`, `BearPrimaryActionButtonStyle`, `BearTabularTextStyle`) في [`InterfaceStyles.xaml`](../Nickvision.Parabolic.WinUI/Styles/InterfaceStyles.xaml) ضمن `ThemeDictionaries` للأوضاع `Default` و`Light` و`Dark`.
+    - ضبط حجم النافذة الافتراضي إلى `800×600` في [`IConfigurationServiceExtensions.cs`](../Nickvision.Parabolic.Shared/Helpers/IConfigurationServiceExtensions.cs) مع ترحيل لمرة واحدة (`CompactWindowGeometryApplied`) للنسخ السابقة ذات المقاس `900×700`، وتقليص عرض الشريط الجانبي `OpenPaneLength` إلى `176` في [`MainWindow.xaml`](../Nickvision.Parabolic.WinUI/Views/MainWindow.xaml).
+    - إضافة [`DialogQueueHelper.cs`](../Nickvision.Parabolic.WinUI/Helpers/DialogQueueHelper.cs) لتسلسل حوارات `ContentDialog` بأمان، وتوحيد الهوامش الجانبية `16px` في [`ScrollViewportHelper.cs`](../Nickvision.Parabolic.WinUI/Helpers/ScrollViewportHelper.cs)، وتحديث بطاقات [`DownloadRow.xaml`](../Nickvision.Parabolic.WinUI/Controls/DownloadRow.xaml) والحوارات والترجمات (`resources/po/{POTFILES,parabolic.pot}`).
+  - **إصلاح انهيار التشغيل `0xc000027b` في `2026.5.155`:**
+    - كان `NavigationViewSelectionIndicatorForeground` في [`MainWindow.xaml`](../Nickvision.Parabolic.WinUI/Views/MainWindow.xaml) يشير بـ`StaticResource` إلى مفتاح غير معرّف (`BearAccentPrimaryBrush`) مما سبب فشل تحميل شجرة XAML وانهيار `Microsoft.ui.xaml.dll` (`E_FAIL / 0xc000027b`) عند الإقلاع.
+    - استُبدل بتعريف `ThemeDictionaries` صريح داخل `NavigationView.Resources` لألوان `Default`/`Light` (`#C93B31`) و`Dark` (`#E04F44`).
+- **التحقق وحدوده:**
+  - محليًا (دون تثبيت `.NET SDK`): نُفّذ تحليل XML وفحص جميع مراجع `StaticResource`/`ThemeResource`/`ResourceKey` عبر ملفات XAML التسعة دون أي أخطاء أو مفاتيح مفقودة.
+  - على GitHub Actions: نجح [البناء 43777610767](https://github.com/2-sa/BearDL/actions/runs/43777610767) بجميع فحوصه (`version`, `plugins`, `windows`, `macos`, `linux`, `release`) وتوفرت جميع أصول `2026.5.156`.
+  - **المتبقي:** التحقق الفعلي من تشغيل المثبّت الجديد `BearDLSetup-x64.exe` (`2026.5.156`) والقبول البصري على جهاز المستخدم.
+
+## طلب سابق مكتمل: تحسين الأداء، استقرار التشغيل بنسخة واحدة، واستقبال روابط الإضافة — 2026-11-13
+
+- أذن المستخدم بإجراء commit وpush للتعديلات الحالية على `main` لتشغيل فحوص Actions (دون تثبيت أدوات محلية أو تشغيل إصدار تلقائي)؛ رُفعت في الكوميت `ce8c5d56` وفوقها إصلاحات البناء حتى `bf31a897`.
 - **تحسينات الاستقرار وتكامل الإضافة:**
   - تسجيل نسخة رئيسية عبر `AppInstance` على Windows بعزل النسخة المحمولة (`--portable`) ببصمة المسار، ومهلة 5 ثوانٍ للتحويل، وحفظ الطلبات المبكرة في قائمة انتظار، واستعادة النافذة المصغّرة (`OverlappedPresenter.Restore()`).
   - الحفاظ على مخطط `http://` عبر `parabolic://http/...` في إضافتي Chrome وFirefox و[`LaunchUrlParser`](../Nickvision.Parabolic.Shared/Helpers/LaunchUrlParser.cs)، وتحديث قائمة السياق عند `runtime.onStartup`، وتحويل `options.js` إلى `async/await` (مع إصلاح `browser.storage` في Firefox) وتحديث `homepage_url`.
@@ -13,8 +44,8 @@
   - تحليل تقدّم `[Parabolic] Progress` دون تخصيص نصوص عبر `ReadOnlySpan<char>`، وتخفيف تحديثات الحالة غير الرقمية (`150ms`)، وحفظ بيانات ATL عند وجود حقول مصدر فقط، وإزالة `--verbose` الافتراضي، وتنفيذ فحوص التحديث (`CheckForUpdatesAsync`) بالتوازي.
   - توازي محدود (`SemaphoreSlim(4, 4)`) في اكتشاف الدفعات و`YoutubeTab` مع حفظ الترتيب الأصلي، وذاكرة صور مصغّرة LRU محدودة (`96` عنصرًا) مع دمج الطلبات المتزامنة.
   - تصغير الصور المصغّرة في `DownloadRow` (`150x100`) وتخفيف تحديث لوح السجل (`250ms` عند ظهوره فقط)، وتأخير فحص الحافظة (`150ms`) والتحديث التفاضلي لقائمة `ListDownloads` عبر `ObservableCollection`.
-- **التحقق المحلي المنفّذ:** نجح `node --test tests/extension/handoff.test.cjs` (4/4 اختبارات)، وفحص تركيب `node -c` لملفات الإضافة، و`git diff --check`. أُضيفت اختبارات [`RobustnessChecks.cs`](../tests/engine/RobustnessChecks.cs) وتحديث [`Program.cs`](../tests/engine/Program.cs). لم يُبنَ التطبيق أو `EngineChecks` محليًا لعدم وجود `.NET SDK`؛ ينتظر نجاح فحوص Actions على GitHub.
-- تحقق نشر التحديث السابق: نجح البناء `41579317599` ونُشر `2026.5.147` بملفات المنصات العشرة والبصمات. التعديلات الحالية متجهة إلى `main` فوق ذلك الإصدار.
+- **التحقق المحلي المنفّذ:** نجح `node --test tests/extension/handoff.test.cjs` (4/4 اختبارات)، وفحص تركيب `node -c` لملفات الإضافة، و`git diff --check`. أُضيفت اختبارات [`RobustnessChecks.cs`](../tests/engine/RobustnessChecks.cs) وتحديث [`Program.cs`](../tests/engine/Program.cs).
+- تحقق نشر التحديث السابق: نجح البناء `41579317599` ونُشر `2026.5.147` بملفات المنصات العشرة والبصمات، ثم تبعته تحديثات الأداء والتصميم والإصدار `2026.5.156`.
 
 ## طلب تحسين الأداء والمتانة — 2026-11-03
 

@@ -293,7 +293,7 @@ public class AddDownloadDialog : Adw.Dialog
             _discoveryContext!.SubtitleLanguages.Where(x => x.ShouldSelect),
             _playlistExportM3URow!.Active,
             _playlistSplitChaptersRow!.Active,
-            _playlistExportM3URow!.Active,
+            _playlistExportDescriptionRow!.Active,
             _playlistExcludeFromHistoryRow!.Active,
             _controller.GetAvailablePostProcessorArguments()[(int)_playlistPostProcessorArgumentRow!.Selected]);
         Close();

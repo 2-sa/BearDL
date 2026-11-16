@@ -4,11 +4,15 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Nickvision.Desktop.Application;
 using Nickvision.Desktop.Filesystem;
 using Nickvision.Desktop.Globalization;
+using Nickvision.Desktop.Keyring;
+using Nickvision.Desktop.Notifications;
 using Nickvision.Desktop.System;
+using Nickvision.Parabolic.Shared.Controllers;
 using Nickvision.Parabolic.Shared.Helpers;
 using Nickvision.Parabolic.Shared.Models;
 using Nickvision.Parabolic.Shared.Services;
@@ -275,6 +279,167 @@ internal static class RobustnessChecks
         finally
         {
             if (Directory.Exists(folder)) { Directory.Delete(folder, true); }
+        }
+        // AddDownloadDialogController ExportDescription defaults and non-persistence.
+        var controllerRoot = Path.Combine(root, "export-description-checks");
+        Directory.CreateDirectory(controllerRoot);
+        try
+        {
+            var controllerConfigStore = new ConcurrentDictionary<string, object?>();
+            controllerConfigStore["ExportDescription"] = true;
+            var exportDescriptionSetCalls = 0;
+            using var txConnection = new SqliteConnection("Data Source=:memory:");
+            txConnection.Open();
+            var controllerConfig = Proxy.Create<IConfigurationService>((method, values) =>
+            {
+                if (method.Name == "Get")
+                {
+                    return controllerConfigStore.TryGetValue(values[0]!.ToString()!, out var existing) ? existing : values[1];
+                }
+                if (method.Name == "Set")
+                {
+                    var key = values[0]!.ToString()!;
+                    if (key == "ExportDescription")
+                    {
+                        Interlocked.Increment(ref exportDescriptionSetCalls);
+                    }
+                    controllerConfigStore[key] = values[1];
+                    return null;
+                }
+                if (method.Name == "CreateTransactionAsync")
+                {
+                    return Task.FromResult(txConnection.BeginTransaction());
+                }
+                throw new NotSupportedException(method.Name);
+            });
+            var controllerYtdlpService = new YtdlpExecutableService(
+                NullLogger<YtdlpExecutableService>.Instance,
+                NullLogger<UpdaterService>.Instance,
+                controllerConfig,
+                denoStub,
+                httpFactory);
+            using var fastDoc = System.Text.Json.JsonDocument.Parse("""{"title":"Fast Item","webpage_url":"https://example.com/fast-item"}""");
+            var fastDiscoveryResult = new DiscoveryResult(fastDoc.RootElement, controllerConfig, translator, new Uri("https://example.com/fast-item"), string.Empty, string.Empty);
+            var controllerDiscovery = Proxy.Create<IDiscoveryService>((method, _) =>
+                method.Name == "GetForUrlAsync"
+                    ? Task.FromResult(fastDiscoveryResult)
+                    : throw new NotSupportedException(method.Name));
+            var capturedBatches = new List<IReadOnlyList<DownloadOptions>>();
+            var controllerDownloadService = Proxy.Create<IDownloadService>((method, args) =>
+            {
+                if (method.Name == "AddWithDuplicateCheckAsync")
+                {
+                    capturedBatches.Add((IReadOnlyList<DownloadOptions>)args[0]!);
+                    return Task.FromResult(true);
+                }
+                throw new NotSupportedException(method.Name);
+            });
+            var notifications = new List<AppNotification>();
+            var controllerNotifications = Proxy.Create<INotificationService>((method, args) =>
+            {
+                if (method.Name == "Send")
+                {
+                    notifications.Add((AppNotification)args[0]!);
+                    return null;
+                }
+                throw new NotSupportedException(method.Name);
+            });
+            var controllerLifetime = Proxy.Create<IHostApplicationLifetime>((method, _) =>
+                method.Name == "get_ApplicationStopping" ? CancellationToken.None : throw new NotSupportedException(method.Name));
+            var controllerKeyring = Proxy.Create<IKeyringService>((method, _) =>
+                method.Name == "GetAllCredentialAsync"
+                    ? Task.FromResult<IReadOnlyList<Credential>>(Array.Empty<Credential>())
+                    : throw new NotSupportedException(method.Name));
+            var controller = new AddDownloadDialogController(
+                NullLogger<AddDownloadDialogController>.Instance,
+                controllerLifetime,
+                controllerConfig,
+                controllerDiscovery,
+                controllerDownloadService,
+                controllerKeyring,
+                controllerNotifications,
+                thumbnails,
+                translator);
+
+            Require(!controller.PreviousExportDescription, "PreviousExportDescription returns false even when config has ExportDescription=true");
+
+            await controller.AddFastDownloadsAsync(new Uri("https://example.com/fast-item"), null, controllerRoot);
+            Require(capturedBatches.Count == 1 && capturedBatches[0].Count == 1, "Fast download queues expected item");
+            Require(!capturedBatches[0][0].ExportDescription, "AddFastDownloadsAsync sets ExportDescription=false");
+            using (var fastProcess = controllerYtdlpService.GetDownloadProcess(capturedBatches[0][0]))
+            {
+                Require(!fastProcess.StartInfo.ArgumentList.Contains("--write-description"), "Fast download process omits --write-description");
+            }
+
+            using var singleDoc = System.Text.Json.JsonDocument.Parse("""{"title":"Single Item","webpage_url":"https://example.com/single-item"}""");
+            var singleMedia = new Media(singleDoc.RootElement, controllerConfig, translator, string.Empty, string.Empty, new Uri("https://example.com/single-item"));
+            var singleContext = new DiscoveryContext(101, new Uri("https://example.com/single-item"), "Single Item", null, new[] { singleMedia });
+            await controller.AddSingleDownloadAsync(
+                singleContext,
+                "single-item",
+                controllerRoot,
+                new SelectionItem<MediaFileType>(MediaFileType.MP4, "MP4", true),
+                new SelectionItem<Format>(Format.BestVideo, "Best", true),
+                new SelectionItem<Format>(Format.BestAudio, "Best", true),
+                Array.Empty<SelectionItem<SubtitleLanguage>>(),
+                splitChapters: false,
+                exportDescription: true,
+                excludeFromHistory: false,
+                new SelectionItem<PostProcessorArgument?>(null, "None", true),
+                string.Empty,
+                string.Empty);
+            Require(capturedBatches.Count == 2 && capturedBatches[1].Count == 1, "Single download queues expected item");
+            Require(capturedBatches[1][0].ExportDescription, "AddSingleDownloadAsync honors explicit exportDescription=true");
+            using (var singleProcess = controllerYtdlpService.GetDownloadProcess(capturedBatches[1][0]))
+            {
+                Require(singleProcess.StartInfo.ArgumentList.Contains("--write-description"), "Single download with exportDescription=true includes --write-description");
+            }
+            Require(!controller.PreviousExportDescription, "AddSingleDownloadAsync leaves PreviousExportDescription=false");
+
+            await controller.AddFastDownloadsAsync(new Uri("https://example.com/fast-item"), null, controllerRoot);
+            Require(capturedBatches.Count == 3 && capturedBatches[2].Count == 1, "Subsequent fast download queues expected item");
+            Require(!capturedBatches[2][0].ExportDescription, "Subsequent AddFastDownloadsAsync still sets ExportDescription=false");
+
+            using var playlistDoc = System.Text.Json.JsonDocument.Parse("""
+                {
+                  "title": "MyPlaylist",
+                  "entries": [
+                    {"title":"Item 1","webpage_url":"https://example.com/playlist-1","playlist_index":1},
+                    {"title":"Item 2","webpage_url":"https://example.com/playlist-2","playlist_index":2}
+                  ]
+                }
+                """);
+            var playlistDiscovery = new DiscoveryResult(playlistDoc.RootElement, controllerConfig, translator, new Uri("https://example.com/playlist"), string.Empty, string.Empty);
+            var playlistContext = new DiscoveryContext(102, playlistDiscovery.Url, playlistDiscovery.Title, null, playlistDiscovery.Media);
+            var playlistItems = playlistDiscovery.Media.Select((m, index) => new MediaSelectionItem(index, m, translator)).ToList();
+            Directory.CreateDirectory(Path.Combine(controllerRoot, playlistContext.Title.SanitizeForFilename(controllerConfig.LimitCharacters)));
+            await controller.AddPlaylistDownloadsAsync(
+                playlistContext,
+                playlistItems,
+                controllerRoot,
+                new SelectionItem<MediaFileType>(MediaFileType.MP4, "MP4", true),
+                new SelectionItem<VideoResolution>(VideoResolution.Best, "Best", true),
+                new SelectionItem<double>(double.MaxValue, "Best", true),
+                reverseDownloadOrder: false,
+                numberTitles: false,
+                Array.Empty<SelectionItem<SubtitleLanguage>>(),
+                exportM3U: true,
+                splitChapters: false,
+                exportDescription: false,
+                excludeFromHistory: false,
+                new SelectionItem<PostProcessorArgument?>(null, "None", true));
+            Require(capturedBatches.Count == 4 && capturedBatches[3].Count == 2, "Playlist download queues all selected items");
+            Require(capturedBatches[3].All(item => !item.ExportDescription), "AddPlaylistDownloadsAsync sets ExportDescription=false even when exportM3U=true");
+            Require(!controller.PreviousExportDescription, "AddPlaylistDownloadsAsync leaves PreviousExportDescription=false");
+            Require(exportDescriptionSetCalls == 0, "Controller never persists PreviousExportDescription");
+            Require(!notifications.Any(n => n.Severity == NotificationSeverity.Error), "Controller regression checks produced no error notifications");
+        }
+        finally
+        {
+            if (Directory.Exists(controllerRoot))
+            {
+                Directory.Delete(controllerRoot, true);
+            }
         }
         Console.WriteLine("PASS: bounded logs, discovery resilience, SQLite rollback and reopen");
     }

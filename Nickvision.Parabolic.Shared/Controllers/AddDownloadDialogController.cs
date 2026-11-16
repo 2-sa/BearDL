@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using Nickvision.Desktop.Application;
 using Nickvision.Desktop.Globalization;
@@ -33,7 +33,7 @@ public class AddDownloadDialogController
     private readonly Dictionary<int, DiscoveryContext> _discoveryContextMap;
 
     public Dictionary<MediaFileType, string> PreviousAudioFormatIds => _configurationService.PreviousAudioFormatIds;
-    public bool PreviousExportDescription => _configurationService.PreviousExportDescription;
+    public bool PreviousExportDescription => false;
     public bool PreviousExportM3U => _configurationService.PreviousExportM3U;
     public bool PreviousNumberTitles => _configurationService.PreviousNumberTitles;
     public bool PreviousReverseDownloadOrder => _configurationService.PreviousReverseDownloadOrder;
@@ -117,7 +117,7 @@ public class AddDownloadDialogController
                     UseBestQuality = true,
                     SubtitleLanguages = media.Subtitles.Where(x => _configurationService.PreviousSubtitleLanguages.Contains(x)).ToList(),
                     SplitChapters = _configurationService.PreviousSplitChapters,
-                    ExportDescription = _configurationService.PreviousExportDescription
+                    ExportDescription = false
                 });
             }
             cancellationToken.ThrowIfCancellationRequested();
@@ -239,7 +239,6 @@ public class AddDownloadDialogController
         _configurationService.PreviousReverseDownloadOrder = reverseDownloadOrder;
         _configurationService.PreviousNumberTitles = numberTitles;
         _configurationService.PreviousSplitChapters = splitChapters;
-        _configurationService.PreviousExportDescription = exportDescription;
         _configurationService.PreviousPostProcessorArgumentName = selectedPostProcessorArgument.Value?.Name ?? string.Empty;
         _configurationService.PreviousSubtitleLanguages = selectedSubtitles;
         await transaction.CommitAsync();
@@ -321,7 +320,6 @@ public class AddDownloadDialogController
             _configurationService.PreviousAudioFormatIds = previous;
         }
         _configurationService.PreviousSplitChapters = options.SplitChapters;
-        _configurationService.PreviousExportDescription = options.ExportDescription;
         _configurationService.PreviousPostProcessorArgumentName = options.PostProcessorArgument?.Name ?? string.Empty;
         _configurationService.PreviousSubtitleLanguages = options.SubtitleLanguages;
         await transaction.CommitAsync();
